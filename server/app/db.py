@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS library_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   tenant_id TEXT NOT NULL DEFAULT '{t}',
   openid TEXT NOT NULL,
-  item_type TEXT NOT NULL DEFAULT 'video',   -- video / image / copy
+  item_type TEXT NOT NULL DEFAULT 'video',   -- video / image / copy / audio
   title TEXT NOT NULL DEFAULT '',
   platform TEXT NOT NULL DEFAULT '',
   author TEXT NOT NULL DEFAULT '',

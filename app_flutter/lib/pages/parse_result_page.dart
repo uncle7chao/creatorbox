@@ -19,6 +19,8 @@ class ParseResultPage extends StatefulWidget {
 class _ParseResultPageState extends State<ParseResultPage> {
   bool _saving = false;
   bool _saved = false;
+  bool _bgmSaving = false;
+  bool _bgmSaved = false;
 
   Session get session => widget.session;
   Map<String, dynamic> get result => widget.result;
@@ -139,6 +141,36 @@ class _ParseResultPageState extends State<ParseResultPage> {
     return label;
   }
 
+  /// BGM 单独入库（item_type=audio），与视频条目分开 ——
+  /// 素材库里按类型区分，回看时知道这是音频不是视频。
+  Future<void> _saveBgm() async {
+    if (_bgmSaving || _bgmSaved || _musicUrl.isEmpty) return;
+    setState(() => _bgmSaving = true);
+    try {
+      final openid = await session.api.authOpenid();
+      await session.api.libraryAdd(
+        openid,
+        itemType: 'audio',
+        title: _str(result['music_title']).isEmpty
+            ? '${_str(result['author']).isEmpty ? 'BGM' : _str(result['author'])} 的BGM'
+            : _str(result['music_title']),
+        platform: _str(result['platform']),
+        author: _str(result['music_author']),
+        sourceText: _musicUrl,
+      );
+      if (!mounted) return;
+      setState(() => _bgmSaved = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('BGM 已存入素材库（小程序端同步可见）')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('存入失败：$e')));
+    } finally {
+      if (mounted) setState(() => _bgmSaving = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -224,15 +256,35 @@ class _ParseResultPageState extends State<ParseResultPage> {
             const SizedBox(height: 8),
             Text('背景音乐', style: theme.textTheme.titleSmall),
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.music_note),
-                title: Text(_str(result['music_title']).isEmpty
-                    ? 'BGM'
-                    : _str(result['music_title']),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: const Text('点击复制音频直链'),
-                trailing: const Icon(Icons.copy),
-                onTap: () => _copy(_musicUrl, '音频直链已复制', context),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.music_note),
+                    title: Text(_str(result['music_title']).isEmpty
+                        ? 'BGM'
+                        : _str(result['music_title']),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(_str(result['music_author']).isEmpty
+                        ? '点击复制音频直链（试听可在小程序端）'
+                        : '${_str(result['music_author'])} · 点击复制音频直链'),
+                    trailing: const Icon(Icons.copy),
+                    onTap: () => _copy(_musicUrl, '音频直链已复制', context),
+                  ),
+                  const Divider(height: 1),
+                  // ⭐ BGM 入库走 item_type=audio（服务端 library 表已支持），
+                  // 与小程序素材库同库 —— 手机端打开素材库即可试听复用。
+                  // 不在本端做试听：不为此引入音频播放器依赖，
+                  // 那会让用户多下一个原生包，收益不抵编译风险。
+                  ListTile(
+                    dense: true,
+                    leading: Icon(_bgmSaved ? Icons.check : Icons.library_music_outlined,
+                        size: 20,
+                        color: _bgmSaved ? Colors.green : null),
+                    title: Text(_bgmSaved ? 'BGM 已存入素材库' : '把 BGM 存入素材库',
+                        style: const TextStyle(fontSize: 14)),
+                    onTap: _bgmSaved ? null : _saveBgm,
+                  ),
+                ],
               ),
             ),
           ],
