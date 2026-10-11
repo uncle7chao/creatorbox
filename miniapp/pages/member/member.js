@@ -238,5 +238,79 @@ Page({
 
   navCompliance() {
     wx.navigateTo({ url: '/pages/compliance/compliance' });
+  },
+
+  // ── 注销账号（隐私保护指引 §四）──
+  // 流程：预览将删除什么 → wxModal 二次确认 → 调接口 → 清本地缓存回首页。
+  // ⭐ 不可逆操作，双重确认缺一不可：这里 confirm 一次，接口 confirm 字段再校验一次。
+  onPurgePreview() {
+    const openid = wx.getStorageSync('openid');
+    if (!openid) {
+      wx.showToast({ title: '未登录', icon: 'none' });
+      return;
+    }
+    wx.showLoading({ title: '查询中' });
+    api.purgePreview(openid)
+      .then(data => {
+        wx.hideLoading();
+        if (!data || data.unknown_user) {
+          wx.showModal({
+            title: '账号注销',
+            content: '未找到你的账号数据，可能已注销或已清除。',
+            showCancel: false
+          });
+          return;
+        }
+        const c = data.counts || {};
+        const items = [
+          ['素材库条目', c.library_items],
+          ['配额记录', c.quota_daily],
+          ['签到记录', c.points_sign],
+          ['跨端绑定身份', c.identities],
+          ['登录凭证', c.auth_tokens]
+        ].filter(x => x[1] > 0)
+         .map(x => `· ${x[0]}：${x[1]} 条`).join('\n') || '· 无';
+
+        wx.showModal({
+          title: '确认注销账号？',
+          content: `将删除以下数据：\n${items}\n\n` +
+                   `此操作【不可恢复】，且会同时退出 App/电脑端登录。\n` +
+                   `平台运营数据（卡密库、违禁词库）不受影响。`,
+          confirmText: '确认注销',
+          confirmColor: '#D92D20',
+          cancelText: '再想想',
+          success: res => {
+            if (!res.confirm) return;
+            this._doPurge(openid);
+          }
+        });
+      })
+      .catch(err => {
+        wx.hideLoading();
+        wx.showToast({ title: err.message || '查询失败', icon: 'none' });
+      });
+  },
+
+  _doPurge(openid) {
+    wx.showLoading({ title: '注销中' });
+    api.purgeAccount(openid)
+      .then(({ statusCode, data }) => {
+        wx.hideLoading();
+        if (statusCode !== 200 || !data || !data.ok) {
+          const msg = (data && data.detail) || '注销失败，请稍后再试';
+          wx.showModal({ title: '注销未完成', content: msg, showCancel: false });
+          return;
+        }
+        // 清本地身份缓存，避免下次进来还拿着已注销的 openid
+        wx.removeStorageSync('openid');
+        wx.removeStorageSync('user');
+        wx.removeStorageSync('isMember');
+        wx.showToast({ title: '已注销', icon: 'success' });
+        setTimeout(() => wx.switchTab({ url: '/pages/index/index' }), 1200);
+      })
+      .catch(err => {
+        wx.hideLoading();
+        wx.showToast({ title: err.message || '注销失败', icon: 'none' });
+      });
   }
 });

@@ -1227,6 +1227,17 @@ _USER_SCOPED_TABLES = (
 # 不是 provider_uid 关联），见 purge_user 内注释。
 
 
+def user_id_by_openid(openid: str) -> str:
+    """openid → user_id（小程序侧注销用；取不到返回空串）。"""
+    assert _conn, 'db.init() 未调用'
+    if not openid:
+        return ''
+    with _lock:
+        r = _conn.execute('SELECT user_id FROM users WHERE openid=?',
+                          (openid,)).fetchone()
+    return (r['user_id'] if r else '') or ''
+
+
 def purge_user(user_id: str) -> Dict[str, Any]:
     """删除用户的全部个人数据（注销账号）。
 

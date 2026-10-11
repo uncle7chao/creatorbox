@@ -159,6 +159,20 @@ function bannedCheck(openid, text) {
     .then(({ data }) => data);
 }
 
+// ── 账号注销（隐私保护指引 §四 删除权）──
+// 小程序侧走 openid 口径，与本文件其余接口一致（App/PC 走 token）。
+// confirm 必须回传 openid 做二次确认闸 —— 注销不可逆，必须防误触。
+function purgePreview(openid) {
+  return request(`/api/auth/purge/preview_by_openid?openid=${encodeURIComponent(openid)}`)
+    .then(({ data }) => data);
+}
+
+function purgeAccount(openid) {
+  return request('/api/auth/purge_by_openid', {
+    method: 'POST', data: { openid, confirm: openid }
+  });
+}
+
 // 封面防盗链代理（2026-10-11）：平台 CDN 直连偶发裂图 → 服务端中转+缓存
 // 非法/空地址原样返回；服务端未知域 403 时前端 binderror 回退原链
 function coverProxy(url) {
@@ -304,6 +318,7 @@ module.exports = {
   TOOLBOX_PLACEHOLDERS,
   points, pointsSign, pointsRedeem,
   redeemCode, bridgeConfirm,
+  purgePreview, purgeAccount,
   bannedCheck,
   TOOLBOX_LIVE,
   INDEX_BANNERS

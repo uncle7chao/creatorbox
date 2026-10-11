@@ -9,7 +9,7 @@ import asyncio
 import hashlib
 import os
 import time
-from typing import List
+from typing import Dict, List
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -695,6 +695,65 @@ async def api_auth_purge_preview(x_user_token: str = Header(default='')):
         'not_deleted': ['卡密库', '违禁词库', '运营设置'],
         'irreversible': True,
     }
+
+
+# ── 小程序侧注销（openid 路径）───────────────────────────────────────────────
+# 为什么小程序走 openid 而 App/PC 走 token：
+#   小程序从 wx.login 拿到 openid 后全程持有，且现有全部存量接口
+#   （素材库/配额/会员/违禁词）本来就是 openid 主键 —— 注销沿用同一套身份口径，
+#   不引入第二套凭证机制，避免两端口径不一致。
+# 风险控制：注销是不可逆操作，用 confirm 回传 openid 做二次确认闸，
+#   与 token 版对齐；实际风险等级与既有 /api/library/delete 相同。
+
+class MiniPurgeReq(BaseModel):
+    openid: str = Field('', description='当前用户 openid')
+    confirm: str = Field('', description='二次确认串，必须等于 openid，防误触')
+
+
+def _purge_counts(oid: str, uid: str) -> Dict[str, int]:
+    return {
+        'library_items': db.count_by_openid('library_items', oid),
+        'quota_daily': db.count_by_openid('quota_daily', oid),
+        'banned_daily': db.count_by_openid('banned_daily', oid),
+        'points_sign': db.count_by_openid('points_sign', oid),
+        'identities': db.count_by_user_id('identities', uid),
+        'auth_tokens': db.count_by_user_id('auth_tokens', uid),
+    }
+
+
+@app.get('/api/auth/purge/preview_by_openid')
+async def api_purge_preview_by_openid(openid: str = ''):
+    """小程序侧注销预览（openid 路径）。"""
+    if not openid:
+        raise HTTPException(400, '缺少 openid')
+    uid = db.user_id_by_openid(openid)
+    if not uid:
+        return {'counts': {}, 'irreversible': True, 'unknown_user': True,
+                'not_deleted': ['卡密库', '违禁词库', '运营设置']}
+    return {
+        'openid': openid,
+        'user_id': uid,
+        'counts': _purge_counts(openid, uid),
+        'not_deleted': ['卡密库', '违禁词库', '运营设置'],
+        'irreversible': True,
+    }
+
+
+@app.post('/api/auth/purge_by_openid')
+async def api_purge_by_openid(req: MiniPurgeReq):
+    """小程序侧注销账号（不可逆）。"""
+    if not req.openid:
+        raise HTTPException(400, '缺少 openid')
+    if (req.confirm or '').strip() != req.openid:
+        raise HTTPException(400, 'confirm 与 openid 不匹配，请确认后再试')
+    uid = db.user_id_by_openid(req.openid)
+    if not uid:
+        raise HTTPException(404, '账号不存在')
+    r = db.purge_user(uid)
+    if not r.get('ok'):
+        raise HTTPException(404, r.get('reason') or '注销失败')
+    return {'ok': True, 'deleted': r['deleted'],
+            'note': '全部个人数据已删除，不可恢复'}
 
 
 @app.get('/api/user/quota')

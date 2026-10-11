@@ -130,6 +130,25 @@
     </view>
   </view>
 
+  <!-- ══ 账号安全（隐私保护指引 §四 删除权）══ -->
+  <view class="sec">
+    <view class="sec-h">账号安全</view>
+
+    <view class="mi" bindtap="onPurgePreview">
+      <view class="mi-ic mi-danger"></view>
+      <view class="mi-body">
+        <view class="mi-t">注销账号</view>
+        <view class="mi-s">删除全部个人数据，不可恢复</view>
+      </view>
+      <view class="mi-arrow"></view>
+    </view>
+
+    <view class="danger-note">
+      注销后将同时清除：解析记录、素材库、配额、签到积分、跨端绑定身份与登录凭证。
+      卡密库、违禁词库等平台运营数据不受影响。
+    </view>
+  </view>
+
   <view class="disclaimer" bindtap="navCompliance">
     开通即表示同意《会员服务协议》，可随时取消
   </view>

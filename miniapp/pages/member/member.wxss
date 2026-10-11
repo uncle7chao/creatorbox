@@ -556,3 +556,45 @@
   width: 3rpx; height: 14rpx;
   background: var(--brand);
 }
+
+/* ── 账号安全区（注销，隐私保护指引 §四）── */
+.mi-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 次要说明：沿用 .mi-note 的次要文字层级，仅字号对齐 .mi-t 的行距 */
+.mi-s {
+  font-size: 22rpx;
+  color: var(--ink-300);
+  margin-top: 4rpx;
+}
+
+/* 危险操作图标：CSS 画的三角警示，与其它实心色块图标区分 */
+.mi-danger {
+  background: #FEF3F2;
+}
+.mi-danger::before {
+  content: '';
+  position: absolute;
+  left: 11rpx; top: 8rpx;
+  width: 0; height: 0;
+  border-left: 7rpx solid transparent;
+  border-right: 7rpx solid transparent;
+  border-bottom: 13rpx solid #D92D20;
+}
+.mi-danger::after {
+  content: '';
+  position: absolute;
+  left: 15.5rpx; top: 15rpx;
+  width: 3rpx; height: 6rpx;
+  background: #D92D20;
+  border-radius: 2rpx;
+}
+
+.danger-note {
+  margin: 16rpx 26rpx 4rpx;
+  font-size: 21rpx;
+  color: var(--ink-300);
+  line-height: 1.65;
+}
