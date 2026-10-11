@@ -1846,11 +1846,27 @@ async def root():
 
 @app.get('/admin')
 async def admin_dashboard():
-    """运维看板（只读）—— 同源单文件，无外部依赖、无构建步骤
+    """运营后台（单文件，同源可用）。
 
-    数据全部来自只读公开端点；写操作仍走 API Key 认证，看板不提供任何操作入口。
-    file:// 直接打开也可用（BASE 回退 127.0.0.1:8080）。
+    ⚠️ 2026-10-11：这里原先服务的是 admin/dashboard.html（只读看板）。
+       现在改为服务 admin/index.html —— 它是 dashboard 的【超集】
+       （大盘 + 卡密/违禁词/用户/Cookie 的读写），旧文件保留未删，
+       需要旧版可直接访问 /admin/legacy。
+
+       同源提供的好处：浏览器同源策略下 fetch 不会遇到 file:// 的跨域问题，
+       也不需要用户手工填服务地址。file:// 直接打开双击也行。
     """
+    name = 'index.html' if (Path(__file__).resolve().parent.parent
+                            / 'admin' / 'index.html').exists() else 'dashboard.html'
+    path = Path(__file__).resolve().parent.parent / 'admin' / name
+    if not path.exists():
+        raise HTTPException(404, f'admin/{name} 不存在')
+    return HTMLResponse(path.read_text(encoding='utf-8'))
+
+
+@app.get('/admin/legacy')
+async def admin_legacy_dashboard():
+    """旧版只读看板（保留）。新版在 /admin。"""
     path = Path(__file__).resolve().parent.parent / 'admin' / 'dashboard.html'
     if not path.exists():
         raise HTTPException(404, 'admin/dashboard.html 不存在')

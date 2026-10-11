@@ -48,36 +48,47 @@
   <h1>CB_API_KEY 设置说明</h1>
   <div class="sub">CreatorBox 运营后台 · 管理接口密钥</div>
 
+  <div class="msg warn" style="margin-bottom:18px">
+    <b>⚠️ 如果你看到的是「运维看板」旧版界面</b>，说明服务还是改动前启动的 ——
+    关掉服务窗口，重新运行 <code>start-server.ps1</code> 即可加载新版。
+  </div>
+
   <div class="card">
     <h2><span class="step">1</span>启动服务</h2>
-    <p class="muted">在项目根目录执行（推荐，密钥会自动处理）：</p>
-    <pre>cd D:\WorkBuddyFILE\CreatorBox
+    <p class="muted">在项目根目录执行：</p>
+    <pre>cd D://WorkBuddyFILE//CreatorBox
 .\start-server.ps1</pre>
-    <p class="muted">首次运行时窗口会打印这样一段：</p>
-    <pre>  管理密钥: 首次已自动生成 → server\.api_key
-           xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-           ↑ 填进运营后台顶部「CB_API_KEY」框（只需填这一次）</pre>
+    <p class="muted">首次运行会自动生成密钥并在窗口里打印；之后启动自动复用。</p>
   </div>
 
   <div class="card">
     <h2><span class="step">2</span>复制密钥</h2>
-    <p class="muted">
-      密钥存在文件里（可用记事本打开 <code>server\.api_key</code>）。
-      或者在 PowerShell 里一键取出并复制到剪贴板：
+    <p class="muted">43 位长串很容易漏字符，务必用命令复制，别手打：</p>
+    <pre>Get-Content D://WorkBuddyFILE//CreatorBox//server//.api_key -Raw | Set-Clipboard</pre>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">3</span>打开后台并填入</h2>
+    <p class="muted">浏览器访问（推荐，服务地址会自动填好）：</p>
+    <pre>http://127.0.0.1:8080/admin</pre>
+    <p class="muted">把刚才复制的密钥粘到顶部「CB_API_KEY」框，点<b>连接</b>。</p>
+    <p class="msg ok">
+      <b>「大盘」页不需要密钥</b>，现在就能看；卡密/违禁词/用户/Cookie 四个页签才需要。
     </p>
-    <pre>Get-Content D:\WorkBuddyFILE\CreatorBox\server\.api_key -Raw | Set-Clipboard</pre>
-    <p class="muted">执行完直接到后台粘贴即可。</p>
   </div>
 
   <div class="card">
-    <h2><span class="step">3</span>打开后台填入</h2>
-    <p class="muted">双击打开 <code>server\admin\index.html</code>，顶部填两个值：</p>
-    <pre>服务地址：http://127.0.0.1:8080
-CB_API_KEY：上一步复制的密钥</pre>
-    <p class="msg ok">之后密钥会存在标签页的 sessionStorage 里，关掉浏览器窗口即失效，下次重新粘一次。</p>
+    <h2>打开后能干什么</h2>
+    <p class="muted" style="line-height:2">
+      <b>大盘</b> —— 服务在线状态、已接入平台数、探针成败记录、告警<br>
+      <b>卡密</b> —— 批量生成（面值天数 × 数量 × 批次）、搜索、单张作废<br>
+      <b>违禁词</b> —— 新增自定义词（改完<b>立即热生效</b>，不用重启服务）、停用/启用<br>
+      <b>用户</b> —— 总数/会员/今日活跃统计，按 openid 或昵称搜索<br>
+      <b>Cookie</b> —— 看小红书/微博 Cookie 是否配置，保存后<b>立即热加载</b>
+    </p>
   </div>
 
-  <div class="card">
+<div class="card">
     <h2>为什么非要配这个？</h2>
     <p class="muted">
       服务端对管理接口采取 <b>默认拒绝</b>：没配 <code>CB_API_KEY</code> 时，

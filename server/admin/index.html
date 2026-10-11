@@ -185,6 +185,16 @@ async function api(path, opts={}){
   return d;
 }
 
+/** 公开接口（无需 Key）：大盘用。
+ *  ⚠️ 不能直接复用 api()：它在没填 Key 时会抛错，会让整个大盘页显示失败，
+ *     而实际上这三个端点本来就是公开的（/api/health 系列不挂鉴权）。
+ *     少给一个密钥就把健康看板也锁掉，不合理。 */
+async function apiPub(path){
+  const r = await fetch(CFG.base + path, {headers:{'Accept':'application/json'}});
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
 function toast(kind, text){
   const box = $('#msgbox') || (() => {
     const d = document.createElement('div'); d.id='msgbox';
@@ -208,6 +218,22 @@ function go(t){
   document.querySelectorAll('nav button').forEach(b=>
     b.classList.toggle('on', b.dataset.t === t));
   clearMsg();
+  // 大盘是公开接口，未配 Key 也能看 —— 别让人以为整个后台都打不开
+  if (t !== 'dash' && !CFG.key) {
+    $('#main').innerHTML = `<div class="card pad">
+      <div class="msg info" style="margin-bottom:14px">
+        <b>还没填管理密钥</b></div>
+      <div style="font-size:13px;line-height:1.9;color:var(--ink2)">
+        卡密、违禁词、用户、Cookie 这几个页签需要 <code>CB_API_KEY</code>。<br>
+        · 密钥文件在 <code>server\\.api_key</code>（用 start-server.ps1 启动会自动生成）<br>
+        · 一键复制：<code>Get-Content D:\\WorkBuddyFILE\\CreatorBox\\server\\.api_key -Raw | Set-Clipboard</code><br>
+        · 然后粘到页面顶部的「CB_API_KEY」框，点「连接」<br><br>
+        <span style="color:var(--ink3)">「大盘」页不需要密钥，现在就能看。</span>
+      </div>
+      <div style="margin-top:16px"><button class="primary" onclick="go('dash')">先看大盘</button></div>
+    </div>`;
+    return;
+  }
   $('#main').innerHTML = '<div class="empty">加载中…</div>';
   VIEWS[t]().catch(e => {
     $('#main').innerHTML = `<div class="card pad"><div class="msg err">${esc(e.message)}</div></div>`;
@@ -217,13 +243,13 @@ function go(t){
 /* ───────────────────────── 大盘 ───────────────────────── */
 VIEWS.dash = async () => {
   const [h, a] = await Promise.allSettled([
-    api('/api/health'), api('/api/ads/config'),
+    apiPub('/api/health'), apiPub('/api/ads/config'),
   ]);
   const hd = h.status==='fulfilled' ? h.value : null;
   let stats = null, alerts = [];
   try {
     const [hh, aa] = await Promise.all([
-      api('/api/health/history'), api('/api/health/alerts')]);
+      apiPub('/api/health/history'), apiPub('/api/health/alerts')]);
     stats = hh; alerts = aa.alerts || aa.items || [];
   } catch(e){ /* 健康历史可选 */ }
 

@@ -8,7 +8,7 @@
      cd D:\WorkBuddyFILE\CreatorBox\server
      python -m uvicorn app.main:app --host 127.0.0.1 --port 8080
 
-启动后打开运维看板： http://127.0.0.1:8080/admin
+启动后打开运营后台： http://127.0.0.1:8080/admin
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -99,7 +99,8 @@ if (Test-Path $keyFile) {
 Set-Location "$ROOT\server"
 Write-Host "  工作目录: $ROOT\server" -ForegroundColor DarkGray
 Write-Host "  监听地址: http://127.0.0.1:$PORT" -ForegroundColor Green
-Write-Host "  运维看板: http://127.0.0.1:$PORT/admin" -ForegroundColor Green
+Write-Host "  运营后台: http://127.0.0.1:$PORT/admin" -ForegroundColor Green
+    Write-Host "    （若刚更新过代码，请重启本脚本以加载新版后台）" -ForegroundColor DarkGray
 Write-Host ''
 Write-Host '  服务启动后【不要关这个窗口】（关闭 = 停止服务）' -ForegroundColor Yellow
 Write-Host '  按 Ctrl+C 可停止服务' -ForegroundColor DarkGray
