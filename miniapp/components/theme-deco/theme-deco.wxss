@@ -1,0 +1,124 @@
+/* 皮肤装饰层：绝对定位垫底，pointer-events 放行点击 */
+.deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ── 经典橙金：暖光斑（缓慢呼吸）── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  animation: breathe 6s ease-in-out infinite;
+}
+.blob.o1 {
+  width: 420rpx; height: 420rpx;
+  right: -140rpx; top: 60rpx;
+  background: radial-gradient(circle, var(--glow), transparent 65%);
+}
+.blob.o2 {
+  width: 320rpx; height: 320rpx;
+  left: -120rpx; top: 640rpx;
+  background: radial-gradient(circle, var(--glow-soft), transparent 65%);
+  animation-delay: 1.5s;
+}
+.blob.o3 {
+  width: 500rpx; height: 500rpx;
+  right: -180rpx; bottom: -60rpx;
+  background: radial-gradient(circle, var(--glow-soft), transparent 65%);
+  animation-delay: 3s;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+/* ── 午夜暗黑：顶部辉光 + 星点闪烁 ── */
+.glow {
+  position: absolute;
+  left: 10%;
+  top: -140rpx;
+  width: 80%;
+  height: 360rpx;
+  background: radial-gradient(ellipse, rgba(216, 185, 142, 0.10), transparent 70%);
+}
+.star {
+  position: absolute;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.5;
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+.star.t1 { left: 12%; top: 180rpx; }
+.star.t2 { left: 32%; top: 420rpx; animation-delay: 0.5s; width: 4rpx; height: 4rpx; }
+.star.t3 { left: 55%; top: 300rpx; animation-delay: 1.1s; }
+.star.t4 { left: 74%; top: 560rpx; animation-delay: 1.7s; width: 5rpx; height: 5rpx; }
+.star.t5 { left: 88%; top: 240rpx; animation-delay: 2.2s; }
+.star.t6 { left: 8%; top: 760rpx; animation-delay: 0.8s; width: 4rpx; height: 4rpx; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 0.9; transform: scale(1.3); }
+}
+
+/* ── 樱花粉：花瓣飘落（循环）── */
+.petal {
+  position: absolute;
+  width: 20rpx;
+  height: 24rpx;
+  background: var(--brand-3);
+  border-radius: 100% 0 100% 0;
+  opacity: 0.7;
+  animation: fall 9s linear infinite;
+}
+.petal.w1 { left: 8%; animation-delay: 0s; }
+.petal.w2 { left: 28%; animation-delay: 2s; width: 15rpx; height: 18rpx; }
+.petal.w3 { left: 52%; animation-delay: 4s; }
+.petal.w4 { left: 72%; animation-delay: 1s; width: 16rpx; height: 19rpx; }
+.petal.w5 { left: 90%; animation-delay: 5.5s; }
+@keyframes fall {
+  0% { transform: translateY(-40rpx) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.7; }
+  80% { opacity: 0.6; }
+  100% { transform: translateY(1100rpx) rotate(340deg); opacity: 0; }
+}
+
+/* ── 墨绿祖母绿：翡翠晕染 + 露珠 ── */
+.mist {
+  position: absolute;
+  border-radius: 50%;
+  animation: breathe 7s ease-in-out infinite;
+}
+.mist.m1 {
+  width: 440rpx; height: 440rpx;
+  right: -150rpx; top: 40rpx;
+  background: radial-gradient(circle, rgba(47, 158, 123, 0.16), transparent 65%);
+}
+.mist.m2 {
+  width: 360rpx; height: 360rpx;
+  left: -130rpx; top: 700rpx;
+  background: radial-gradient(circle, rgba(111, 211, 178, 0.10), transparent 65%);
+  animation-delay: 2s;
+}
+.mist.m3 {
+  width: 520rpx; height: 520rpx;
+  right: -200rpx; bottom: -80rpx;
+  background: radial-gradient(circle, rgba(31, 111, 87, 0.18), transparent 65%);
+  animation-delay: 4s;
+}
+.dew {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(111, 211, 178, 0.5);
+  box-shadow: 0 0 12rpx rgba(111, 211, 178, 0.35);
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+.dew.d1 { left: 14%; top: 220rpx; width: 8rpx; height: 8rpx; }
+.dew.d2 { left: 48%; top: 520rpx; width: 6rpx; height: 6rpx; animation-delay: 1.1s; }
+.dew.d3 { left: 82%; top: 320rpx; width: 7rpx; height: 7rpx; animation-delay: 2.2s; }

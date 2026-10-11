@@ -1,0 +1,149 @@
+@import "../../styles/skin-icons.wxss";
+
+.page {
+  background: var(--bg-page);
+  min-height: 100vh;
+  padding-bottom: 48rpx;
+}
+
+.hero {
+  background: linear-gradient(165deg, var(--hero-a) 0%, var(--hero-a2) 60%, var(--hero-b) 100%);
+  padding: 36rpx 40rpx 72rpx;
+}
+
+.hero-title { font-size: 34rpx; font-weight: 600; color: #FFFFFF; }
+.hero-sub { font-size: 24rpx; color: var(--brand-3); margin-top: 10rpx; }
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  margin: var(--card-lift) 24rpx 0;
+  padding: 30rpx var(--card-pad);
+  box-shadow: var(--card-shadow);
+  border: var(--card-line) solid var(--line);
+}
+
+.card + .card { margin-top: var(--sec-gap); }
+
+/* 余额卡 */
+.bal-card {
+  display: flex;
+  align-items: center;
+}
+
+.bal-l {
+  flex: 1;
+  text-align: center;
+}
+
+.bal-num {
+  font-size: 60rpx;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1.2;
+}
+
+.bal-streak { color: var(--ink-900); }
+
+.bal-lab {
+  font-size: 22rpx;
+  color: var(--ink-500);
+  margin-top: 6rpx;
+}
+
+.bal-sep {
+  width: 1rpx;
+  height: 70rpx;
+  background: var(--line);
+}
+
+/* 近 7 天 */
+.wk-h {
+  font-size: 24rpx;
+  color: var(--ink-500);
+  margin-bottom: 16rpx;
+}
+
+.wk-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.wk-cell {
+  flex: 1;
+  text-align: center;
+}
+
+.wk-dot {
+  width: 22rpx; height: 22rpx;
+  border-radius: 50%;
+  background: var(--track);
+  margin: 0 auto;
+}
+
+.wk-dot.wk-today { background: var(--brand); }
+
+.wk-l {
+  font-size: 18rpx;
+  color: var(--ink-300);
+  margin-top: 8rpx;
+}
+
+.wk-note {
+  font-size: 20rpx;
+  color: var(--ink-300);
+  margin-top: 18rpx;
+  text-align: center;
+}
+
+/* 按钮 */
+.btn-primary {
+  background: var(--brand);
+  color: var(--ink-900);
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 14rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+}
+
+.btn-done {
+  background: var(--bg-soft);
+  color: var(--ink-300);
+}
+
+.msg {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: var(--brand-ink);
+  text-align: center;
+}
+
+.err {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: #C2494A;
+  text-align: center;
+}
+
+/* 兑换 */
+.rd-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.rd-desc {
+  font-size: 22rpx;
+  color: var(--ink-500);
+  margin: 10rpx 0 4rpx;
+}
+
+.disc {
+  margin: var(--sec-gap) 24rpx 0;
+  font-size: 20rpx;
+  color: var(--ink-300);
+  line-height: 1.9;
+  text-align: center;
+}

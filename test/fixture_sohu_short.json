@@ -1,0 +1,78 @@
+{
+ "success": true,
+ "platform": "sohu",
+ "method": "api_v4",
+ "type": "video",
+ "vid": "620253660",
+ "title": "隐约雷鸣，阴霾天空，但盼来，能留你在此对你宠爱！@张凌赫",
+ "description": "雷鸣 阴霾 宠爱",
+ "author": "卑微羽羽子",
+ "author_uid": "413398630",
+ "author_avatar": "https://e3f49eaa46b57.cdn.sohucs.com/c_fill,w_200,h_200,g_faces/group3/M08/62/B5/MTAuMTguMTcuMTkx/MTAwMTE0XzE1NTQ4OTY1NTc2NjQ=_o.jpg",
+ "author_fans": 653,
+ "publish_time_ms": 1740200678314,
+ "publish_date_text": "2025-02-22",
+ "keyword": "雷鸣 阴霾 宠爱",
+ "upload_region": "湖北",
+ "view_count": 0,
+ "cover": "https://e3f49eaa46b57.cdn.sohucs.com/sscs/2023/12/2/17/3/6_18c3f1fc9f9g128SysCutcloudSrcimag_498470676_7_4b.jpg",
+ "video_url": "https://data.vod.itc.cn/?k=XZoIb81bwm12ZDoBuTWcNT1CvmemZD6sfY14vm6AZM4VNMwuNT1CvmfVZDoV0Y2svmN2ZMemNOoGNh2OvmXAyB2HWheXlBeX528XyEbWyAfXeMkXzTK6yOb60JWXfLoHqM14r&a=t9glcS3FsWjM4CJ6x9vmoHr7XCw7Jfjf9wgS9lDuti50EComtEOL4p3gcEOLsHJlxUIAoD2OWJbOWhWS0mEAZDNOfYv4WONtfYo2RD6S0p0cWho3NMAcMS0uR8kRZKKXqAkBN2sNgmk6eKWRhtwVhVK30EA6TTz",
+ "duration_ms": 32000,
+ "dash": false,
+ "need_proxy": true,
+ "anonymous": true,
+ "no_watermark": true,
+ "watermark_free": true,
+ "quality": "720P",
+ "truncated": false,
+ "duration_actual_s": 30.04,
+ "size": 468026,
+ "options": [
+  {
+   "index": 0,
+   "gear": "720P",
+   "width": 1280,
+   "height": 720,
+   "bit_rate": null,
+   "no_watermark": true,
+   "url": "https://data.vod.itc.cn/?k=XZoIb81bwm12ZDoBuTWcNT1CvmemZD6sfY14vm6AZM4VNMwuNT1CvmfVZDoV0Y2svmN2ZMemNOoGNh2OvmXAyB2HWheXlBeX528XyEbWyAfXeMkXzTK6yOb60JWXfLoHqM14r&a=t9glcS3FsWjM4CJ6x9vmoHr7XCw7Jfjf9wgS9lDuti50EComtEOL4p3gcEOLsHJlxUIAoD2OWJbOWhWS0mEAZDNOfYv4WONtfYo2RD6S0p0cWho3NMAcMS0uR8kRZKKXqAkBN2sNgmk6eKWRhtwVhVK30EA6TTz"
+  }
+ ],
+ "options_count": 1,
+ "short_url": "https://tv.sohu.com/v/MjAyNjA5MzAvbjYyMDI1MzY2MC5zaHRtbA==.html",
+ "meta": {
+  "title": "隐约雷鸣，阴霾天空，但盼来，能留你在此对你宠爱！@张凌赫",
+  "title_source": "ssr",
+  "description": "雷鸣 阴霾 宠爱",
+  "cover": "https://e3f49eaa46b57.cdn.sohucs.com/sscs/2023/12/2/17/3/6_18c3f1fc9f9g128SysCutcloudSrcimag_498470676_7_4b.jpg",
+  "author_name": "卑微羽羽子",
+  "author_id": "413398630",
+  "author_avatar": "https://e3f49eaa46b57.cdn.sohucs.com/c_fill,w_200,h_200,g_faces/group3/M08/62/B5/MTAuMTguMTcuMTkx/MTAwMTE0XzE1NTQ4OTY1NTc2NjQ=_o.jpg",
+  "duration_s": 32.0,
+  "publish_ts": 1740200678,
+  "publish_time_text": "2025-02-22",
+  "publish_time": "2025-02-22 13:04",
+  "stats": {
+   "view": 0
+  },
+  "stats_text": {},
+  "tags": [],
+  "extra": {
+   "keyword": "雷鸣 阴霾 宠爱",
+   "upload_region": "湖北"
+  }
+ },
+ "duration_s": 32.0,
+ "publish_time": "2025-02-22 13:04",
+ "author_name": "卑微羽羽子",
+ "stats": {
+  "view": 0
+ },
+ "tags": [],
+ "extra": {
+  "keyword": "雷鸣 阴霾 宠爱",
+  "upload_region": "湖北"
+ },
+ "meta_schema_version": 1,
+ "cached": false
+}

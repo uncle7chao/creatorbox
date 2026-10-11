@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CreatorBox · 解析客户端高保真稿</title>
+<style>
+  :root{
+    /* 橙金色板（docs/配色规范-橙金v2.md） */
+    --brand900:#3D2000; --brand700:#8A4B00; --brand600:#B86300;
+    --brand500:#E8890C; --brand400:#FFA733; --brand300:#FFC46B;
+    --brand100:#FFF0D9;
+    --success500:#1B8A5A; --success100:#E4F5EC;
+    --warn500:#C77700; --warn100:#FFF4E0;
+    --danger500:#C0392B; --info500:#2A6FB0;
+    --ink900:#1A1614; --ink700:#4A423C; --ink500:#7D736B;
+    --ink300:#B8AEA6; --bgPage:#FAF7F4; --bgCard:#FFF; --bgSunken:#F3EEE9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E8E2DC;color:var(--ink900);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    padding:24px 16px 60px}
+  .hd{max-width:1180px;margin:0 auto 20px}
+  .hd h1{font-size:20px;font-weight:500;margin-bottom:4px}
+  .hd p{font-size:13px;color:var(--ink500)}
+  .screens{max-width:1180px;margin:0 auto;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+  .col{display:flex;flex-direction:column;gap:8px}
+  .cap{font-size:12px;color:var(--ink500);text-align:center;margin-top:6px}
+  .phone{width:340px;height:690px;background:var(--bgPage);border-radius:26px;
+    overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.13);position:relative;flex-shrink:0}
+  .status{height:26px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 18px;font-size:11px;color:var(--ink900);position:relative;z-index:3}
+  .status .r{display:flex;gap:4px;align-items:center}
+  .bar{width:15px;height:8px;border:1.5px solid var(--ink900);border-radius:2px}
+
+  /* ── 屏1 解析首页 ── */
+  .hero{background:linear-gradient(160deg,#3D2000,#5C3200 55%,#8A4B00);
+    padding:10px 20px 62px;position:relative}
+  .topbar{display:flex;align-items:center;justify-content:space-between}
+  .topbar .t{font-size:17px;color:#fff;font-weight:500}
+  .vip{border:1px solid var(--brand300);color:var(--brand300);
+    border-radius:99px;padding:4px 10px;font-size:11px}
+  .hero h2{font-size:24px;color:#fff;font-weight:500;margin:12px 0 4px;line-height:1.25}
+  .hero .sub{font-size:12px;color:var(--brand300)}
+  .card{background:var(--bgCard);border-radius:12px}
+  .input-card{margin:-46px 16px 0;padding:14px;
+    box-shadow:0 4px 16px rgba(0,0,0,.08);position:relative;z-index:2}
+  .ta{background:var(--bgSunken);border-radius:10px;padding:12px;
+    font-size:13px;color:var(--ink500);min-height:76px;line-height:1.5;position:relative}
+  .ta .clip{position:absolute;right:10px;bottom:10px;color:var(--ink500);font-size:12px}
+  .err{color:var(--danger500);font-size:12px;margin-top:6px;min-height:0}
+  .cta{margin-top:12px;height:46px;background:var(--brand500);color:var(--ink900);
+    border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:500}
+  .quota{margin:-30px 16px 0;padding:14px 0;display:flex;position:relative;z-index:2}
+  .qi{flex:1;text-align:center}
+  .qi .v{font-size:18px;font-weight:500;line-height:1.2}
+  .qi.big .v{font-size:22px;color:var(--brand500)}
+  .qi .l{font-size:11px;color:var(--ink500);margin-top:2px}
+  .qdiv{width:1px;height:28px;background:var(--bgSunken);margin:6px 0}
+  .tags{margin:16px 16px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start}
+  .tag{background:var(--bgSunken);border-radius:99px;padding:4px 9px;font-size:12px;color:var(--ink700)}
+  .verified{margin-left:auto;background:var(--success100);color:var(--success500);
+    border-radius:99px;padding:4px 9px;font-size:11px;display:flex;
+    align-items:center;gap:5px;white-space:nowrap}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--success500)}
+  .lib{margin:16px 16px 0;padding:13px 14px;display:flex;align-items:center;gap:10px;
+    border:1px solid var(--bgSunken)}
+  .lib .n{font-size:14px}
+  .lib .d{font-size:12px;color:var(--ink500);margin-left:auto}
+  .lib .c{color:var(--ink300)}
+  .disc{margin:20px 20px 0;font-size:11px;color:var(--ink500);line-height:1.6}
+
+  /* ── 屏2 视频结果页 ── */
+  .appbar{height:48px;background:var(--bgCard);display:flex;align-items:center;
+    padding:0 8px;gap:4px;border-bottom:1px solid var(--bgSunken);flex-shrink:0}
+  .appbar .bk{width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    color:var(--ink900);font-size:17px}
+  .appbar .t{font-size:16px;font-weight:500;flex:1;text-align:center;margin-right:32px}
+  .body{flex:1;overflow:hidden;padding-bottom:0}
+  .player{margin:16px;background:#000;border-radius:12px;overflow:hidden;position:relative;
+    aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+  .player .ph{color:rgba(255,255,255,.22);font-size:42px}
+  .badge-nwm{position:absolute;left:10px;top:10px;background:var(--success500);color:#fff;
+    border-radius:99px;padding:3px 8px;font-size:11px}
+  .badge-dur{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.55);color:#fff;
+    border-radius:99px;padding:3px 8px;font-size:11px}
+  .meta{margin:0 16px;padding:14px;border:1px solid var(--bgSunken)}
+  .meta h3{font-size:15px;font-weight:500;line-height:1.4;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .meta .approx{font-size:11px;color:var(--warn500);margin-top:4px}
+  .author{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#FFC46B,#E8890C)}
+  .author .n{font-size:13px;color:var(--ink700)}
+  .stats{margin-top:8px;font-size:12px;color:var(--ink500)}
+  .tags2{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .tag2{background:var(--bgSunken);border-radius:99px;padding:3px 8px;font-size:11px;color:var(--ink700)}
+  .qual{margin:14px 16px 0;padding:14px;border:1px solid var(--bgSunken)}
+  .qual .hd2{display:flex;align-items:center;font-size:14px;font-weight:500;margin-bottom:10px}
+  .qual .lim{margin-left:auto;font-size:11px;color:var(--ink500);font-weight:400}
+  .qchips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1.2px solid var(--ink300);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--ink700)}
+  .chip.on{background:var(--brand500);border-color:var(--brand500);color:var(--ink900)}
+  .chip.lock{border-color:var(--warn500);color:var(--warn500)}
+  .chip .lk{font-size:10px;margin-left:3px;padding:1px 3px;border-radius:3px;
+    border:1px solid currentColor;vertical-align:1px}
+  /* 纯 CSS 图标，不用 emoji */
+  .player .ph{width:0;height:0;border-left:22px solid rgba(255,255,255,.3);
+    border-top:14px solid transparent;border-bottom:14px solid transparent}
+  .appbar .bk{position:relative}
+  .appbar .bk::before{content:'';position:absolute;width:10px;height:10px;
+    border-left:1.6px solid var(--ink900);border-bottom:1.6px solid var(--ink900);
+    transform:rotate(45deg);left:9px;top:9px}
+  .libico{width:18px;height:14px;border:1.5px solid var(--ink500);border-radius:2px;
+    position:relative;display:inline-block}
+  .libico::before{content:'';position:absolute;left:0;top:3px;width:100%;height:1.5px;
+    background:var(--ink500)}
+  .lib-empty .ic{width:40px;height:32px;border:1.5px solid var(--ink300);
+    border-radius:4px;margin:0 auto 12px;position:relative}
+  .lib-empty .ic::before{content:'';position:absolute;left:0;top:8px;width:100%;
+    height:1.5px;background:var(--ink300)}
+  .adbtn{margin-top:10px;height:40px;border:1.2px dashed var(--warn500);
+    border-radius:10px;color:var(--warn500);font-size:13px;
+    display:flex;align-items:center;justify-content:center}
+  .warnbar{margin:14px 16px 0;padding:10px 12px;background:var(--warn100);
+    border-left:3px solid var(--warn500);border-radius:0 8px 8px 0;
+    font-size:12px;color:var(--warn500)}
+  .savebar{background:var(--bgCard);border-top:1px solid var(--bgSunken);
+    padding:12px 16px;flex-shrink:0}
+  .savebar .cta{margin:0}
+
+  /* ── 屏3 图集结果页 ── */
+  .grid{margin:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .grid .ph{aspect-ratio:1;background:var(--bgSunken);border-radius:6px;display:flex;
+    align-items:center;justify-content:center;color:var(--ink300);font-size:11px}
+  .grid .ph.a{background:linear-gradient(135deg,#FFE0B8,#FFC46B)}
+  .grid .ph.b{background:linear-gradient(135deg,#D8C4B0,#B89B7A)}
+  .grid .ph.c{background:linear-gradient(135deg,#B8C4D0,#8A9AAA)}
+  .ghead{margin:16px 16px 8px;display:flex;align-items:center;gap:8px}
+  .ghead .t{font-size:15px;font-weight:500}
+  .ghead .c{font-size:12px;color:var(--ink500)}
+  .ghead .b{margin-left:auto;background:var(--success500);color:#fff;
+    border-radius:99px;padding:3px 8px;font-size:11px}
+
+  /* ── 屏4 素材库 ── */
+  .lib-empty{margin:0;padding-top:130px;text-align:center;color:var(--ink300)}
+  .lib-empty .ic{font-size:42px;margin-bottom:12px}
+  .lib-empty .a{font-size:14px;color:var(--ink500)}
+  .lib-empty .b{font-size:12px;color:var(--ink300);margin-top:4px}
+  .litem{margin:8px 16px 0;padding:10px;display:flex;gap:10px;align-items:center;
+    border:1px solid var(--bgSunken)}
+  .lthumb{width:52px;height:52px;border-radius:6px;flex-shrink:0;
+    background:linear-gradient(135deg,#FFC46B,#E8890C)}
+  .litem .tt{font-size:13px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden}
+  .litem .pp{font-size:11px;color:var(--ink500);margin-top:4px}
+
+  .note{max-width:1180px;margin:26px auto 0;background:#fff;border-radius:12px;padding:18px;
+    font-size:13px;line-height:1.8}
+  .note h4{font-size:14px;margin-bottom:8px;font-weight:500}
+  .note code{background:#F3EEE9;padding:1px 6px;border-radius:4px;font-size:12px}
+  .note ul{margin:8px 0 0 18px}
+  .note li{margin:3px 0;color:var(--ink700)}
+</style>
+</head>
+<body>
+<div class="hd">
+  <h1>CreatorBox · 解析客户端高保真稿</h1>
+  <p>橙金配色（配色规范-橙金v2）· 严格按小程序UI设计规范 v3 约束· 8 个平台已验证</p>
+</div>
+
+<div class="screens">
+  <!-- 屏1 -->
+  <div class="col">
+    <div class="phone">
+      <div class="status"><span>9:41</span><div class="r"><span class="bar"></span><span>100%</span></div></div>
+      <div class="hero">
+        <div class="topbar"><span class="t">素材解析</span><span class="vip">9.9 开通会员</span></div>
+        <h2>源头就干净</h2>
+        <div class="sub">抖音 · B站 · 小红书 · 7 个平台</div>
+      </div>
+      <div class="input-card">
+        <div class="ta">粘贴视频或图集链接<br>支持 App 复制文案<span class="clip">粘贴</span></div>
+        <div class="err"></div>
+        <div class="cta">开始解析</div>
+      </div>
+      <div class="quota card">
+        <div class="qi big"><div class="v">不限</div><div class="l">解析次数</div></div>
+        <div class="qdiv"></div>
+        <div class="qi"><div class="v">2/2</div><div class="l">今日保存</div></div>
+        <div class="qdiv"></div>
+        <div class="qi"><div class="v">720P</div><div class="l">免费画质</div></div>
+      </div>
+      <div class="tags">
+        <span class="tag">抖音</span><span class="tag">B站</span><span class="tag">好看视频</span>
+        <span class="tag">微博</span><span class="tag">AcFun</span><span class="tag">小红书</span>
+        <span class="tag">快手</span>
+        <span class="verified"><span class="dot"></span>全部已验证</span>
+      </div>
+      <div class="lib card">
+        <span class="libico"></span>
+        <span class="n">素材库</span>
+        <span class="d">解析记录都在这</span>
+        <span class="c">›</span>
+      </div>
+      <div class="disc">
+        本工具仅供个人学习与二次创作使用，请勿用于侵权或商业盗用。<br>
+        素材版权归原作者所有，争议与投诉请联系：creatorbox@example.com
+      </div>
+    </div>
+    <div class="cap">屏 1 · 解析首页（转化率最高）</div>
+  </div>
+
+  <!-- 屏2 -->
+  <div class="col">
+    <div class="phone">
+      <div class="status"><span>9:41</span><div class="r"><span class="bar"></span><span>100%</span></div></div>
+      <div class="appbar"><span class="bk"></span><span class="t">B站</span></div>
+      <div class="body">
+        <div class="player">
+          <span class="ph"></span>
+          <span class="badge-nwm">无水印</span>
+          <span class="badge-dur">3分33秒</span>
+        </div>
+        <div class="meta card">
+          <h3>【官方 MV】Never Gonna Give You Up - Rick Astley</h3>
+          <div class="author"><span class="avatar"></span><span class="n">索尼音乐中国 @486906719</span></div>
+          <div class="stats">播放 1.1亿　点赞 294.3万　评论 23.6万　收藏 154.8万　分享 49.7万</div>
+        </div>
+        <div class="qual card">
+          <div class="hd2">清晰度<span class="lim">免登录上限 720P</span></div>
+          <div class="qchips">
+            <span class="chip">540P</span>
+            <span class="chip on">720P</span>
+            <span class="chip lock">1080P <span class="lk">锁</span></span>
+          </div>
+          <div class="adbtn">看广告解锁 1080P</div>
+        </div>
+      </div>
+      <div class="savebar"><div class="cta">保存视频 · 720P</div></div>
+    </div>
+    <div class="cap">屏 2 · 视频结果页（三个变现触点）</div>
+  </div>
+
+  <!-- 屏3 -->
+  <div class="col">
+    <div class="phone">
+      <div class="status"><span>9:41</span><div class="r"><span class="bar"></span><span>100%</span></div></div>
+      <div class="appbar"><span class="bk"></span><span class="t">小红书</span></div>
+      <div class="body">
+        <div class="ghead"><span class="t">原图</span><span class="c">7 张 · 无水印</span>
+          <span class="b">无水印</span></div>
+        <div class="grid">
+          <div class="ph a">1</div><div class="ph b">2</div><div class="ph c">3</div>
+          <div class="ph c">4</div><div class="ph a">5</div><div class="ph b">6</div>
+          <div class="ph b">7</div>
+        </div>
+        <div class="meta card" style="margin-top:14px">
+          <h3>林萧，你真成主编了</h3>
+          <div class="author"><span class="avatar"></span><span class="n">鲲鹏</span></div>
+          <div class="tags2">
+            <span class="tag2">#杨幂</span><span class="tag2">#杂志</span>
+            <span class="tag2">#林萧</span><span class="tag2">#ELLE</span>
+          </div>
+        </div>
+      </div>
+      <div class="savebar"><div class="cta">保存图集（7 张）</div></div>
+    </div>
+    <div class="cap">屏 3 · 图集结果页</div>
+  </div>
+
+  <!-- 屏4 -->
+  <div class="col">
+    <div class="phone">
+      <div class="status"><span>9:41</span><div class="r"><span class="bar"></span><span>100%</span></div></div>
+      <div class="appbar"><span class="bk"></span><span class="t">素材库</span></div>
+      <div class="body">
+        <div class="lib-empty">
+          <div class="ic"></div>
+          <div class="a">还没有解析记录</div>
+          <div class="b">回首页粘贴链接试试</div>
+        </div>
+      </div>
+    </div>
+    <div class="cap">屏 4 · 素材库（M1 本地存储）</div>
+  </div>
+</div>
+
+<div class="note">
+  <h4>v3 定位约束的落地情况</h4>
+  <ul>
+    <li><b>定位是"韧性"不是"功能多"</b> → 首页不列功能清单，只有「全部已验证」徽章</li>
+    <li><b>解析不限次</b> → 额度区第一个指标是「不限」且字号最大（22px，橙色）</li>
+    <li><b>免费能拿到干净原片</b> → 主文案说「源头就干净」，不宣传「去水印质量」</li>
+    <li><b>平台改版是主要风险</b> → 「全部已验证」+ 服务未连时变灰显示「服务未连」</li>
+    <li><b>规范 3.13</b> → 底部免责灰字 11px，含投诉渠道</li>
+  </ul>
+  <h4 style="margin-top:14px">橙金配色的三条硬规则</h4>
+  <ul>
+    <li>主 CTA 文字用<b>深色 #1A1614</b>（8.1:1）—— 白字只有 2.6:1 不达 AA</li>
+    <li>「无水印」徽章用<b>冷绿 #1B8A5A</b>，不跟主色走暖 —— 避免与 CTA 撞色</li>
+    <li>深色区用<b>深棕→橙渐变</b>，不用纯橙（纯橙大面积刺眼）</li>
+  </ul>
+</div>
+</body>
+</html>

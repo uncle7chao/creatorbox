@@ -1,0 +1,55 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+  <!-- 头部 + 筛选（P0：素材/文案库分开管理）-->
+  <view class="head">
+    <text class="head-t">素材库</text>
+    <text class="head-s">今日已保存 {{todayCount}} 条</text>
+  </view>
+  <view class="filter">
+    <view class="fitem {{filter === 'all' ? 'on' : ''}}" data-f="all" bindtap="onFilter">全部</view>
+    <view class="fitem {{filter === 'material' ? 'on' : ''}}" data-f="material" bindtap="onFilter">素材 <text class="fn">{{allCount - copyCount}}</text></view>
+    <view class="fitem {{filter === 'copy' ? 'on' : ''}}" data-f="copy" bindtap="onFilter">文案库 <text class="fn">{{copyCount}}</text></view>
+  </view>
+
+  <!-- 广告位 · Banner（2026-10-08：移出「列表非空」条件块，空态也展示；后台可开关） -->
+  <ad-banner placement="library_banner" />
+
+  <!-- 空态 -->
+  <view wx:if="{{!items.length}}" class="empty">
+    <view class="empty-art">
+      <view class="empty-line"></view>
+      <view class="empty-line short"></view>
+    </view>
+    <view class="empty-t">还没有保存记录</view>
+    <view class="empty-s">解析成功后保存的文件会出现在这里</view>
+    <button class="btn-primary empty-btn" bindtap="navHome">去解析</button>
+  </view>
+
+  <!-- 列表 -->
+  <block wx:else>
+    <!--⚠️ 只存展示字段，不存播放地址 ——
+         CDN 地址带签名会过期，存了到时候也用不了。 -->
+    <view wx:for="{{items}}" wx:key="id" class="item">
+      <view class="item-cover" data-src="{{item.cover}}" bindtap="onPreview">
+        <image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill" class="item-img" lazy-load />
+        <view wx:else class="item-nocover"></view>
+      </view>
+      <view class="item-body">
+        <view class="item-title">{{item.title}}</view>
+        <view class="item-meta">
+          <text class="item-plat">{{item.platformLabel}}</text>
+          <text wx:if="{{item.author}}" class="item-author">{{item.author}}</text>
+          <text class="item-time">{{item.timeText}}</text>
+        </view>
+        <view class="item-acts">
+          <view class="item-btn" data-src="{{item.sourceText}}" bindtap="onReuse">重新解析</view>
+          <view class="item-btn danger" data-id="{{item.id}}" bindtap="onDelete">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="tip">
+      重新解析会获取新的下载地址（原地址有时效）
+    </view>
+  </block>
+</view>

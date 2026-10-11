@@ -1,0 +1,75 @@
+@import "../../styles/skin-icons.wxss";
+.page{min-height:100vh;background:var(--bg-page);padding-bottom:40rpx}
+.hero{background:radial-gradient(240rpx 160rpx at 85% 8%,rgba(255,196,107,.35),transparent 70%),linear-gradient(165deg,var(--hero-b),var(--hero-a2) 55%,var(--brand-deep) 120%);padding:24rpx 28rpx 40rpx}
+.hh-top{display:flex;justify-content:space-between;align-items:center}
+.hh-t{color:#fff;font-size:34rpx;font-weight:500}
+.hh-badge{font-size:20rpx;color:var(--hero-a);background:linear-gradient(135deg,#FFC46B,var(--brand-2));border-radius:999rpx;padding:4rpx 18rpx;font-weight:500}
+.hh-s{font-size:22rpx;color:#FFD9A0;margin-top:8rpx}
+/* 计数条 */
+.cnt{margin:-20rpx 22rpx 0;background:#fff;border-radius:var(--r-card);padding:20rpx 24rpx;box-shadow:0 8rpx 24rpx rgba(61,32,0,.10);display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
+.cnt-t{display:block;font-size:28rpx;font-weight:500;color:var(--ink-900)}
+.cnt-s{display:block;font-size:20rpx;color:var(--ink-300);margin-top:4rpx}
+.cnt-r{font-size:20rpx;color:var(--brand-deep);background:var(--brand-soft);border-radius:999rpx;padding:4rpx 16rpx}
+/* 分区 */
+.sec{margin:var(--sec-gap) 22rpx 0}
+.sec-h{font-size:28rpx;font-weight:500;color:var(--ink-900);display:flex;align-items:center;gap:12rpx;margin-bottom:14rpx}
+.live{font-size:18rpx;color:#0F6E56;background:#E1F5EE;border-radius:999rpx;padding:2rpx 12rpx}
+.sec-ghost{color:var(--ink-500)}
+.ghost-tag{font-size:18rpx;color:var(--ink-500);background:var(--bg-soft);border-radius:999rpx;padding:2rpx 12rpx}
+.grid{background:var(--bg-card);border-radius:var(--r-card);padding:var(--card-pad) 8rpx;border:var(--card-line) solid var(--line);box-shadow:var(--card-shadow);display:grid;grid-template-columns:repeat(4,1fr);gap:24rpx 0}
+.tool{text-align:center;position:relative}
+/* 真实图标（彩色渐变 + 投影） */
+.ti{width:84rpx;height:84rpx;border-radius:var(--r-card);margin:0 auto;display:flex;align-items:center;justify-content:center;position:relative}
+.ti-orange{background:linear-gradient(135deg,var(--brand-3),var(--brand));box-shadow:0 8rpx 20rpx rgba(232,121,12,.30)}
+.ti-blue{background:linear-gradient(135deg,#6D8DFF,#4A5AE8);box-shadow:0 8rpx 20rpx rgba(74,90,232,.28)}
+.ti-red{background:linear-gradient(135deg,#FF7B6B,#E24B4A);box-shadow:0 8rpx 20rpx rgba(226,75,74,.28)}
+/* 图形：每工具独立语义化图形（纯 CSS，白色，适配任意色块） */
+
+/* 素材解析：下载（箭头入托盘） */
+.g-dl{position:relative;width:34rpx;height:34rpx}
+.g-dl .stem{position:absolute;left:50%;top:2rpx;transform:translateX(-50%);width:5rpx;height:14rpx;background:#fff;border-radius:3rpx}
+.g-dl .head{position:absolute;left:50%;top:14rpx;transform:translateX(-50%);width:0;height:0;border-left:10rpx solid transparent;border-right:10rpx solid transparent;border-top:11rpx solid #fff}
+.g-dl .tray{position:absolute;left:3rpx;bottom:3rpx;width:28rpx;height:5rpx;background:#fff;border-radius:3rpx}
+
+/* 批量解析：三条层叠列表（从淡到实） */
+.g-layers{position:relative;width:32rpx;height:30rpx}
+.g-layers .l1{position:absolute;left:4rpx;top:20rpx;width:24rpx;height:5rpx;background:rgba(255,255,255,.55);border-radius:3rpx}
+.g-layers .l2{position:absolute;left:4rpx;top:12rpx;width:24rpx;height:5rpx;background:rgba(255,255,255,.8);border-radius:3rpx}
+.g-layers .l3{position:absolute;left:4rpx;top:4rpx;width:24rpx;height:5rpx;background:#fff;border-radius:3rpx}
+
+/* 文案提取：文档（外框 + 行） */
+.g-doc{position:relative;width:26rpx;height:32rpx;border:4rpx solid #fff;border-radius:6rpx;box-sizing:border-box}
+.g-doc .d1,.g-doc .d2,.g-doc .d3{position:absolute;left:4rpx;height:3rpx;background:#fff;border-radius:2rpx}
+.g-doc .d1{right:4rpx;top:6rpx}
+.g-doc .d2{right:4rpx;top:13rpx}
+.g-doc .d3{right:10rpx;top:20rpx}
+
+/* 热门榜单：领奖台柱条（中高侧低） */
+.g-pod{position:relative;width:34rpx;height:30rpx}
+.g-pod .b1{position:absolute;left:0;bottom:0;width:9rpx;height:14rpx;background:rgba(255,255,255,.65);border-radius:3rpx 3rpx 0 0}
+.g-pod .b2{position:absolute;left:12.5rpx;bottom:0;width:9rpx;height:30rpx;background:#fff;border-radius:3rpx 3rpx 0 0}
+.g-pod .b3{position:absolute;right:0;bottom:0;width:9rpx;height:21rpx;background:rgba(255,255,255,.82);border-radius:3rpx 3rpx 0 0}
+
+/* 运营干货：摊开的书页（左右页 + 中缝） */
+.g-book{position:relative;width:34rpx;height:28rpx}
+.g-book .pgl{position:absolute;left:0;top:0;width:15rpx;height:28rpx;border:4rpx solid #fff;border-right:0;border-radius:6rpx 0 0 6rpx;box-sizing:border-box}
+.g-book .pgr{position:absolute;right:0;top:0;width:15rpx;height:28rpx;border:4rpx solid #fff;border-left:0;border-radius:0 6rpx 6rpx 0;box-sizing:border-box}
+.g-book .sp{position:absolute;left:50%;top:2rpx;transform:translateX(-50%);width:3rpx;height:24rpx;background:#fff;border-radius:2rpx}
+
+/* 占位图标（置灰）：虚线圆 + 加号（示意「待上线」，替代低质灰块） */
+.ti-ghost{background:var(--bg-soft);border:2rpx dashed var(--ink-300);box-shadow:none}
+.g-ghost{width:30rpx;height:30rpx;border-radius:50%;border:3rpx dashed var(--ink-300);position:relative;background:transparent}
+.g-ghost:after{content:'';position:absolute;left:50%;top:50%;width:12rpx;height:3rpx;background:var(--ink-300);transform:translate(-50%,-50%)}
+.g-ghost:before{content:'';position:absolute;left:50%;top:50%;width:3rpx;height:12rpx;background:var(--ink-300);transform:translate(-50%,-50%)}
+.lock{position:absolute;right:-6rpx;bottom:-6rpx;width:26rpx;height:26rpx;border-radius:50%;background:var(--ink-300);border:3rpx solid #fff}
+.lock:after{content:'';position:absolute;left:8rpx;top:4rpx;width:8rpx;height:10rpx;border:2rpx solid #fff;border-radius:4rpx}
+.soon{position:absolute;top:-14rpx;left:50%;transform:translateX(-50%);font-size:16rpx;color:#fff;background:linear-gradient(135deg,#C8CDD6,#9BA3B0);border-radius:999rpx;padding:0 10rpx;white-space:nowrap}
+/* 文字 */
+.tl{font-size:22rpx;color:var(--ink-700);margin-top:10rpx}
+.tl .new{font-size:16rpx;background:#E24B4A;color:#fff;border-radius:6rpx;padding:0 6rpx;vertical-align:4rpx;margin-left:4rpx}
+.tl-ghost{color:var(--ink-300)}
+.td{font-size:18rpx;color:var(--ink-300);margin-top:2rpx}
+.disc{margin:24rpx 48rpx 0;font-size:20rpx;color:var(--ink-300);text-align:center;line-height:1.7}/* 违禁词检测：盾牌 + 对勾（2026-10-09） */
+.g-shield{position:relative;width:30rpx;height:34rpx}
+.g-shield .sh-body{position:absolute;left:3rpx;top:0;width:24rpx;height:28rpx;background:#fff;border-radius:6rpx 6rpx 12rpx 12rpx;clip-path:polygon(0 0,100% 0,100% 72%,50% 100%,0 72%)}
+.g-shield .sh-check{position:absolute;left:10rpx;top:10rpx;width:10rpx;height:6rpx;border-left:3rpx solid #E8890C;border-bottom:3rpx solid #E8890C;transform:rotate(-45deg)}

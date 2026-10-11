@@ -1,0 +1,90 @@
+/* Banner 轮播：三套渐变皮肤对应三个运营位 */
+.bs {
+  margin: 20rpx 24rpx 0;
+  height: 152rpx;
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.slide {
+  height: 152rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 28rpx;
+  position: relative;
+  overflow: hidden;
+}
+.slide-hover { opacity: 0.85; }
+
+/* 三套渐变（成员位/热榜位/干货位） */
+.slide.g1 {
+  background: linear-gradient(135deg, var(--brand-3), var(--brand));
+  box-shadow: 0 8rpx 20rpx rgba(232, 121, 12, 0.28);
+}
+.slide.g2 {
+  background: linear-gradient(135deg, #FF7B6B, #E24B4A);
+  box-shadow: 0 8rpx 20rpx rgba(226, 75, 74, 0.26);
+}
+.slide.g3 {
+  background: linear-gradient(135deg, #6D8DFF, #4A5AE8);
+  box-shadow: 0 8rpx 20rpx rgba(74, 90, 232, 0.26);
+}
+
+/* 右上角装饰圆（溢出裁切，制造层次） */
+.slide::after {
+  content: '';
+  position: absolute;
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  right: -50rpx;
+  top: -70rpx;
+}
+
+.s-tag {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+  font-size: 16rpx;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 2rpx 12rpx;
+  border-radius: 0 0 0 10rpx;
+}
+.s-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.s-t {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+}
+.s-sub {
+  margin-top: 6rpx;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.s-go {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.s-arrow {
+  width: 0;
+  height: 0;
+  border-top: 8rpx solid transparent;
+  border-bottom: 8rpx solid transparent;
+  border-left: 11rpx solid #fff;
+  margin-left: 4rpx;
+}

@@ -1,0 +1,25 @@
+name: creatorbox_app
+description: >-
+  CreatorBox 跨端应用（Flutter 一条码线：Windows/Android）。
+  P1 范围：桥接登录（账号中台）+ 12 平台解析核心 + 字幕/链接产出。
+  依赖后端：CreatorBox server（CreatorBox/server，HTTP JSON API）。
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0                 # REST 客户端（轻量够用，不上 dio）
+  shared_preferences: ^2.2.0   # token / device uid 持久化
+  uuid: ^4.4.0                 # 设备本地身份生成
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

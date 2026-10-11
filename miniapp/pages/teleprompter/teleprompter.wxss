@@ -1,0 +1,202 @@
+@import "../../styles/skin-icons.wxss";
+
+.page {
+  background: var(--bg-page);
+  min-height: 100vh;
+  padding-bottom: 48rpx;
+}
+
+/* ══ 编辑态 ══ */
+.hero {
+  background: linear-gradient(165deg, var(--hero-a) 0%, var(--hero-a2) 60%, var(--hero-b) 100%);
+  padding: 36rpx 40rpx 72rpx;
+}
+
+.hero-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.hero-sub {
+  font-size: 24rpx;
+  color: var(--brand-3);
+  margin-top: 10rpx;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  margin: var(--card-lift) 24rpx 0;
+  padding: 28rpx var(--card-pad) 24rpx;
+  box-shadow: var(--card-shadow);
+  border: var(--card-line) solid var(--line);
+}
+
+.tp-input {
+  width: 100%;
+  min-height: 320rpx;
+  background: var(--bg-soft);
+  border-radius: 14rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: var(--ink-900);
+  box-sizing: border-box;
+  line-height: 1.7;
+}
+
+.tp-ph { color: var(--ink-300); }
+
+.err {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: #C2494A;
+}
+
+.opt-row {
+  display: flex;
+  align-items: center;
+  margin-top: 24rpx;
+}
+
+.opt-l {
+  width: 90rpx;
+  font-size: 26rpx;
+  color: var(--ink-700);
+}
+
+.opt-group {
+  display: flex;
+  gap: 14rpx;
+  flex: 1;
+}
+
+.opt {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  border-radius: 10rpx;
+  background: var(--bg-soft);
+  color: var(--ink-700);
+  font-size: 26rpx;
+  border: 2rpx solid transparent;
+}
+
+.opt-on {
+  background: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand);
+  font-weight: 600;
+}
+
+.btn-primary {
+  margin-top: 32rpx;
+  background: var(--brand);
+  color: var(--ink-900);
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 14rpx;
+  height: 92rpx;
+  line-height: 92rpx;
+  text-align: center;
+}
+
+/* ══ 使用建议 ══ */
+.tips {
+  margin: var(--sec-gap) 24rpx 0;
+  padding: 22rpx;
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  border: var(--card-line) solid var(--line);
+}
+
+.tips-t {
+  font-size: 24rpx;
+  color: var(--ink-500);
+  margin-bottom: 10rpx;
+}
+
+.tips-i {
+  font-size: 24rpx;
+  color: var(--ink-700);
+  line-height: 1.9;
+}
+
+/* ══ 播放态：全屏黑底 ══ */
+.tp-screen {
+  position: fixed;
+  inset: 0;
+  background: #0B0B0D;
+  z-index: 999;
+}
+
+.tp-body {
+  color: #FFFFFF;
+  font-weight: 600;
+  line-height: 2;
+  padding: 0 44rpx;
+  word-break: break-all;
+}
+
+.tp-lead { height: 40vh; }   /* 顶部留白：台词从视线处进入 */
+.tp-tail { height: 60vh; }   /* 尾部留白：保证最后一句能滚到视线位 */
+
+.tp-top {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  background: linear-gradient(180deg, rgba(0,0,0,.55), transparent);
+}
+
+.tp-exit {
+  color: rgba(255,255,255,.85);
+  font-size: 26rpx;
+  padding: 8rpx 20rpx;
+  border: 1rpx solid rgba(255,255,255,.4);
+  border-radius: 999rpx;
+}
+
+.tp-state {
+  color: rgba(255,255,255,.6);
+  font-size: 22rpx;
+}
+
+.tp-ph { width: 90rpx; }
+
+.tp-bottom {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, rgba(0,0,0,.55), transparent);
+}
+
+.tp-speed-l {
+  color: rgba(255,255,255,.7);
+  font-size: 24rpx;
+  margin-right: 20rpx;
+}
+
+.tp-speeds {
+  display: flex;
+  gap: 14rpx;
+}
+
+.tp-sp {
+  padding: 10rpx 34rpx;
+  border-radius: 999rpx;
+  color: rgba(255,255,255,.75);
+  font-size: 24rpx;
+  border: 1rpx solid rgba(255,255,255,.35);
+}
+
+.tp-sp-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #FFFFFF;
+  font-weight: 600;
+}

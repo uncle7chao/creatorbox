@@ -1,0 +1,101 @@
+.page{min-height:100vh;background:var(--bg-page);padding-bottom:40rpx}
+.in-card{margin:20rpx 24rpx 0;background:#fff;border-radius:22rpx;padding:24rpx;box-shadow:0 6rpx 24rpx rgba(61,32,0,.06)}
+.in-head{display:flex;justify-content:space-between;align-items:center}
+.in-t{font-size:30rpx;font-weight:500;color:var(--ink-900)}
+.in-n{font-size:22rpx;color:#fff;background:linear-gradient(135deg,var(--brand-2),var(--brand));border-radius:999rpx;padding:2rpx 18rpx}
+.ta{width:100%;min-height:140rpx;background:var(--bg-page);border:1rpx solid var(--line);border-radius:var(--r-small);padding:20rpx;margin-top:16rpx;font-size:26rpx;color:var(--ink-700);box-sizing:border-box;line-height:1.8}
+.ta-ph{color:var(--ink-300)}
+.in-tip{display:flex;justify-content:space-between;margin-top:12rpx;font-size:22rpx;color:var(--ink-300)}
+.in-tip em{color:var(--brand);font-style:normal;font-weight:500}
+.err{margin-top:12rpx;font-size:24rpx;color:#C0392B}
+.bp{margin-top:20rpx;background:linear-gradient(135deg,var(--brand-2),var(--brand));color:#fff;font-size:30rpx;font-weight:500;border-radius:var(--r-card);height:84rpx;line-height:84rpx;border:0;box-shadow:0 8rpx 20rpx rgba(232,137,12,.30)}
+.bp[disabled]{background:#F0D9B8;color:#fff;box-shadow:none}
+/* 结果 */
+.rs{margin:24rpx 24rpx 0}
+.rs-head{display:flex;justify-content:space-between;align-items:center}
+.rs-t{font-size:30rpx;font-weight:500;color:var(--ink-900)}
+.rs-m{font-size:22rpx;color:var(--ink-500)}
+.rs-m em{color:var(--brand);font-style:normal;font-weight:500}
+.rs-all{display:inline-block;margin-top:10rpx;font-size:22rpx;color:var(--brand-deep);background:var(--brand-soft);border-radius:999rpx;padding:4rpx 18rpx}
+.ri{display:flex;align-items:center;background:#fff;border-radius:var(--r-card);padding:18rpx;margin-top:14rpx;gap:16rpx;box-shadow:0 2rpx 10rpx rgba(61,32,0,.05)}
+.ri-err{opacity:.75}
+.sel{width:34rpx;height:34rpx;border-radius:50%;border:2rpx solid var(--ink-300);flex-shrink:0}
+.sel.on{background:linear-gradient(135deg,var(--brand-2),var(--brand));border-color:var(--brand);position:relative}
+.sel.on:after{content:'';position:absolute;left:10rpx;top:4rpx;width:9rpx;height:16rpx;border-right:3rpx solid #fff;border-bottom:3rpx solid #fff;transform:rotate(45deg)}
+.sel.dis{background:var(--bg-soft)}
+.icov{width:72rpx;height:92rpx;border-radius:12rpx;background:var(--bg-soft);background-size:cover;background-position:center;flex-shrink:0}
+.ib{flex:1;min-width:0}
+.it{font-size:26rpx;color:var(--ink-900);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it-err{color:var(--ink-500)}
+.im{font-size:20rpx;color:var(--ink-300);margin-top:4rpx}
+.ih{font-size:20rpx;color:var(--brand-deep);margin-top:4rpx}
+.st{font-size:20rpx;border-radius:8rpx;padding:4rpx 12rpx;flex-shrink:0}
+.st-ok{color:#0F6E56;background:#E1F5EE}
+.st-err{color:#A32D2D;background:#FCEBEB}
+/* 保存 */
+.sv-wrap{margin:24rpx 24rpx 0}
+.sv-tip{margin-top:12rpx;text-align:center;font-size:22rpx;color:var(--ink-300)}
+.disc{margin:24rpx 48rpx 0;font-size:20rpx;color:var(--ink-300);text-align:center;line-height:1.7}
+/* ══ 批量解析进度卡（首页同款视觉：条纹流动 + 诚实封顶 92）══ */
+.bpmask {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 26, 21, 0.6);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bpcard {
+  width: 560rpx;
+  background: var(--bg-card);
+  border-radius: 24rpx;
+  padding: 40rpx 36rpx 32rpx;
+  text-align: center;
+}
+
+.bp-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.bp-bar {
+  margin-top: 28rpx;
+  height: 22rpx;
+  border-radius: 999rpx;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.bp-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, var(--brand-2), var(--brand));
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.28) 0 14rpx,
+    transparent 14rpx 28rpx),
+    linear-gradient(135deg, var(--brand-2), var(--brand));
+  background-size: 200% 100%, 100% 100%;
+  animation: bpstripe 1.1s linear infinite;
+  transition: width 0.3s ease;
+}
+
+@keyframes bpstripe {
+  to { background-position: 56rpx 0, 0 0; }
+}
+
+.bp-meta {
+  margin-top: 16rpx;
+  display: flex;
+  justify-content: space-between;
+  font-size: 22rpx;
+  color: var(--ink-500);
+}
+
+.bp-pct {
+  font-weight: 600;
+  color: var(--brand);
+}

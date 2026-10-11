@@ -1,0 +1,454 @@
+/**
+ * 屏 2 · 结果页样式
+ *
+ * 关键设计约束（来自规范）：
+ *   · 实线 = 强制，虚线 = 可选（不虚线化会让用户觉得被强迫）
+ *   · 1080P 用琥珀色不用灰 —— 免费拿不到的高亮才是「差一点点」的钩子
+ *   · 两个虚线按钮并排，视觉权重相同
+ *   · 免责灰字 11px
+ */
+
+.page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding-bottom: 48rpx;
+}
+
+/* ── 加载 / 丢失 ── */
+.loading {
+  padding: 200rpx 0;
+  text-align: center;
+}
+
+.spin {
+  width: 56rpx;
+  height: 56rpx;
+  margin: 0 auto 24rpx;
+  border: 5rpx solid var(--bg-soft);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-t {
+  font-size: 28rpx;
+  color: var(--ink-500);
+}
+
+.lost {
+  padding: 160rpx 48rpx;
+  text-align: center;
+}
+
+.lost-t {
+  font-size: 30rpx;
+  color: var(--ink-500);
+  margin-bottom: 40rpx;
+}
+
+/* ── 顶部信息栏 ── */
+.topbar {
+  background: var(--bg-card);
+  padding: 28rpx 28rpx 24rpx;
+  display: flex;
+  align-items: flex-start;
+}
+
+.topbar-l {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--ink-900);
+  line-height: 1.4;
+  /* 超长省略（规范要求） */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.topbar-sub {
+  font-size: 24rpx;
+  color: var(--ink-500);
+  margin-top: 10rpx;
+}
+
+/* 绿底「无水印」徽章 */
+.wm-badge {
+  background: #1B8A5A;
+  color: #FFFFFF;
+  font-size: 22rpx;
+  border-radius: 8rpx;
+  padding: 8rpx 16rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+/* 标题来源提示 */
+.hint {
+  margin: 0 28rpx 16rpx;
+  font-size: 22rpx;
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-radius: 8rpx;
+  padding: 12rpx 16rpx;
+}
+
+/* 平台特有提示（琥珀条） */
+.notice {
+  margin: 0 28rpx 16rpx;
+  font-size: 24rpx;
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-radius: 10rpx;
+  padding: 16rpx 20rpx;
+  line-height: 1.5;
+}
+
+/* ── 预览区 ── */
+.video-wrap {
+  margin: 20rpx 28rpx;
+  position: relative;
+  width: 100%;
+  /* 16:9 用 padding-top技巧（小程序支持） */
+  height: 400rpx;
+  background: var(--ink-900);
+  border-radius: 14rpx;
+  overflow: hidden;
+}
+
+.video-cover {
+  width: 100%;
+  height: 100%;
+}
+
+.video-nocover {
+  width: 100%;
+  height: 100%;
+  background: #2b2622;
+}
+
+/* 播放三角：纯 CSS，不用 emoji */
+.video-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -30rpx;
+  margin-top: -40rpx;
+  border-left: 60rpx solid rgba(255, 255, 255, 0.9);
+  border-top: 40rpx solid transparent;
+  border-bottom: 40rpx solid transparent;
+}
+
+/* 图集网格 */
+.grid {
+  margin: 20rpx 28rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.cell {
+  width: calc((100% - 16rpx) / 3);
+  height: 220rpx;
+  border-radius: 8rpx;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
+.cell-img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── 互动数据 ── */
+.stats {
+  margin: 24rpx 28rpx 0;
+  background: var(--bg-card);
+  border-radius: 14rpx;
+  padding: 24rpx 0;
+  display: flex;
+}
+
+.stat {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-n {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.stat-l {
+  display: block;
+  font-size: 22rpx;
+  color: var(--ink-500);
+  margin-top: 6rpx;
+}
+
+/* ── 文案卡（双产出，P0）── */
+.copycard {
+  margin: 12rpx 28rpx 0;
+  background: var(--bg-card);
+  border-radius: 14rpx;
+  padding: 20rpx 22rpx;
+}
+
+.cc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.cc-t {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: var(--ink-900);
+}
+
+.cc-btn {
+  font-size: 22rpx;
+  color: var(--brand-deep);
+  border: 1rpx solid #FFC46B;
+  border-radius: 8rpx;
+  padding: 6rpx 18rpx;
+  background: var(--brand-soft);
+}
+
+.cc-body {
+  font-size: 24rpx;
+  color: var(--ink-700);
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cc-tags {
+  margin-top: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+}
+
+.cc-tag {
+  font-size: 20rpx;
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-radius: 6rpx;
+  padding: 4rpx 12rpx;
+}
+
+/* ── 保存区（双按钮：保存 + 广告解锁）── */
+.save-btn {
+  margin: 24rpx 28rpx 0;
+  display: flex;
+  gap: 16rpx;
+}
+
+/* ── 话题标签 ── */
+.tags {
+  margin: 20rpx 28rpx 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.tag {
+  font-size: 22rpx;
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-radius: 6rpx;
+  padding: 6rpx 14rpx;
+}
+
+/* ── 清晰度 ── */
+.sec-title {
+  margin: 32rpx 28rpx 16rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--ink-900);
+  display: flex;
+  align-items: baseline;
+}
+
+.sec-note {
+  font-size: 22rpx;
+  color: var(--ink-500);
+  font-weight: 400;
+  margin-left: 16rpx;
+}
+
+.quals {
+  margin: 0 28rpx;
+  display: flex;
+  gap: 16rpx;
+}
+
+.qual {
+  flex: 1;
+  text-align: center;
+  padding: 18rpx 0;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  border: 1rpx solid var(--line);
+  background: var(--bg-card);
+  color: var(--ink-700);
+}
+
+/* 实线 = 强制：当前选中的免费档 */
+.qual-on {
+  background: var(--brand-deep);
+  border-color: var(--brand-deep);
+  color: #FFFFFF;
+}
+
+/* 虚线 = 可选 + 琥珀色（免费拿不到的高亮） */
+.qual-locked {
+  border: 1rpx dashed var(--brand);
+  color: var(--brand);
+  background: var(--bg-card);
+}
+
+/* ── 两个虚线按钮 ── */
+.ad-acts {
+  margin: 28rpx 28rpx 0;
+  display: flex;
+  gap: 16rpx;
+}
+
+.ad-btn {
+  flex: 1;
+  text-align: center;
+  border: 1rpx dashed var(--brand);
+  border-radius: 12rpx;
+  padding: 20rpx 0;
+  font-size: 24rpx;
+  color: var(--brand);
+  background: var(--bg-card);
+}
+
+/* ── 保存主按钮 ── */
+.save-btn {
+  margin: 28rpx 28rpx 0;
+}
+
+.quota-tip {
+  margin: 16rpx 28rpx 0;
+  text-align: center;
+  font-size: 22rpx;
+  color: var(--ink-500);
+}
+
+.quota-tip-go {
+  color: var(--brand);
+  margin-left: 8rpx;
+}
+
+/* ── Banner 广告位 ── */
+.banner {
+  margin: 32rpx 28rpx 0;
+  height: 200rpx;
+  background: var(--bg-soft);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-t {
+  font-size: 22rpx;
+  color: var(--ink-300);
+}
+
+/* ── 免责灰字 ── */
+.disclaimer {
+  margin: 28rpx 48rpx 0;
+  font-size: 22rpx;
+  color: var(--ink-300);
+  line-height: 1.7;
+  text-align: center;
+}
+/* ══ BGM 卡（2026-10-11：试听 + 提取）══ */
+.bgm {
+  display: flex;
+  align-items: center;
+  margin: 20rpx 24rpx 0;
+  padding: 18rpx 24rpx;
+  border-radius: var(--r-card);
+  background: var(--bg-soft, #f6f1e9);
+  border: 1rpx solid var(--line, #f0ebe2);
+}
+.bgm-play {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-2), var(--brand));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 18rpx;
+}
+.bgm-on { opacity: 0.75; }
+.bgm-tri {
+  width: 0; height: 0;
+  border-top: 10rpx solid transparent;
+  border-bottom: 10rpx solid transparent;
+  border-left: 15rpx solid #fff;
+  margin-left: 5rpx;
+}
+.bgm-on .bgm-tri {
+  width: 8rpx; height: 24rpx;
+  border-left: 8rpx solid #fff;
+  border-right: 8rpx solid #fff;
+  border-top: none; border-bottom: none;
+  margin-left: 0;
+}
+.bgm-body { flex: 1; min-width: 0; }
+.bgm-t {
+  font-size: 26rpx; font-weight: 700;
+  color: var(--ink-900, #2a2a2a);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bgm-s { margin-top: 2rpx; font-size: 20rpx; color: var(--ink-300, #b8b8b8); }
+.bgm-copy {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: var(--brand, #E8890C);
+  border: 1rpx solid var(--brand, #E8890C);
+  padding: 8rpx 22rpx;
+  border-radius: 26rpx;
+}
+
+
+/* ══ 字幕文案卡（2026-10-11：YouTube/FB）══ */
+.cc-btns { display: flex; align-items: center; }
+.cc-btn-main {
+  background: var(--brand, #E8890C);
+  color: #fff;
+  border-color: var(--brand, #E8890C);
+  margin-left: 12rpx;
+}
+.cc-sub { max-height: 300rpx; overflow: hidden; position: relative; }
+.cc-submeta {
+  margin-top: 12rpx;
+  font-size: 20rpx;
+  color: var(--ink-300, #b8b8b8);
+}

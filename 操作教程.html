@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>CreatorBox · 操作教程</title>
+<style>
+:root{
+  --bg:#fbf9f6; --card:#fff; --ink900:#1f1a15; --ink700:#5c5248;
+  --ink500:#8b8178; --ink300:#d6cec4; --line:#ece5dd;
+  --brand:#c8791a; --brand700:#a55f0e; --brand50:#fdf3e3;
+  --ok:#1b8a5a; --warn:#b45309; --err:#c0392b;
+  --code-bg:#2b2622; --code-ink:#f0e9e0;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink900);
+  font:15px/1.75 -apple-system,"Microsoft YaHei","Segoe UI",sans-serif;
+}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px 80px}
+header{margin-bottom:28px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+.sub{color:var(--ink500);font-size:14px}
+h2{font-size:19px;margin:38px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:16px;margin:22px 0 10px;color:var(--ink900)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps>li{counter-increment:s;position:relative;padding:0 0 22px 44px;margin:0}
+.steps>li::before{
+  content:counter(s);position:absolute;left:0;top:1px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--brand);color:#fff;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.steps>li::after{
+  content:'';position:absolute;left:13px;top:34px;bottom:2px;width:2px;background:var(--line);
+}
+.steps>li:last-child{padding-bottom:0}
+.steps>li:last-child::after{display:none}
+.steps b{display:block;margin-bottom:4px;font-size:16px}
+pre{
+  background:var(--code-bg);color:var(--code-ink);
+  padding:14px 16px;border-radius:9px;overflow-x:auto;
+  font:13px/1.7 "Cascadia Mono",Consolas,monospace;margin:10px 0;
+  position:relative;
+}
+.copy{
+  position:absolute;top:8px;right:8px;
+  background:#4a423b;color:#e8e0d6;border:0;border-radius:6px;
+  padding:4px 11px;font-size:12px;cursor:pointer;font-family:inherit;
+  opacity:0;transition:.15s;
+}
+pre:hover .copy{opacity:1}
+.copy:hover{background:var(--brand);color:#fff}
+.copy.ok{background:var(--ok);color:#fff}
+code{background:#f1ebe3;padding:2px 6px;border-radius:5px;font:13px/1.5 Consolas,monospace;color:var(--brand700)}
+.note{border-left:4px solid var(--brand);background:var(--brand50);padding:12px 16px;border-radius:0 9px 9px 0;margin:14px 0;font-size:14px}
+.note.ok{border-color:var(--ok);background:#eef8f3}
+.note.warn{border-color:var(--warn);background:#fdf6e9}
+.note.err{border-color:var(--err);background:#fdeeeb}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#f6f1ea;font-weight:600;font-size:13px;color:var(--ink700)}
+td code{font-size:12px}
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600}
+.tag.must{background:#fdeeeb;color:var(--err)}
+.tag.opt{background:var(--brand50);color:var(--brand700)}
+.faq{border:1px solid var(--line);border-radius:9px;padding:0;margin:10px 0;background:#fff}
+.faq summary{padding:12px 16px;cursor:pointer;font-weight:600;font-size:14px;list-style:none;display:flex;align-items:center;gap:8px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:'+';color:var(--brand);font-weight:700;font-size:16px;width:14px}
+.faq[open] summary::before{content:'-'}
+.faq .body{padding:0 16px 14px;font-size:14px;color:var(--ink700)}
+.faq .body pre{background:#f4efe8;color:var(--ink900)}
+.flow{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;font-size:13px}
+.flow div{padding:5px 0}
+.arrow{color:var(--brand);font-weight:700}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>CreatorBox · 操作教程</h1>
+  <div class="sub">从零到在手机上看到界面 · 2026-10-07 更新（含已修的坑）</div>
+</header>
+
+<div class="note ok">
+  <b>最短路径（3 条命令）</b><br>
+  如果你只想赶紧看到东西，直接从下面「三步跑起来」开始，其余章节是遇到问题时的排查手册。
+</div>
+
+<h2>一、准备（只做一次）</h2>
+
+<table>
+  <tr><th style="width:120px">需要什么</th><th>说明</th><th style="width:90px">状态</th></tr>
+  <tr><td>Flutter SDK</td><td>本机 <code>D:\dev\flutter</code>，版本 3.47.5</td><td><span class="tag must">已装</span></td></tr>
+  <tr><td>Android SDK + JDK</td><td>跑真机或模拟器要</td><td><span class="tag must">已装</span></td></tr>
+  <tr><td>Python venv</td><td>跑解析服务（8 个平台的解析器在 Python 里）</td><td><span class="tag must">已装</span></td></tr>
+  <tr><td>一部手机</td><td>可选。没有的话能在电脑浏览器看（见「浏览器版」）</td><td><span class="tag opt">可选</span></td></tr>
+</table>
+
+<div class="note warn">
+  <b>关键认知：这不是纯 App，解析靠电脑上的服务</b><br>
+  手机 App 只负责界面和下载，<b>解析逻辑在 Python 服务里</b>（8 个平台的接口对接都在那）。
+  所以<b>电脑上的服务必须开着</b>，App 才能用。App 首页会显示「服务未连」提示，不会静默失败。
+</div>
+
+<h2>二、三步跑起来</h2>
+
+<ol class="steps">
+<li>
+  <b>窗口 1 · 开窗口 A，起解析服务</b>
+  <pre>cd D:\WorkBuddyFILE\CreatorBox
+.\start-server.ps1</pre>
+  看到 <code>Application startup complete</code> 就绪。这个窗口保持开着。
+</li>
+
+<li>
+  <b>窗口 2 · 开窗口 B，连手机并转发端口</b>
+  <pre>cd D:\WorkBuddyFILE\CreatorBox\app
+adb devices</pre>
+  手机要开「开发者选项 → USB 调试」，首次连接要在手机上点「允许」。
+  <div class="note">
+    <b>为什么要端口转发？</b> 手机上的 <code>127.0.0.1</code> 指的是<b>手机自己</b>，不是你的电脑。
+    <code>adb reverse tcp:8080 tcp:8080</code> 建立转发后，手机的 8080 才等于电脑的 8080。
+  </div>
+</li>
+
+<li>
+  <b>窗口 B · 跑 App</b>
+  <pre>cd D:\WorkBuddyFILE\CreatorBox\app
+flutter run</pre>
+  首次会编译 1–3 分钟。之后改代码按 <code>r</code> 热重载，<code>q</code> 退出。
+</li>
+</ol>
+
+<div class="note">
+  <b>或者：一条命令搞定全部</b><br>
+  依赖、服务、端口转发、启动 App 都串起来了，会自动挑设备：
+  <pre>cd D:\WorkBuddyFILE\CreatorBox\app
+.\run.ps1</pre>
+  依赖已就绪时会跳过 <code>pub get</code>；服务已在跑时会复用不重启。
+</div>
+
+<h3>不玩手机：浏览器版</h3>
+<p>浏览器里 <code>127.0.0.1</code> 就是电脑自己，<b>不需要 adb 转发</b>：</p>
+<pre>cd D:\WorkBuddyFILE\CreatorBox\app
+flutter run -d chrome</pre>
+<p>Web 版有两点限制：下载/分享走浏览器机制，部分平台体验略差；<b>但看界面、跑通解析链路完全够用</b>。</p>
+
+<h2>三、数据是怎么流的</h2>
+<div class="flow">
+  <div><span class="arrow">①</span> 你在 App 输入框粘贴分享文案/链接</div>
+  <div><span class="arrow">②</span> App 调 <code>POST http://127.0.0.1:8080/api/parse</code>（经 adb reverse 转发到电脑）</div>
+  <div><span class="arrow">③</span> Python 服务识别平台 → 取「平台源头就干净」的原始流地址</div>
+  <div><span class="arrow">④</span> 返回标题/封面/时长/互动数据/清晰度档位 + 下载地址</div>
+  <div><span class="arrow">⑤</span> App 展示结果页，你点「保存」→ 下载文件 → 调起系统分享面板</div>
+</div>
+<div class="note">
+  <b>为什么强调「源头就干净」</b>：平台水印是在<b>分发环节</b>才叠上去的，服务器上存着无水印原片。
+  我们拿到原始流地址就是<b>零画质损失</b>的干净文件 —— 所以整个方案<b>零 AI 模型</b>，
+  不需要 inpainting、不下载几百 MB 的模型包。
+</div>
+
+<h2>四、常用命令</h2>
+
+<pre>cd D:\WorkBuddyFILE\CreatorBox\app
+
+flutter run                        # 跑 App（自动挑设备）
+flutter run -d chrome              # 浏览器版
+flutter run -d <设备名>            # 指定设备（名字从 flutter devices 拿）
+
+adb reverse tcp:8080 tcp:8080      # 端口转发（每次插拔数据线可能要重跑）
+adb reverse --list                 # 看当前有哪些转发
+
+flutter devices                    # 列出可用设备
+flutter pub get                    # 只装依赖（已装会很快）
+flutter run --dart-define=CB_API=http://192.168.1.5:8080   # 走局域网 IP</pre>
+
+<h3>run.ps1 的参数</h3>
+<pre>.\run.ps1                          # 自动挑设备
+.\run.ps1 -Device chrome           # 指定浏览器
+.\run.ps1 -Device <设备名>
+.\run.ps1 -SkipServer              # 服务已在跑时跳过启动那步
+.\run.ps1 -Api http://192.168.1.5:8080   # 手机同 WiFi，走局域网 IP（不依赖 adb）</pre>
+
+<h3>服务端日志在哪</h3>
+<p><code>run.ps1</code> 启动的服务会写两个文件，排查问题时先看它们：</p>
+<pre>Get-Content D:\WorkBuddyFILE\CreatorBox\server.err.log -Tail 30</pre>
+
+<h2>五、验证服务是否正常（不装 App 也能查）</h2>
+<p>浏览器打开 <code>D:\WorkBuddyFILE\CreatorBox\verify.html</code>，粘贴链接或分享文案就能测，
+带完整 JSON 输出和服务状态表 —— <b>排查解析问题先用它，比在 App 里试快得多</b>。</p>
+
+<pre># 命令行方式看服务状态
+Invoke-RestMethod http://127.0.0.1:8080/api/health | Select-Object engine, platforms</pre>
+
+<h2>六、常见问题排查</h2>
+
+<details class="faq">
+<summary>No supported devices connected</summary>
+<div class="body">
+  <p><b>原因① 平台目录缺失。</b>这个项目最初只有手写的 <code>lib/</code>，没有 Android 工程：</p>
+  <pre>cd D:\WorkBuddyFILE\CreatorBox\app
+.\setup-platforms.ps1</pre>
+  <p><b>原因② 手机没被识别。</b>开 USB 调试、数据线插好、手机上点「允许 USB 调试」，然后 <code>flutter devices</code> 确认。</p>
+  <p><b>原因③ 手机弹窗拦了。</b>小米/华为等需要在「开发者选项」里额外打开「USB 安装」或「USB 调试（安全设置）」。</p>
+  <p><b>绕过去：</b><code>flutter create . --platforms=web</code> 然后 <code>flutter run -d chrome</code>，先在电脑上看。</p>
+</div>
+</details>
+
+<details class="faq">
+<summary>App 报 Connection refused / 服务未连</summary>
+<div class="body">
+  <p>按顺序查三处：</p>
+  <p><b>① 服务在跑吗。</b>浏览器打开 <code>http://127.0.0.1:8080/api/health</code>，能看到 8 个平台就是好的。</p>
+  <p><b>② 端口转发做了吗。</b>真机上 <code>adb reverse --list</code> 应该能看到 <code>tcp:8080 tcp:8080</code>。没有就 <code>adb reverse tcp:8080 tcp:8080</code>。</p>
+  <p><b>③ 是不是明文 HTTP 被系统拦了。</b>Android 9+ 默认禁止 <code>http://</code>。
+  这个已经在 <code>android/app/src/debug/AndroidManifest.xml</code> 里开了白名单，
+  但<b>只对 debug 构建生效</b> —— 确认你跑的是 <code>flutter run</code> 而不是 release 包。</p>
+  <p><b>换局域网 IP</b>（转发失败时的替代方案）：</p>
+  <pre>ipconfig | Select-String IPv4# 找到电脑的 192.168.x.x
+flutter run --dart-define=CB_API=http://192.168.1.5:8080</pre>
+  <p>前提是手机和电脑在<b>同一个 WiFi</b>，且防火墙放行 8080 端口。</p>
+</div>
+</details>
+
+<details class="faq">
+<summary>flutter pub get 卡几十分钟</summary>
+<div class="body">
+  <p><b>这不是「慢」，是卡死。</b>根因是本机设了代理变量，而 <code>pub</code> 读 <code>http_proxy</code>。</p>
+  <p>用现成脚本（会临时清代理 + <b>先做 15 秒预检</b>，不通就直接中止，不让你空等）：</p>
+  <pre>cd D:\WorkBuddyFILE\CreatorBox\app
+.\setup-pub.ps1</pre>
+  <p><b>注意</b>：不要设国内镜像。<code>pub.flutter-io.cn</code> 的归档接口会 301 跳到
+  <code>storage.flutter-io.cn</code>，那个域名在你本机 DNS 解析不了、走代理被拦成 502 ——
+  <b>换镜像反而更糟</b>。实测 pub.dev 直连 1.4s/包就够用。</p>
+  <p>如果它中途卡住，先杀掉残留进程再重试（残留会锁住缓存）：</p>
+  <pre>Get-Process dart,flutter -EA SilentlyContinue | Stop-Process -Force</pre>
+</div>
+</details>
+
+<details class="faq">
+<summary>PowerShell 报「意外的标记 }」或中文乱码</summary>
+<div class="body">
+  <p><b>这是编码问题，不是语法错。</b>PowerShell 5.1 会把<b>无 BOM 的 UTF-8 脚本按 GBK 解码</b>，
+  中文字节被截断导致引号配对失效。</p>
+  <p><b>识别特征：报错行号对不上。</b>报错说第 39 行有问题，但第 39 行是 <code>foreach ($v in $proxyVars) {</code> ——
+  一行 foreach 不可能括号不配对。<b>行号对不上 = 解码问题。</b></p>
+  <p>所有脚本都已加 UTF-8 BOM。以后自己写脚本，加完 BOM 跑一遍预检：</p>
+  <pre>python tests\check_ps_syntax.py</pre>
+</div>
+</details>
+
+<details class="faq">
+<summary>改了依赖后报 version solving failed</summary>
+<div class="body">
+  <p>大概率是<b>两个包间接依赖了不同版本 的 <code>web</code></b>。本项目遇到过：</p>
+  <pre>share_plus 9.x        要 web ^0.5.0
+cached_network_image 3.x 要 web ^1.0.0   → 冲突</pre>
+  <p><b>解法：</b>用 <code>flutter pub add 包名</code> 让 pub 自己解，它会给出兼容版本：</p>
+  <pre>flutter pub add share_plus
+flutter pub add cached_network_image</pre>
+  <p>本项目最终用的是 <code>share_plus ^13.3.1</code> + <code>cached_network_image ^4.0.4</code>。</p>
+  <p><b>升级后要核对 API 变化</b>：<code>share_plus</code> 13 里 <code>Share</code> 整个类已废弃，
+  新 API 是 <code>SharePlus.instance.share(ShareParams(...))</code>。</p>
+</div>
+</details>
+
+<details class="faq">
+<summary>点「保存」没反应 / 分享面板不弹</summary>
+<div class="body">
+  <p>App 的正确流程是：<b>先用 dio 下载到临时文件 → 用本地路径构造 XFile → 调分享面板</b>。</p>
+  <div class="note err">
+    <b>常见错法（我们一开始就犯的）</b>：<code>XFile('https://cdn.example.com/a.mp4')</code> ——
+    传的是<b>远程 URL</b>，而 XFile 内部走 <code>File(uri)</code>，http 字符串不是合法文件路径，<b>必然抛异常</b>。
+  </div>
+  <p>下载大文件需要时间，App 里有进度提示。若失败先看是不是网络问题。</p>
+</div>
+</details>
+
+<h2>七、现在可以试的链接</h2>
+<p>粘贴进 App 或 <code>verify.html</code>：</p>
+<pre>B站      https://www.bilibili.com/video/BV1GJ411x7h7
+AcFun    https://www.acfun.cn/v/ac48890260
+微博     https://weibo.com/tv/show/1034:5343195622473745?mid=5343196424963244
+快手     https://www.kuaishou.com/f/X-3M7HpE9Kh3sh1V
+好看视频https://haokan.baidu.com/v?vid=1688233510589355861
+搜狐     https://tv.sohu.com/v/MjAyNjA5MzAvbjYyMDI1MzY2MC5zaHRtbA==.html</pre>
+
+<div class="note">
+  <b>小红书要带分享文案</b>（视频笔记的标题只在分享文案里，不在接口里）：<br>
+  <code>16 【一部上映十天却惨遭下架的电影，却赚足了观众的眼泪 - 怪咖解说 | 小红书 - 你的生活兴趣社区】 😆 kkceQvt29agF6eV 😆 https://www.xiaohongshu.com/discovery/item/6a72adee...html</code><br>
+  完整文案见 <code>server/tests/e2e_regression.py</code>。
+</div>
+
+<h2>八、项目结构速查</h2>
+<pre>D:\WorkBuddyFILE\CreatorBox\
+├── server\                ← 解析服务（Python，8 个平台）
+│   ├── app\parsers\       ← 各平台解析器
+│   ├── app\meta.py        ← 元信息规范层（统一字段名）
+│   └── start-server.ps1   ← 起服务
+├── app\                   ← 客户端（Flutter）
+│   ├── lib\services\      ← API 客户端、下载保存
+│   ├── lib\screens\       ← 首页、素材库
+│   ├── lib\widgets\       ← 结果页
+│   ├── run.ps1            ← ⭐ 一键跑起来
+│   └── setup-pub.ps1      ← 依赖获取（清代理 + 预检）
+└── verify.html            ← 本地验证台（浏览器打开即用）</pre>
+</div>
+
+<script>
+// 给每个代码块挂一个复制按钮（鼠标悬停时显示）
+document.querySelectorAll('pre').forEach(function (pre) {
+  const btn = document.createElement('button');
+  btn.className = 'copy';
+  btn.textContent = '复制';
+  btn.addEventListener('click', async function () {
+    const text = pre.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      // 非安全上下文（file://）下 clipboard API 不可用 → 兜底
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+    }
+    btn.textContent = '已复制';
+    btn.classList.add('ok');
+    setTimeout(function () {
+      btn.textContent = '复制';
+      btn.classList.remove('ok');
+    }, 1600);
+  });
+  pre.appendChild(btn);
+});
+</script>

@@ -1,0 +1,87 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+
+  <!-- 头部 -->
+  <view class="bh">
+    <text class="bh-t">违禁词检测</text>
+    <text class="bh-s">发布前最后一道合规检查 · 风险提示仅供参考</text>
+  </view>
+
+  <!-- 输入区 -->
+  <view class="card">
+    <view class="ta-wrap">
+      <textarea class="ta" value="{{text}}" bindinput="onInput"
+                placeholder="粘贴要发布的文案 / 口播稿&#10;支持标题、正文、评论区文案"
+                placeholder-class="ta-ph" maxlength="5000" auto-height />
+      <view wx:if="{{text}}" class="ta-clear" bindtap="clearInput">
+        <view class="ta-clear-x"></view>
+      </view>
+    </view>
+    <view class="ops">
+      <view class="op" bindtap="onPaste">粘贴</view>
+      <view class="op" bindtap="clearInput">清空</view>
+      <view class="op op-len">{{text.length}}/5000</view>
+    </view>
+    <view class="quota-line">
+      {{isMember ? '会员 · 不限次 · 全类目' : '今日 ' + used + '/' + limit + ' 次 · 基础词库'}}
+    </view>
+    <view class="go {{checking ? 'go-disabled' : ''}}" bindtap="onCheck">
+      {{checking ? '检测中…' : '开始检测'}}
+    </view>
+  </view>
+
+  <!-- ══ 结果区 ══ -->
+  <block wx:if="{{checked}}">
+    <!-- 风险结论横幅 -->
+    <view class="verdict v-{{riskLevel}}">
+      <view class="v-dot"></view>
+      <view class="v-body">
+        <view class="v-t">
+          {{riskLevel === 'clean' ? '未检测到风险词' :
+            riskLevel === 'high' ? '高风险：发现 ' + total + ' 处' :
+            '中风险：发现 ' + total + ' 处'}}
+        </view>
+        <view class="v-s" wx:if="{{riskLevel !== 'clean'}}">命中词已标红，建议逐个复核</view>
+        <view class="v-s" wx:else>词库持续更新，发布前建议再查一次</view>
+      </view>
+    </view>
+
+    <!-- 标红原文 -->
+    <view class="card seg-card" wx:if="{{total > 0}}">
+      <view class="seg-h">原文标红</view>
+      <view class="seg-text">
+        <text wx:for="{{segments}}" wx:key="index"
+              class="{{item.hit ? 'seg-hit' : ''}}">{{item.t}}</text>
+      </view>
+      <view class="seg-copy" bindtap="onCopyClean" wx:if="{{total > 0}}">复制修正版</view>
+    </view>
+
+    <!-- 分组明细 -->
+    <view class="card" wx:if="{{groups.length}}">
+      <view class="grp" wx:for="{{groups}}" wx:key="category">
+        <view class="grp-h">
+          <text class="grp-name">{{item.name}}</text>
+          <text class="grp-cnt">{{item.count}} 处</text>
+        </view>
+        <view class="grp-risk">{{item.risk}}</view>
+        <view class="word" wx:for="{{item.words}}" wx:for-item="w" wx:key="word">
+          <text class="w-t">「{{w.word}}」× {{w.count}}</text>
+          <text class="w-sug" wx:if="{{w.suggest}}">可改为「{{w.suggest}}」</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 会员解锁引导（非会员且有命中） -->
+    <view class="lockcard" wx:if="{{locked.length && !isMember}}" bindtap="onUpgrade">
+      <view class="lk-t">还有 {{locked.length}} 个类目未检测</view>
+      <view class="lk-s">医疗功效 / 金融承诺 / 站外导流 / 虚假夸大 —— 限流重灾区，会员全查</view>
+      <view class="lk-go">开通会员全类目检测</view>
+    </view>
+  </block>
+
+  <!-- 说明 -->
+  <view class="disc">
+    检测结果基于公开资料整理的词库，为风险提示而非法律意见；
+    命中不代表必然违规，未命中不代表绝对安全，请结合平台最新规则人工判断。
+  </view>
+</view>

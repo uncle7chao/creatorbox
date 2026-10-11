@@ -1,0 +1,152 @@
+{
+ "success": true,
+ "platform": "acfun",
+ "method": "ssr_ksplayjson",
+ "type": "video",
+ "ac": "48890260",
+ "internal_id": "39242716",
+ "title": "蕉换幸运",
+ "description": "",
+ "author": "九星之歌",
+ "author_id": "2176158",
+ "author_avatar": "https://imgs.aixifan.com/style/image/201907/Pt1GipJtiUHE0rnGckcm5gHzJeTRxjJh.jpg",
+ "author_fans": 298302,
+ "author_fans_text": "29.8万",
+ "author_ip": "江西",
+ "cover": "https://imgs.aixifan.com/newUpload/2176158_49cb7fdfd0214349a858e6076e6382b7.gif",
+ "channel": "搞笑",
+ "duration_ms": 298965,
+ "video_url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-e8022095d2f7db32242cb094ac58be27-hls_1080p_h264_6m_1.m3u8?pkey=ABClGds-3q6vUnyswgFh5B2EcfX_bSP_fNyw_291PziFNEWMUBEuf1jgGDkOtst90Mp_1OBB3iq4yNV7whCjCQzYneTuTmgcfr1h2whAzdrzZKsA1ja4RJhFnVQHBqWBUF1Qm4OAky7izQW5ZUPaShiXynnDzyI8op52B1vaQj-GMGKMRaQOpQIpSfEfOfz_uvH5MWg7TaJJs83t4EQqTKV_4aIJNwo4sZfeKHE66Qe2hA&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+ "m3u8_url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-e8022095d2f7db32242cb094ac58be27-hls_1080p_h264_6m_1.m3u8?pkey=ABClGds-3q6vUnyswgFh5B2EcfX_bSP_fNyw_291PziFNEWMUBEuf1jgGDkOtst90Mp_1OBB3iq4yNV7whCjCQzYneTuTmgcfr1h2whAzdrzZKsA1ja4RJhFnVQHBqWBUF1Qm4OAky7izQW5ZUPaShiXynnDzyI8op52B1vaQj-GMGKMRaQOpQIpSfEfOfz_uvH5MWg7TaJJs83t4EQqTKV_4aIJNwo4sZfeKHE66Qe2hA&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+ "quality": "1080P+",
+ "options": [
+  {
+   "index": 0,
+   "gear": "1080P+",
+   "width": 1920,
+   "height": 1080,
+   "bit_rate": 4209,
+   "frame_rate": 30.000034,
+   "no_watermark": true,
+   "url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-e8022095d2f7db32242cb094ac58be27-hls_1080p_h264_6m_1.m3u8?pkey=ABClGds-3q6vUnyswgFh5B2EcfX_bSP_fNyw_291PziFNEWMUBEuf1jgGDkOtst90Mp_1OBB3iq4yNV7whCjCQzYneTuTmgcfr1h2whAzdrzZKsA1ja4RJhFnVQHBqWBUF1Qm4OAky7izQW5ZUPaShiXynnDzyI8op52B1vaQj-GMGKMRaQOpQIpSfEfOfz_uvH5MWg7TaJJs83t4EQqTKV_4aIJNwo4sZfeKHE66Qe2hA&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+   "is_m3u8": true
+  },
+  {
+   "index": 1,
+   "gear": "1080P",
+   "width": 1920,
+   "height": 1080,
+   "bit_rate": 2642,
+   "frame_rate": 30.000034,
+   "no_watermark": true,
+   "url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-bddece73726e6cea81487f14c3c80b7b-hls_1080p_2.m3u8?pkey=ABA025IZjr3nj1lU06rQN4Y83fuMqTK6LR1FdkQhVugLmZ6lrt6s4_w4_SSi1gnW-wHzMpB3sgVkk1aF3eRas3PatUvY1vLX3q0oSLO9TmB7RZzw5fS5sjHWILalQlRr-y9VyBFvcjuRxoVDXXOREGXpO-if6wG6vBFg3tBbvcq7YiXIiU1W3GIrhIEzTvxfjE8QuooSU5Vyn0lJT2499-T5r9niCQWXOL9QBQtTiyzWwQ&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+   "is_m3u8": true
+  },
+  {
+   "index": 2,
+   "gear": "720P",
+   "width": 1280,
+   "height": 720,
+   "bit_rate": 1595,
+   "frame_rate": 30.000034,
+   "no_watermark": true,
+   "url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-1afed5ad077c2704bcaffcfe6965c3e7-hls_720p_2.m3u8?pkey=ABCULkkUpiPskuNPDiXx5sJsPNh5EaWnDf7-CMWarsOtGMcrqFWonPY9WUeAdX99FriZSolvCeLOgBhR26Zg_k7US2biC3UX8TG6zqTPZ83XyVfCPY8VZgMCBwHRKGSIcQ8xIVQKaWGXjbui3Fix2oiG6Vn0dyhZA32y99PPvMniD0vIX1eEPkTvk9F35lF-aD5yk-3m_trNOy2NB2iupiVNSo0NoXXjgqD3Jb0Xo8A1fA&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+   "is_m3u8": true
+  },
+  {
+   "index": 3,
+   "gear": "540P",
+   "width": 960,
+   "height": 540,
+   "bit_rate": 833,
+   "frame_rate": 30.000034,
+   "no_watermark": true,
+   "url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-0e59d7fb2e2905162a42acb0ce00426f-hls_540p_2.m3u8?pkey=ABAFvfHfRiXo_Q_sk8kSj2czP86vsGcCYb1dYPxc0-YpiJhsRU7uUPGKjf8yokCQzE9ZUi3f4RHRM5UtXvzOqWLY-D8lsGGmaNCykGoG5SL1QYg6ZqLni4v0OoAbwciDLilC7LV-lfOl_qwUNRfteMUOZy8t_hkdxLnXbdh8Wv5chLBiyZ_RK89uO2LGQ5DVIBjvRDv6nf7TMGv-aLMxKl2FpJdleNFKV6oGGEDEzswg8g&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+   "is_m3u8": true
+  },
+  {
+   "index": 4,
+   "gear": "360P",
+   "width": 640,
+   "height": 360,
+   "bit_rate": 506,
+   "frame_rate": 30.000034,
+   "no_watermark": true,
+   "url": "https://tx-safety-video.acfun.cn/mediacloud/acfun/acfun_video/182d278e9abbb1e7-602085ae4d0606a8b11a02d3058bf3e8-hls_360p_2.m3u8?pkey=ABA3vD6TY1Kt9MlQgEBJG0dzLNuq4l4_RgCBeCxvaZFAQl69LNy7mVWPiMo38M7dNN4djaub5pFj8zMFsg7CGpvh7aJJ74qPbAbogsnxMoxfQ759hUAyi9tBLDuE3nDW3Xk6bOIrAs8PIHM8ucgyxTIrCnNleHwzvoWfurjqBdO665UaZR8Gd1IT0hS438Qr3g3IM4RH-4grm2TUsCW5ofa1BFccUjN582rlXOB6t6AciQ&safety_id=AAICnaAQplwH55xlhWuxrKAB",
+   "is_m3u8": true
+  }
+ ],
+ "options_count": 5,
+ "dash": true,
+ "m3u8_only": true,
+ "merge_required": true,
+ "m3u8_usable": true,
+ "merge_endpoint": "/api/merge",
+ "merge_measured": {
+  "elapsed_s": 5.36,
+  "size_mb": 150.04,
+  "segments": 59,
+  "mode": "direct"
+ },
+ "merge_note": "实测 59 个分段内容各不相同 → 是真实完整视频。ffmpeg -c copy 合并 299.01s / 150MB 仅需 5.4 秒，duration_ratio=1.0（与 EXTINF 声明一致）",
+ "need_proxy": true,
+ "anonymous": true,
+ "no_watermark": true,
+ "watermark_free": true,
+ "cdn_hosts": [
+  "tx-safety-video.acfun.cn",
+  "ali-safety-video.acfun.cn"
+ ],
+ "expiry_note": "m3u8 分段带 ?pkey= 签名，有时效，不可长期缓存；建议缓存 TTL ≤ 30 分钟",
+ "cache_ttl_hint": 1800,
+ "like_count": null,
+ "view_count": null,
+ "comment_count": null,
+ "danmaku_count": 39,
+ "upload_time_ms": 1791099362184,
+ "known_gaps": [
+  "author: currentVideoInfo 不含作者字段",
+  "cover: 需另从 pageInfo 取（本parser 未取）"
+ ],
+ "short_url": "https://www.acfun.cn/v/ac48890260",
+ "meta": {
+  "title": "蕉换幸运",
+  "title_source": "ssr",
+  "description": "",
+  "cover": "https://imgs.aixifan.com/newUpload/2176158_49cb7fdfd0214349a858e6076e6382b7.gif",
+  "author_name": "九星之歌",
+  "author_id": "2176158",
+  "author_avatar": "https://imgs.aixifan.com/style/image/201907/Pt1GipJtiUHE0rnGckcm5gHzJeTRxjJh.jpg",
+  "duration_s": 298.96,
+  "publish_ts": 1791099362,
+  "publish_time_text": "2026-10-04 15:36",
+  "publish_time": "2026-10-04 15:36",
+  "stats": {
+   "danmaku": 39
+  },
+  "stats_text": {
+   "fan": "29.8万"
+  },
+  "tags": [],
+  "extra": {
+   "channel": "搞笑",
+   "user_ip": "江西"
+  }
+ },
+ "duration_s": 298.96,
+ "publish_time": "2026-10-04 15:36",
+ "author_name": "九星之歌",
+ "stats": {
+  "danmaku": 39
+ },
+ "tags": [],
+ "stats_text": {
+  "fan": "29.8万"
+ },
+ "extra": {
+  "channel": "搞笑",
+  "user_ip": "江西"
+ },
+ "meta_schema_version": 1,
+ "cached": false
+}

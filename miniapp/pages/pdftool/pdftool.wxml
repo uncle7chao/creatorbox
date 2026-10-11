@@ -1,0 +1,70 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+
+  <view class="hero">
+    <view class="hero-title">PDF 工具</view>
+    <view class="hero-sub">合并 · 提取页 · 加水印 · 文件不落库保留 1 天</view>
+  </view>
+
+  <!-- 功能 tab -->
+  <view class="tabs">
+    <view class="t {{tab === 'merge' ? 't-on' : ''}}" data-t="merge" bindtap="switchTab">合并</view>
+    <view class="t {{tab === 'extract' ? 't-on' : ''}}" data-t="extract" bindtap="switchTab">提取页</view>
+    <view class="t {{tab === 'watermark' ? 't-on' : ''}}" data-t="watermark" bindtap="switchTab">加水印</view>
+  </view>
+
+  <view class="card">
+    <!-- 合并：文件列表 -->
+    <block wx:if="{{tab === 'merge'}}">
+      <view class="pick" bindtap="choose" hover-class="pick-hover">
+        <view class="pick-plus"></view>
+        <view class="pick-t">{{files.length ? '继续添加（最多 5 个）' : '从聊天记录选择 PDF（2-5 个）'}}</view>
+      </view>
+      <view wx:for="{{files}}" wx:key="path" class="fitem">
+        <view class="ficon"></view>
+        <view class="finfo">
+          <view class="fname">{{item.name}}</view>
+          <view class="fsize">{{item.size}}</view>
+        </view>
+        <view class="fdel" data-i="{{index}}" catchtap="removeFile">×</view>
+      </view>
+    </block>
+
+    <!-- 提取页 / 水印：单文件 -->
+    <block wx:else>
+      <view class="pick" bindtap="choose" hover-class="pick-hover">
+        <view class="pick-plus"></view>
+        <view class="pick-t">{{single ? single.name + ' · ' + single.size : '从聊天记录选择 PDF'}}</view>
+      </view>
+
+      <view wx:if="{{tab === 'extract'}}" class="opt-row">
+        <view class="opt-l">提取第</view>
+        <input class="pg-input" type="number" value="{{page}}" bindinput="onPage" />
+        <view class="opt-l">页</view>
+      </view>
+
+      <view wx:if="{{tab === 'watermark'}}" class="opt-row">
+        <view class="opt-l">水印</view>
+        <input class="wm-input" value="{{watermarkText}}" maxlength="24"
+               placeholder="最多 24 字，如：CreatorBox" bindinput="onWmText" />
+      </view>
+    </block>
+
+    <view wx:if="{{errMsg}}" class="err">{{errMsg}}</view>
+
+    <view class="btn-primary {{busy ? 'btn-busy' : ''}}" bindtap="run">
+      {{busy ? '处理中…' : (tab === 'merge' ? '开始合并' : tab === 'extract' ? '提取该页' : '添加水印')}}
+    </view>
+  </view>
+
+  <!-- 结果 -->
+  <view wx:if="{{resultUrl}}" class="result">
+    <view class="r-t">处理完成，已打开预览</view>
+    <view class="r-btn" bindtap="run">再处理一次</view>
+  </view>
+
+  <view class="disc">
+    <view>· 文件经本机解析服务处理，产物保留 1 天后自动清除</view>
+    <view>· 单文件上限 10MB · 合并最多 5 个 · 提取前先确认页码</view>
+  </view>
+</view>

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "免责与协议",
+  "usingComponents": {
+    "theme-deco": "/components/theme-deco/theme-deco"
+  }
+}

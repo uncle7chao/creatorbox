@@ -1,0 +1,53 @@
+name: creatorbox
+description: CreatorBox · 素材解析工具（粘贴链接，下载平台源头就干净的素材）
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+# ⭐ 依赖原则（依据 docs/CreatorBox-产品方案v2-纯解析.md）
+#
+# 本方案**零 AI 依赖** —— 去水印 = 解析下载，不需要图像处理模型。
+# 所以这里没有 image / tflite / liteRt 等推理库。
+# 客户端只负责：输入链接 → 调服务端 → 预览 → 保存。
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ---- 网络：调解析服务 ----
+  http: ^1.2.2
+
+  # ---- 状态管理：轻量，够用就好 ----
+  provider: ^6.1.2
+
+  # ---- 本地存储：草稿 / 解析历史 ----
+  shared_preferences: ^2.3.2
+
+  # ---- 保存到相册 ----
+  # ⚠️ 用系统分享而非直写相册：Android 13+ 直写相册要 READ_MEDIA_IMAGES
+  #    权限，审核麻烦；分享面板体验也够用。
+  #    若后续确需直存再加 gal 或 image_gallery_saver。
+  #
+  # ⭐ 版本必须 >=13：9.x 依赖 web ^0.5.0，与 cached_network_image 4.x
+  #    要求的 web ^1.0.0 冲突（2026-10-06 实测 solving failed）。
+  #    13.3.1 要 web ^1.1.1，两边才对齐。
+  share_plus: ^13.3.1
+
+  # ---- 网络图片（封面 / 首帧）----
+  # ⭐ 4.x 起不再依赖 web 包（旧 3.4.1 的 web 约束是冲突根源）
+  cached_network_image: ^4.0.4
+
+  # ---- 文件下载（视频 / 图集原片）----
+  dio: ^5.7.0
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

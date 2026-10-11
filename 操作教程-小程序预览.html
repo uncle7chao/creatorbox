@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>CreatorBox · 小程序预览教程（小白版）</title>
+<style>
+:root{
+  --bg:#fbf9f6; --card:#fff; --ink900:#1f1a15; --ink700:#5c5248;
+  --ink500:#8b8178; --ink300:#d6cec4; --line:#ece5dd;
+  --brand:#c8791a; --brand700:#a55f0e; --brand50:#fdf3e3;
+  --ok:#1b8a5a; --warn:#b45309; --err:#c0392b;
+  --code-bg:#2b2622; --code-ink:#f0e9e0;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink900);
+  font:15px/1.75 -apple-system,"Microsoft YaHei","Segoe UI",sans-serif;
+}
+.wrap{max-width:900px;margin:0 auto;padding:32px 20px 80px}
+header{margin-bottom:28px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+.sub{color:var(--ink500);font-size:14px}
+h2{font-size:19px;margin:38px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+h3{font-size:16px;margin:22px 0 10px;color:var(--ink900)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps>li{counter-increment:s;position:relative;padding:0 0 22px 44px;margin:0}
+.steps>li::before{
+  content:counter(s);position:absolute;left:0;top:1px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--brand);color:#fff;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.steps>li::after{
+  content:'';position:absolute;left:13px;top:34px;bottom:2px;width:2px;background:var(--line);
+}
+.steps>li:last-child{padding-bottom:0}
+.steps>li:last-child::after{display:none}
+.steps>li:last-child::before{content:'✓';background:var(--ok)}
+.steps b{display:block;margin-bottom:4px;font-size:16px}
+pre{
+  background:var(--code-bg);color:var(--code-ink);
+  padding:14px 16px;border-radius:9px;overflow-x:auto;
+  font:13px/1.7 "Cascadia Mono",Consolas,monospace;margin:10px 0;
+  position:relative;
+}
+.copy{
+  position:absolute;top:8px;right:8px;
+  background:#4a423b;color:#e8e0d6;border:0;border-radius:6px;
+  padding:4px 11px;font-size:12px;cursor:pointer;font-family:inherit;
+  opacity:0;transition:.15s;
+}
+pre:hover .copy{opacity:1}
+.copy:hover{background:var(--brand);color:#fff}
+.copy.ok{background:var(--ok);color:#fff}
+code{background:#f1ebe3;padding:2px 6px;border-radius:5px;font:13px/1.5 Consolas,monospace;color:var(--brand700)}
+.note{border-left:4px solid var(--brand);background:var(--brand50);padding:12px 16px;border-radius:0 9px 9px 0;margin:14px 0;font-size:14px}
+.note.ok{border-color:var(--ok);background:#eef8f3}
+.note.warn{border-color:var(--warn);background:#fdf6e9}
+.note.err{border-color:var(--err);background:#fdeeeb}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#f6f1ea;font-weight:600;font-size:13px;color:var(--ink700)}
+kbd{
+  background:#fff;border:1px solid var(--ink300);border-bottom-width:2px;
+  border-radius:5px;padding:1px 7px;font:12.5px Consolas,monospace;color:var(--ink700);
+}
+details{margin:10px 0;padding:10px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+summary{cursor:pointer;font-weight:600;color:var(--ink700)}
+.pill{display:inline-block;padding:1px 10px;border-radius:999px;font-size:12px;font-weight:600;vertical-align:1px}
+.pill.g{background:#eef8f3;color:var(--ok)}
+.pill.o{background:var(--brand50);color:var(--brand700)}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>CreatorBox 小程序 · 预览教程</h1>
+  <div class="sub">小白版 · 目标：在你的电脑上把小程序跑起来、每个页面都点一遍 · 全程不需要发布、不需要注册小程序账号 · 预计 10 分钟</div>
+</header>
+
+<div class="note ok">
+<b>开始前只需要确认两件事：</b><br>
+① 你的电脑是 Windows（本教程按 Windows 写）；<br>
+② 项目文件夹在 <code>D:\WorkBuddyFILE\CreatorBox</code>（如果不在，把下面出现的路径换成你的实际位置）。
+</div>
+
+<!-- ═══════════ 第 1 章 ═══════════ -->
+<h2>第 1 步 · 安装「微信开发者工具」</h2>
+<div class="card">
+<ul class="steps">
+  <li><b>下载</b>
+    打开官网下载页：<code>https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html</code>，
+    选 <b>Windows 64 稳定版</b>，双击下载的 exe 一路「下一步」装完。</li>
+  <li><b>打开并登录</b>
+    桌面双击「微信开发者工具」，弹出二维码 → <b>用你的微信扫码</b>登录。
+    <div class="note" style="margin-top:10px">扫码只是登录这个工具，<b>不代表注册小程序</b>，也不会发布任何东西。放心扫。</div></li>
+</ul>
+</div>
+
+<!-- ═══════════ 第 2 章 ═══════════ -->
+<h2>第 2 步 · 启动解析服务<span class="pill o">小程序的「发动机」</span></h2>
+<div class="card">
+<p>小程序界面只是「遥控器」，真正解析视频的是电脑上的一个服务。每次预览前要先把它打开。</p>
+<ul class="steps">
+  <li><b>打开项目文件夹</b>
+    资源管理器进入 <code>D:\WorkBuddyFILE\CreatorBox</code>。</li>
+  <li><b>右键运行启动脚本</b>
+    找到 <code>start-server.ps1</code> → <b>右键</b> → 「使用 PowerShell 运行」。
+    黑窗口出现 <code>Uvicorn running on http://127.0.0.1:8080</code> 就算成功，<b>这个窗口别关</b>（关了服务就停了）。</li>
+  <li><b>验证服务活着</b>
+    打开浏览器，访问下面这个地址，看到满屏绿色「正常」就是好了：</li>
+</ul>
+<pre>http://127.0.0.1:8080/admin</pre>
+<div class="note warn">如果双击/右键运行被系统拦（提示「禁止运行脚本」），复制这条命令到 PowerShell 里回车：</div>
+<pre>powershell -ExecutionPolicy Bypass -File "D:\WorkBuddyFILE\CreatorBox\start-server.ps1"</pre>
+</div>
+
+<!-- ═══════════ 第 3 章 ═══════════ -->
+<h2>第 3 步 · 导入小程序项目</h2>
+<div class="card">
+<ul class="steps">
+  <li><b>打开工具首页的「导入项目」</b>
+    微信开发者工具左侧选「小程序」→ 点 <b>导入</b>（不是「新建」！）。</li>
+  <li><b>选目录</b>
+    目录填（直接复制粘贴进去）：</li>
+</ul>
+<pre>D:\WorkBuddyFILE\CreatorBox\miniapp</pre>
+<ul class="steps">
+  <li><b>AppID 选「测试号」</b>
+    AppID 一栏点「测试号」链接（配置文件里已预置了游客模式，一般会自动带上）。
+    项目名称随便，点「确定」。</li>
+  <li><b>等待模拟器出现</b>
+    左边模拟器窗口出现「去掉水印 只要干净素材」的深色首页 → 成功！</li>
+</ul>
+<div class="note err"><b>如果模拟器一片白或报错</b>：点工具栏的「编译」按钮重新编译一次；还报错就把错误信息截图发我。</div>
+</div>
+
+<!-- ═══════════ 第 4 章 ═══════════ ═─ 认识界面 -->
+<h2>第 4 步 · 认识三个最有用的东西</h2>
+<div class="card">
+<table>
+  <tr><th style="width:220px">在哪</th><th>干什么用</th></tr>
+  <tr><td><b>模拟器</b>（左侧手机画面）</td><td>就是小程序本身，鼠标当手指点就行</td></tr>
+  <tr><td><b>编译模式下拉</b>（工具栏顶部，默认显示「首页」）</td><td>点开有 11 个页面直达入口：批量解析、工具箱、热门榜单、运营干货……选哪个直接跳哪个屏</td></tr>
+  <tr><td><b>编译按钮</b></td><td>改了代码或界面不对劲时，点一下重新加载</td></tr>
+</table>
+</div>
+
+<!-- ═══════════ 第 5 章 ═══════════ -->
+<h2>第 5 步 · 把功能都玩一遍</h2>
+<div class="card">
+<table>
+  <tr><th>功能</th><th>怎么玩</th><th>预期看到</th></tr>
+  <tr><td><b>解析视频</b> <span class="pill g">核心</span></td>
+      <td>首页粘贴这条测试链接 → 点「开始解析」：<pre>https://www.bilibili.com/video/BV1GJ411x7h7</pre></td>
+      <td>跳到结果页：标题、作者、清晰度选项、保存按钮</td></tr>
+  <tr><td><b>提取文案</b></td>
+      <td>首页同一条链接 → 点虚线的「提取文案」</td>
+      <td>提示「文案已复制到剪贴板」</td></tr>
+  <tr><td><b>批量解析</b></td>
+      <td>底部「工具箱」→「批量解析」→ 每行贴一条链接（免费一次 3 条）</td>
+      <td>逐条显示成功/失败，可勾选保存</td></tr>
+  <tr><td><b>热门榜单</b></td>
+      <td>底部「榜单」tab → 点任意条目</td>
+      <td>B 站热榜 20 条；点条目直接解析该视频</td></tr>
+  <tr><td><b>运营干货</b></td>
+      <td>底部「工具箱」→「运营干货」→ 随便点一篇</td>
+      <td>10 篇创作者干货，可搜索、可分类</td></tr>
+  <tr><td><b>工具箱占位卡</b></td>
+      <td>工具箱页点灰色的卡（音频提文案等 8 个）</td>
+      <td>只弹「规划中」，不跳转 —— 这是按合规故意做的</td></tr>
+  <tr><td><b>会员页</b></td>
+      <td>底部「会员」→ 点开通按钮</td>
+      <td>明确提示「开发中」（支付还没接，不会假装能买）</td></tr>
+</table>
+<div class="note">解析成功的前提是<b>第 2 步的服务窗口一直开着</b>。看到页面顶部出现黄色「服务未连接」，就是服务被关了 —— 回去重新跑 start-server.ps1。</div>
+</div>
+
+<!-- ═══════════ FAQ ═══════════ -->
+<h2>常见问题</h2>
+
+<details><summary>模拟器顶部一直显示黄色「服务未连接」？</summary>
+<p>90% 是解析服务没启动或被关了。回第 2 步重跑 <code>start-server.ps1</code>，浏览器先打开 <code>http://127.0.0.1:8080/admin</code> 确认能看到看板，再回工具点「编译」。</p></details>
+
+<details><summary>点解析一直转圈，最后提示超时？</summary>
+<p>第一次解析某平台要现抓数据，可能要几秒；批量 5 条以上可能 10 秒+。如果每次都超时，看服务黑窗口里有没有红色报错，截图发我。</p></details>
+
+<details><summary>启动服务时报「端口被占用」？</summary>
+<p>说明上次的服务还挂着。最简单：重启电脑；或复制这条命令清掉旧进程再启动：</p>
+<pre>Get-NetTCPConnection -LocalPort 8080 -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }</pre></details>
+
+<details><summary>我改了什么之后界面没变化？</summary>
+<p>点工具栏「编译」按钮强制重新加载。还是没变就「工具」菜单 → 「清除缓存」→「全部清除」，再编译。</p></details>
+
+<details><summary>想把小程序放到手机上看（真机预览）？</summary>
+<p>工具栏点「预览」生成二维码，手机微信扫码即可。<b>但有一个前置改动</b>：手机访问不到电脑的 127.0.0.1，需要把服务地址改成电脑的局域网 IP —— 这个改动告诉我一声，我帮你改好你再扫。</p></details>
+
+<div class="note ok" style="margin-top:30px">
+<b>预览顺利的话</b>，把发现的问题（页面截图 + 圈出位置）发我，我按批次改。
+本教程只覆盖「本地预览」；正式发布（提审）要等 ICP 备案下来，那是另一套流程。
+</div>
+
+</div>
+
+<script>
+// 给每个代码块挂一个复制按钮（鼠标悬停时显示）
+document.querySelectorAll('pre').forEach(function (pre) {
+  const btn = document.createElement('button');
+  btn.className = 'copy';
+  btn.textContent = '复制';
+  btn.addEventListener('click', async function () {
+    const text = pre.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      // 非安全上下文（file://）下 clipboard API 不可用 → 兜底
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(ta);
+    }
+    btn.textContent = '已复制';
+    btn.classList.add('ok');
+    setTimeout(function () {
+      btn.textContent = '复制';
+      btn.classList.remove('ok');
+    }, 1600);
+  });
+  pre.appendChild(btn);
+});
+</script>

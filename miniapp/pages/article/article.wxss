@@ -1,0 +1,116 @@
+/* ══ 运营干货 · 文章详情 ══ */
+
+.page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding-bottom: 60rpx;
+}
+
+/* ── 文头 ── */
+.head {
+  padding: 44rpx 32rpx 32rpx;
+  background: var(--bg-card);
+  box-shadow: 0 4rpx 18rpx rgba(61, 32, 0, 0.06);
+}
+.head-cat {
+  display: inline-block;
+  padding: 6rpx 18rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+}
+.head-title {
+  margin-top: 18rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--ink-900);
+  line-height: 1.4;
+}
+.head-summary {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: var(--ink-500);
+  line-height: 1.6;
+}
+.head-meta {
+  margin-top: 18rpx;
+  font-size: 20rpx;
+  color: var(--ink-300);
+}
+
+/* ── 正文 ── */
+.body { padding: 8rpx 32rpx 0; }
+.sec { margin-top: 36rpx; }
+.sec-h {
+  display: flex;
+  align-items: center;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--ink-900);
+  line-height: 1.4;
+}
+.sec-idx {
+  flex-shrink: 0;
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  margin-right: 16rpx;
+  text-align: center;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--brand-3), var(--brand));
+}
+.sec-p {
+  margin-top: 14rpx;
+  padding-left: 56rpx;
+  font-size: 27rpx;
+  color: var(--ink-700);
+  line-height: 1.7;
+}
+
+/* ── 合规提示 ── */
+.compliance {
+  margin: 48rpx 32rpx 0;
+  padding: 22rpx 26rpx;
+  border-radius: var(--r-small);
+  font-size: 21rpx;
+  color: var(--ink-300);
+  line-height: 1.6;
+  background: var(--bg-soft-2);
+}
+
+/* ── 返回专栏 ── */
+.back {
+  margin: 36rpx auto 0;
+  width: 320rpx;
+  padding: 18rpx 0;
+  text-align: center;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--brand-2), var(--brand));
+  box-shadow: 0 8rpx 20rpx rgba(232, 137, 12, 0.35);
+}
+
+/* ── 错误态 ── */
+.state {
+  margin-top: 200rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.state-t { font-size: 28rpx; color: var(--ink-500); }
+.state-btn {
+  margin-top: 32rpx;
+  padding: 16rpx 56rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--brand-2), var(--brand));
+}

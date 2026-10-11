@@ -1,0 +1,33 @@
+<!-- 皮肤装饰层：垫底的氛围图形，不响应任何操作 -->
+<view wx:if="{{theme === 'classic'}}" class="deco d-classic">
+  <view class="blob o1"></view>
+  <view class="blob o2"></view>
+  <view class="blob o3"></view>
+</view>
+
+<view wx:elif="{{theme === 'dark'}}" class="deco d-dark">
+  <view class="glow"></view>
+  <view class="star t1"></view>
+  <view class="star t2"></view>
+  <view class="star t3"></view>
+  <view class="star t4"></view>
+  <view class="star t5"></view>
+  <view class="star t6"></view>
+</view>
+
+<view wx:elif="{{theme === 'jade'}}" class="deco d-jade">
+  <view class="mist m1"></view>
+  <view class="mist m2"></view>
+  <view class="mist m3"></view>
+  <view class="dew d1"></view>
+  <view class="dew d2"></view>
+  <view class="dew d3"></view>
+</view>
+
+<view wx:elif="{{theme === 'sakura'}}" class="deco d-sakura">
+  <view class="petal w1"></view>
+  <view class="petal w2"></view>
+  <view class="petal w3"></view>
+  <view class="petal w4"></view>
+  <view class="petal w5"></view>
+</view>

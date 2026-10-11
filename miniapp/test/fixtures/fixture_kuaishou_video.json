@@ -1,0 +1,115 @@
+{
+ "success": true,
+ "platform": "kuaishou",
+ "method": "m_gifshow_ssr",
+ "type": "video",
+ "work_id": "3xy2kubupu94q74",
+ "photo_id": "5215450050295425229",
+ "title": "#颜值身材至上 #喜爱度激励计划",
+ "description": "#颜值身材至上 #喜爱度激励计划",
+ "author": "曦月",
+ "author_id": "NY250113",
+ "author_avatar": "https://p66.a.kwimgs.com/uhead/AB/2025/01/25/02/BMjAyNTAxMjUwMjA4NTlfODQ0NTcxOTA2XzFfaGQyMTFfOTg0_s.jpg",
+ "cover": "https://p23.a.yximgs.com/upic/2026/09/28/20/BMjAyNjA5MjgyMDQyMTFfODQ0NTcxOTA2XzIxMDQwMjgyOTI2OF8xXzM=_B076a1f571132332cfa89d88e56d96fcc.jpg?clientCacheKey=3xy2kubupu94q74.jpg&di=751cab86&bp=10000",
+ "duration_ms": 13100,
+ "publish_time_ms": 1790599347946,
+ "like_count": 1795,
+ "comment_count": 0,
+ "share_count": 0,
+ "view_count": 23469,
+ "width": 720,
+ "height": 1280,
+ "video_url": "https://txmov2.a.kwimgs.com/upic/2026/09/28/20/BMjAyNjA5MjgyMDQyMTFfODQ0NTcxOTA2XzIxMDQwMjgyOTI2OF8xXzM=_b_B371597bb3609da5ba714a49ef7924df2.mp4?clientCacheKey=3xy2kubupu94q74_b.mp4&tt=b&di=751cab86&bp=10000",
+ "options": [
+  {
+   "index": 0,
+   "gear": "主地址",
+   "cdn": "txmov2.a.kwimgs.com",
+   "no_watermark": true,
+   "url": "https://txmov2.a.kwimgs.com/upic/2026/09/28/20/BMjAyNjA5MjgyMDQyMTFfODQ0NTcxOTA2XzIxMDQwMjgyOTI2OF8xXzM=_b_B371597bb3609da5ba714a49ef7924df2.mp4?clientCacheKey=3xy2kubupu94q74_b.mp4&tt=b&di=751cab86&bp=10000"
+  },
+  {
+   "index": 1,
+   "gear": "主地址",
+   "cdn": "tymov2.a.kwimgs.com",
+   "no_watermark": true,
+   "url": "https://tymov2.a.kwimgs.com/upic/2026/09/28/20/BMjAyNjA5MjgyMDQyMTFfODQ0NTcxOTA2XzIxMDQwMjgyOTI2OF8xXzM=_b_B371597bb3609da5ba714a49ef7924df2.mp4?clientCacheKey=3xy2kubupu94q74_b.mp4&tt=b&di=751cab86&bp=10000"
+  },
+  {
+   "index": 2,
+   "gear": "720x1280rep1",
+   "width": 720,
+   "height": 1280,
+   "cdn": "k0u3by39ycy11zw240ex964xea00x71bxx11z.djvod.ndcimgs.com",
+   "no_watermark": true,
+   "url": "https://k0u3by39ycy11zw240ex964xea00x71bxx11z.djvod.ndcimgs.com/upic/2026/09/28/20/BMjAyNjA5MjgyMDQyMTFfODQ0NTcxOTA2XzIxMDQwMjgyOTI2OF8xXzM=_b_B371597bb3609da5ba714a49ef7924df2.mp4?tag=1-1791339384-unknown-0-oacknyum2f-a43522e2f4178f7e&provider=self&clientCacheKey=3xy2kubupu94q74_b.mp4&di=751cab86&bp=10000&x-ks-ptid=210402829268&kwai-not-alloc=self-cdn&kcdntag=p:Fujian;i:ChinaTelecom;ft:UNKNOWN;h:COLD;pn:kuaishouVideoProjection&ocid=6&tt=b&ss=vpm"
+  },
+  {
+   "index": 3,
+   "gear": "720x1280rep2",
+   "width": 720,
+   "height": 1280,
+   "cdn": "k0u3by39ycy11zw240ex964xea00x71bxx11z.djvod.ndcimgs.com",
+   "no_watermark": true,
+   "url": "https://k0u3by39ycy11zw240ex964xea00x71bxx11z.djvod.ndcimgs.com/bs2/photo-video-mz/5215450050295425229_08b9603e49ae95f7_3665_hd15.mp4?tag=1-1791339384-unknown-0-bfpxvjbynp-2fdb28f47bec8810&provider=self&clientCacheKey=3xy2kubupu94q74_72aaeaf5&di=751cab86&bp=10000&x-ks-ptid=210402829268&kwai-not-alloc=self-cdn&kcdntag=p:Fujian;i:ChinaTelecom;ft:UNKNOWN;h:COLD;pn:kuaishouVideoProjection&ocid=6&tt=hd15&ss=vpm"
+  }
+ ],
+ "options_count": 4,
+ "images": [],
+ "image_count": 0,
+ "cdn_hosts": [
+  "k0u3by39ycy11zw240ex964xea00x71bxx11z.djvod.ndcimgs.com",
+  "txmov2.a.kwimgs.com",
+  "tymov2.a.kwimgs.com"
+ ],
+ "need_proxy": true,
+ "anonymous": true,
+ "no_watermark": true,
+ "watermark_free": true,
+ "entry_note": "⭐ 走 m.gifshow.com 而非 www.kuaishou.com —— 主站 GraphQL 有反爬滑块（result=400002）",
+ "cache_ttl_hint": 1800,
+ "short_url": "https://www.kuaishou.com/f/X-3M7HpE9Kh3sh1V",
+ "meta": {
+  "title": "#颜值身材至上 #喜爱度激励计划",
+  "title_source": "ssr",
+  "description": "#颜值身材至上 #喜爱度激励计划",
+  "cover": "https://p23.a.yximgs.com/upic/2026/09/28/20/BMjAyNjA5MjgyMDQyMTFfODQ0NTcxOTA2XzIxMDQwMjgyOTI2OF8xXzM=_B076a1f571132332cfa89d88e56d96fcc.jpg?clientCacheKey=3xy2kubupu94q74.jpg&di=751cab86&bp=10000",
+  "author_name": "曦月",
+  "author_id": "NY250113",
+  "author_avatar": "https://p66.a.kwimgs.com/uhead/AB/2025/01/25/02/BMjAyNTAxMjUwMjA4NTlfODQ0NTcxOTA2XzFfaGQyMTFfOTg0_s.jpg",
+  "duration_s": 13.1,
+  "publish_ts": 1790599347,
+  "publish_time_text": "2026-09-28 20:42",
+  "publish_time": "2026-09-28 20:42",
+  "stats": {
+   "like": 1795,
+   "comment": 0,
+   "share": 0,
+   "view": 23469
+  },
+  "stats_text": {},
+  "tags": [],
+  "extra": {
+   "photo_id": "5215450050295425229",
+   "work_id": "3xy2kubupu94q74",
+   "kwai_id": "NY250113"
+  }
+ },
+ "duration_s": 13.1,
+ "publish_time": "2026-09-28 20:42",
+ "author_name": "曦月",
+ "stats": {
+  "like": 1795,
+  "comment": 0,
+  "share": 0,
+  "view": 23469
+ },
+ "tags": [],
+ "extra": {
+  "photo_id": "5215450050295425229",
+  "work_id": "3xy2kubupu94q74",
+  "kwai_id": "NY250113"
+ },
+ "meta_schema_version": 1,
+ "cached": false
+}

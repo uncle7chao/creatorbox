@@ -1,0 +1,213 @@
+/**
+ * 全局样式 · 皮肤变量
+ *
+ * 页面根节点绑定 class="page theme-{{theme}}"（utils/themes.js 驱动）。
+ * 默认变量挂在 page 上 = 经典橙金；.theme-dark / .theme-sakura 覆盖。
+ * 迁移工具：server/tools/migrate_skin.py（幂等，新增页面颜色后可重跑）。
+ */
+page {
+  /* 面：奶油纸感（不再是「白底 + 大促橙」） */
+  --bg-page: #F7F2EA;
+  --bg-card: #FFFFFF;
+  --bg-soft: #F1E9DC;
+  --bg-soft-2: #EFE6D6;
+  --track: #F0E8DB;
+  /* 墨色：暖褐黑 */
+  --ink-900: #241C15;
+  --ink-700: #4F443A;
+  --ink-500: #8B7D6E;
+  --ink-300: #B5A895;
+  --line: #E0D5C3;
+  /* 品牌：焦糖琥珀（低饱和、有质感，告别荧光橙） */
+  --brand: #D97A26;
+  --brand-2: #E89B3C;
+  --brand-3: #F2C879;
+  --brand-deep: #A85D18;
+  --brand-ink: #A9743F;
+  --brand-soft: #FBF1E2;
+  /* 深色 hero 渐变锚点：浓缩咖啡 */
+  --hero-a: #33210F;
+  --hero-b: #22160A;
+  --hero-a2: #4A2F14;
+  /* 形态：圆角（卡片/小件，皮肤可调「软硬」） */
+  --r-card: 24rpx;
+  --r-small: 16rpx;
+  /* 光：光晕/高光也必须跟随皮肤（旧橙残留是「配色改了但光没改」的根因） */
+  --glow: rgba(226, 150, 60, 0.16);
+  --glow-soft: rgba(226, 150, 60, 0.09);
+  /* 结构：浮起 + 投影（经典形态：纸面上的立体卡） */
+  --card-lift: -72rpx;
+  --card-shadow: 0 8rpx 32rpx rgba(61, 32, 0, 0.10);
+  --card-line: 0rpx;
+  --card-pad: 24rpx;
+  --sec-gap: 20rpx;
+}
+
+/* 页面根节点建立层叠上下文：装饰层(z:-1) 垫在内容下、背景色上 */
+.page {
+  position: relative;
+  z-index: 0;
+}
+
+/* ══ 图标形态层：皮肤不只是配色，图标语言也不同 ══
+   classic 实心渐变块（默认）· dark 描边透明块 · sakura 圆形柔和块
+   覆盖全站图标底座：工具箱 .ti / 首页工具行 .tool-i / 特权卡 .pk-tile /
+   广告卡圆钮 .adb-go / 轮播箭头钮 .s-go
+   （特异度 0,2,0 > 页面内 0,1,0，无需 !important） */
+
+/* 午夜暗黑：描边风（透明底 + 品牌描边 + 微光） */
+.theme-dark .ti,
+.theme-dark .tool-i,
+.theme-dark .pk-tile,
+.theme-dark .adb-go,
+.theme-dark .s-go,
+.theme-jade .ti,
+.theme-jade .tool-i,
+.theme-jade .pk-tile,
+.theme-jade .adb-go,
+.theme-jade .s-go {
+  background: transparent !important;
+  border: 2rpx solid var(--brand);
+  box-shadow: 0 0 0 1rpx rgba(216, 185, 142, 0.12);
+}
+/* 深色皮肤分区发丝线：浅色皮肤靠投影分层，深色靠线（结构差异） */
+.theme-dark .hero,
+.theme-jade .hero {
+  border-bottom: 1rpx solid var(--line);
+}
+.theme-dark .sec,
+.theme-jade .sec {
+  border-top: 1rpx solid var(--line);
+  padding-top: 4rpx;
+}
+
+/* 祖母绿：同线性语言，微光用翡翠调 */
+.theme-jade .ti,
+.theme-jade .tool-i,
+.theme-jade .pk-tile {
+  box-shadow: 0 0 0 1rpx rgba(47, 158, 123, 0.16);
+}
+/* 占位卡的虚线描边保持语义（虚线=未上线），但描边提亮 */
+.theme-dark .ti-ghost {
+  border: 2rpx dashed var(--ink-300);
+  background: transparent;
+}
+
+/* 樱花粉：圆形柔和块（更圆润，弱投影） */
+.theme-sakura .ti,
+.theme-sakura .tool-i,
+.theme-sakura .pk-tile {
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-3), var(--brand)) !important;
+  box-shadow: 0 4rpx 12rpx rgba(232, 93, 143, 0.22);
+}
+/* 占位卡：樱花下也保持置灰虚线（不粉化） */
+.theme-sakura .ti-ghost {
+  background: var(--bg-soft) !important;
+  border: 2rpx dashed var(--line);
+  border-radius: var(--r-card);
+}
+/* 箭头圆钮：樱花下用实心品牌色（浅底白箭头看不见） */
+.theme-sakura .adb-go,
+.theme-sakura .s-go {
+  background: var(--brand);
+}
+
+/* ── 曜石黑金：真黑面 + 香槟金（不是橙！质感从「施工牌」变「轻奢」）── */
+.theme-dark {
+  --bg-page: #0E0E11;
+  --bg-card: #17171C;
+  --bg-soft: #1F1F26;
+  --bg-soft-2: #1F1F26;
+  --track: #26262E;
+  --ink-900: #EFE9DF;
+  --ink-700: #C6BFB4;
+  --ink-500: #948D84;
+  --ink-300: #6A645D;
+  --line: #2C2C34;
+  --brand: #D8B98E;
+  --brand-2: #C9A46B;
+  --brand-3: #F0DDBE;
+  --brand-deep: #E3C79B;
+  --brand-ink: #D8B98E;
+  --brand-soft: #2A231A;
+  --hero-a: #17140F;
+  --hero-b: #0C0A08;
+  --hero-a2: #241C12;
+  --r-card: 20rpx;
+  --r-small: 14rpx;
+  --glow: rgba(216, 185, 142, 0.15);
+  --glow-soft: rgba(216, 185, 142, 0.08);
+  /* 结构：扁平 + 细描边（不浮起、无投影 —— 黑金的高级感靠这个） */
+  --card-lift: 24rpx;
+  --card-shadow: none;
+  --card-line: 1rpx;
+  --card-pad: 32rpx;
+  --sec-gap: 16rpx;
+}
+
+/* ── 墨绿祖母绿：深墨绿面 + 翡翠（去棕去橙，靠色相做质感）── */
+.theme-jade {
+  --bg-page: #0C1210;
+  --bg-card: #121A17;
+  --bg-soft: #16201C;
+  --bg-soft-2: #16201C;
+  --track: #1D2A25;
+  --ink-900: #E8F0EC;
+  --ink-700: #B9C9C2;
+  --ink-500: #8A9A93;
+  --ink-300: #64736C;
+  --line: #23302B;
+  --brand: #2E9E7B;
+  --brand-2: #38B48C;
+  --brand-3: #6FD3B2;
+  --brand-deep: #1F6F57;
+  --brand-ink: #6FD3B2;
+  --brand-soft: #14261F;
+  --hero-a: #0A1512;
+  --hero-b: #06100D;
+  --hero-a2: #12241E;
+  --r-card: 22rpx;
+  --r-small: 15rpx;
+  --glow: rgba(111, 211, 178, 0.15);
+  --glow-soft: rgba(111, 211, 178, 0.08);
+  /* 结构：深浮起 + 玻璃描边（绿绒面的纵深） */
+  --card-lift: -48rpx;
+  --card-shadow: 0 14rpx 36rpx rgba(0, 0, 0, 0.45);
+  --card-line: 1rpx;
+  --card-pad: 30rpx;
+  --sec-gap: 22rpx;
+}
+
+/* ── 樱花粉：品牌换色、面加粉调、形态更软糯 ── */
+.theme-sakura {
+  --bg-page: #FBF6F8;
+  --bg-card: #FFFFFF;
+  --bg-soft: #F7ECF1;
+  --bg-soft-2: #F7ECF1;
+  --track: #F5E4EB;
+  --ink-900: #2B1B22;
+  --ink-700: #5A414B;
+  --ink-500: #9A8290;
+  --ink-300: #C4AAB5;
+  --line: #EBD9E1;
+  --brand: #E85D8F;
+  --brand-2: #F0789F;
+  --brand-3: #FFA8C4;
+  --brand-deep: #C2497A;
+  --brand-ink: #C2497A;
+  --brand-soft: #FDEEF4;
+  --hero-a: #5C2440;
+  --hero-b: #43182E;
+  --hero-a2: #6E2C4C;
+  --r-card: 30rpx;
+  --r-small: 22rpx;
+  --glow: rgba(232, 93, 143, 0.15);
+  --glow-soft: rgba(232, 93, 143, 0.08);
+  /* 结构：轻悬浮 + 无投影 + 最松（轻盈手感） */
+  --card-lift: -48rpx;
+  --card-shadow: none;
+  --card-line: 1rpx;
+  --card-pad: 34rpx;
+  --sec-gap: 26rpx;
+}

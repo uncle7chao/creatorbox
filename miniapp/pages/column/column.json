@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "运营干货",
+  "navigationBarBackgroundColor": "#3D2000",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#FAF7F4",
+  "usingComponents": {
+    "theme-deco": "/components/theme-deco/theme-deco"
+  }
+}

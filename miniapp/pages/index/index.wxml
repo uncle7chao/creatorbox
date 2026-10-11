@@ -1,0 +1,203 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+  <!-- ══ 深色区 ══ -->
+  <view class="hero">
+    <!-- 顶部轮播（2026-10-08）：后台「首页顶部轮播」位配了图 → 1~3 张自宣传轮播；
+         没配图 → 保持默认标题 hero，不留空 -->
+    <swiper wx:if="{{heroImages.length}}" class="hero-swiper"
+            autoplay circular interval="4000" duration="500"
+            indicator-dots indicator-color="rgba(255,255,255,.4)"
+            indicator-active-color="#ffffff">
+      <swiper-item wx:for="{{heroImages}}" wx:key="*this">
+        <image class="hero-swiper-img" src="{{item}}" mode="aspectFill"
+               bindtap="onHeroTap" hover-class="none" />
+      </swiper-item>
+    </swiper>
+    <block wx:else>
+      <view class="hero-top">
+        <text class="hero-title">素材解析</text>
+        <navigator class="hero-vip" url="/pages/member/member" hover-class="none">
+          9.9 开通会员
+        </navigator>
+      </view>
+
+      <!-- 主文案：转化核心，20px -->
+      <view class="hero-main">去掉水印 只要干净素材</view>
+      <!-- 副文案 -->
+      <view class="hero-sub">{{platforms[0]}} · {{platforms[1]}} · {{platforms[2]}} · {{platformCount || 8}} 个平台</view>
+    </block>
+  </view>
+
+  <!-- ══ 悬浮白卡（上提 2.25rem）══ -->
+  <view class="card">
+    <!-- 服务未连提示：诚实告知，不静默失败 -->
+    <view wx:if="{{!serviceOk}}" class="svc-warn">
+      <text class="svc-warn-dot"></text>
+      <text>{{serviceMsg}}，请在电脑上启动解析服务</text>
+    </view>
+
+    <view class="ta-wrap">
+      <textarea
+        class="ta"
+        value="{{input}}"
+        placeholder="粘贴视频链接或分享内容&#10;例：https://v.douyin.com/xxxxx/"
+        placeholder-class="ta-ph"
+        maxlength="-1"
+        auto-height
+        bindinput="onInput"
+        disabled="{{parsing}}"
+      />
+      <view wx:if="{{input}}" class="ta-clear" bindtap="clearInput">
+        <view class="ta-clear-x"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{errorMsg}}" class="err">{{errorMsg}}</view>
+
+    <!-- ⭐ 轻量免责行（抄轻抖）：与独立合规页并存 -->
+    <view class="compline">
+      <text>内容来自公开平台，请确认已获授权</text>
+      <navigator url="/pages/compliance/compliance" hover-class="none" class="compline-link">使用规范</navigator>
+    </view>
+
+    <!-- 主按钮：占满 -->
+    <button
+      class="btn-primary"
+      bindtap="onParse"
+      disabled="{{parsing || !input}}"
+      loading="{{parsing}}"
+    >
+      {{parsing ? '解析中' : '开始解析'}}
+    </button>
+
+    <!-- 次要按钮：粘贴 + 提取文案（双按钮，抄轻抖）
+         ⚠️ 用 view 不用 button：button 默认样式会干扰文字垂直居中 -->
+    <view class="sub-row">
+      <view class="sub-btn btn-ghost {{parsing ? 'sub-disabled' : ''}}"
+            bindtap="pasteFromClipboard" hover-class="btn-hover">从剪贴板粘贴</view>
+      <view class="sub-btn btn-dashed {{(parsing || !input) ? 'sub-disabled' : ''}}"
+            bindtap="onExtractCopy" hover-class="btn-hover">提取文案</view>
+    </view>
+  </view>
+
+  <!-- ══ 额度三指标（常驻可见 = 成本闸门）══ -->
+  <view class="quota">
+    <view class="q-item q-hero">
+      <view class="q-num">不限</view>
+      <view class="q-label">解析次数</view>
+    </view>
+    <view class="q-sep"></view>
+    <view class="q-item">
+      <view class="q-num">
+        <text class="{{savedToday >= saveQuota ? 'q-num-warn' : ''}}">{{savedToday}}/{{saveQuota}}</text>
+      </view>
+      <view class="q-label">今日保存</view>
+    </view>
+    <view class="q-sep"></view>
+    <view class="q-item">
+      <view class="q-num">{{freeMaxHeight}}P</view>
+      <view class="q-label">免费画质</view>
+    </view>
+  </view>
+
+  <!-- ══ 琥珀提示条：今日保存已用完 ══ -->
+  <view wx:if="{{savedToday >= saveQuota}}" class="amber">
+    今日保存已用完 · 解析不限次数，可继续使用
+  </view>
+
+  <!-- ══ 工具行（抄竞品图标矩阵：批量/素材/热榜/工具箱）══ -->
+  <view class="tools">
+    <view class="tool" bindtap="navBatch">
+      <view class="tool-i ti-orange">
+        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/batch-classic.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/batch-dark.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/batch-jade.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/batch-sakura.png" mode="aspectFit" />
+      </view>
+      <view class="tool-l">批量解析<text class="new">新</text></view>
+    </view>
+    <view class="tool" bindtap="navLibrary">
+      <view class="tool-i ti-green">
+        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/library-classic.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/library-dark.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/library-jade.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/library-sakura.png" mode="aspectFit" />
+      </view>
+      <view class="tool-l">我的素材</view>
+    </view>
+    <view class="tool" bindtap="navRanking">
+      <view class="tool-i ti-red">
+        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/rank-classic.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/rank-dark.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/rank-jade.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/rank-sakura.png" mode="aspectFit" />
+      </view>
+      <view class="tool-l">热榜</view>
+    </view>
+    <view class="tool" bindtap="navToolbox">
+      <view class="tool-i ti-ghost">
+        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/more-classic.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/more-dark.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/more-jade.png" mode="aspectFit" />
+        <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/more-sakura.png" mode="aspectFit" />
+        <view class="more-badge">8+</view>
+      </view>
+      <view class="tool-l tool-l-ghost">更多工具</view>
+    </view>
+  </view>
+
+  <!-- ══ 广告位 · 统一组件（mode=code→流量主<ad> / mode=image→自定义多图轮播；
+       后台没传图时回落到 INDEX_BANNERS 兜底帧，2026-10-08）══ -->
+  <ad-banner placement="index_banner" fallback="{{banners}}" />
+
+  <!-- ══ 平台标签区（4 列栅格，不再碎成三排）══ -->
+  <view class="plat">
+    <view class="plat-head">
+      <text class="plat-title">支持平台</text>
+      <view class="plat-badge">
+        <view class="plat-badge-dot"></view>
+        <text>全部已验证</text>
+      </view>
+    </view>
+    <view class="plat-tags">
+      <view wx:for="{{platformTags}}" wx:key="key" class="tag">
+        <image class="tag-ic" src="/images/plat/{{item.key}}-{{theme}}.png" mode="aspectFit" />
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 免责灰字（规范 3.13 硬要求，必须存在但不能显眼）══ -->
+  <view class="disclaimer" bindtap="navCompliance">
+    本工具仅获取平台公开内容，用户需自行确保使用权限与合规性
+  </view>
+
+  <!-- ══ 解析过程动画卡（抄竞品骨架，去广告/假进度；纯 CSS 无 emoji）══ -->
+  <view wx:if="{{parsing}}" class="pmask">
+    <view class="pcard">
+      <view class="p-spark s1"></view>
+      <view class="p-spark s2"></view>
+      <view class="p-title">正在解析链接…</view>
+      <view class="p-bar">
+        <view class="p-fill" style="width: {{progress}}%"></view>
+      </view>
+      <view class="p-meta">
+        <text class="p-step">{{stepText}}</text>
+        <text class="p-pct">{{progress}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ══ 弹窗广告（服务端控制频次；大关闭按钮 + 暂不需要逃生口）══ -->
+  <view wx:if="{{showPopup}}" class="apm">
+    <view class="apcard">
+      <view class="ap-close" bindtap="onPopupClose">×</view>
+      <image wx:if="{{popupImage}}" class="ap-img" src="{{popupImage}}" mode="aspectFill" />
+      <view class="ap-tag">会员推广</view>
+      <view class="ap-t">9.9/月 解锁全部权益</view>
+      <view class="ap-s">批量 10 条/次 · 高清画质 · 云端素材库同步</view>
+      <view class="ap-btn" bindtap="onPopupGo">立即开通</view>
+      <view class="ap-skip" bindtap="onPopupClose">暂不需要</view>
+    </view>
+  </view>
+</view>

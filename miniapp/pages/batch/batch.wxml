@@ -1,0 +1,67 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+  <!-- 输入卡 -->
+  <view class="in-card">
+    <view class="in-head">
+      <text class="in-t">粘贴链接（每行一条）</text>
+      <text class="in-n">{{count}} 条</text>
+    </view>
+    <textarea class="ta" value="{{input}}" bindinput="onInput"
+      placeholder="https://v.douyin.com/xxxxx/&#10;https://www.bilibili.com/video/BV…"
+      placeholder-class="ta-ph" maxlength="-1" auto-height disabled="{{parsing}}" />
+    <view class="in-tip">
+      <text>免费单次 {{batchLimit}} 条</text>
+      <text>会员<em>不限条数</em>（上限 10）</text>
+    </view>
+    <view wx:if="{{errMsg}}" class="err">{{errMsg}}</view>
+    <button class="bp" bindtap="onParse" disabled="{{parsing || !count}}">
+      {{parsing ? '解析中…' : '开始批量解析'}}
+    </button>
+  </view>
+
+  <!-- 结果 -->
+  <view wx:if="{{results.length}}" class="rs">
+    <view class="rs-head">
+      <text class="rs-t">解析结果</text>
+      <text class="rs-m">成功 {{okCount}} · 失败 {{failCount}} · 已选 <em>{{selectedCount}}</em></text>
+    </view>
+    <view class="rs-all" bindtap="onSelectAll">全选成功项</view>
+
+    <view wx:for="{{results}}" wx:key="idx"
+      class="ri {{item.ok ? '' : 'ri-err'}}"
+      data-idx="{{item.idx}}" bindtap="onToggle">
+      <view class="sel {{selected[item.idx] ? 'on' : ''}} {{item.ok ? '' : 'dis'}}"></view>
+      <view class="icov" style="{{item.cover ? 'background-image:url(' + item.cover + ')' : ''}}"></view>
+      <view class="ib">
+        <view class="it {{item.ok ? '' : 'it-err'}}">{{item.title}}</view>
+        <view class="im">{{item.meta}}</view>
+        <view wx:if="{{item.titleHint}}" class="ih">{{item.titleHint}}</view>
+      </view>
+      <view class="st {{item.ok ? 'st-ok' : 'st-err'}}">{{item.ok ? '成功' : '失败'}}</view>
+    </view>
+  </view>
+
+  <!-- 保存 -->
+  <view wx:if="{{okCount > 0}}" class="sv-wrap">
+    <button class="bp" bindtap="onSave" disabled="{{parsing || !selectedCount}}">
+      保存已选 {{selectedCount}} 条
+    </button>
+    <view class="sv-tip">每个内容占 1 次保存额度 · 视频存推荐档 · 图集存全部</view>
+  </view>
+
+  <view class="disc">批量结果与单条解析使用同一服务与缓存</view>
+
+<!-- ══ 批量解析进度卡（首页同款：条纹流动 + 诚实封顶）══ -->
+<view wx:if="{{parsing && bProgress > 0}}" class="bpmask">
+  <view class="bpcard">
+    <view class="bp-title">正在批量解析 {{bTotal}} 条</view>
+    <view class="bp-bar">
+      <view class="bp-fill" style="width: {{bProgress}}%"></view>
+    </view>
+    <view class="bp-meta">
+      <text class="bp-step">{{bProgress < 92 ? '逐条解析中，请稍候' : '即将完成'}}</text>
+      <text class="bp-pct">{{bProgress}}%</text>
+    </view>
+  </view>
+</view>
+</view>

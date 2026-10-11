@@ -1,0 +1,54 @@
+<!-- 广告位 · Banner v3（模式二选一：流量主 <ad> XOR 自定义多图轮播；开关由服务端控制） -->
+
+<!-- 1. 广告代码模式：微信流量主真实广告（mode=code，unit_id 由后台按位配置） -->
+<ad wx:if="{{on && mode === 'wxad'}}" unit-id="{{unitId}}" binderror="onAdError" />
+
+<!-- 2. 自定义图片模式：≥2 张自动轮播（mode=image，张数由后台决定） -->
+<swiper wx:elif="{{on && mode === 'image' && images.length > 1}}"
+        class="adb-swiper" autoplay circular interval="4000" duration="500"
+        indicator-dots indicator-color="rgba(255,255,255,.45)"
+        indicator-active-color="#ffffff">
+  <swiper-item wx:for="{{images}}" wx:key="*this">
+    <view class="adb-img-wrap" bindtap="onTap" hover-class="adb-hover">
+      <image class="adb-img" src="{{item}}" mode="aspectFill" />
+      <view class="adb-tag">推广</view>
+    </view>
+  </swiper-item>
+</swiper>
+
+<!-- 2b. 自定义图片模式：仅 1 张 → 静图 -->
+<view wx:elif="{{on && mode === 'image'}}" class="adb-img-wrap" bindtap="onTap" hover-class="adb-hover">
+  <image class="adb-img" src="{{images[0]}}" mode="aspectFill" />
+  <view class="adb-tag">推广</view>
+</view>
+
+<!-- 3. 兜底卡轮播（后台没传图时，首页默认推广帧；≥2 张轮播） -->
+<swiper wx:elif="{{on && mode === 'cards' && fallback.length > 1}}"
+        class="adb-swiper" autoplay circular interval="4000" duration="500"
+        indicator-dots indicator-color="rgba(255,255,255,.45)"
+        indicator-active-color="#ffffff">
+  <swiper-item wx:for="{{fallback}}" wx:key="key">
+    <view class="slide {{item.cls}}"
+          data-path="{{item.path}}" data-tab="{{item.tab}}"
+          bindtap="onTapFallback" hover-class="adb-hover">
+      <view class="s-tag">{{item.tag}}</view>
+      <view class="s-body">
+        <view class="s-t">{{item.title}}</view>
+        <view class="s-sub">{{item.sub}}</view>
+      </view>
+      <view class="s-go"><view class="s-arrow"></view></view>
+    </view>
+  </swiper-item>
+</swiper>
+
+<!-- 4. 自营推广卡（默认填充） -->
+<view wx:elif="{{on}}" class="adb" bindtap="goMember" hover-class="adb-hover">
+  <view class="adb-tag">推广</view>
+  <view class="adb-body">
+    <view class="adb-t">9.9 开通会员</view>
+    <view class="adb-s">批量解析 10 条/次 · 高清画质 · 云端素材库</view>
+  </view>
+  <view class="adb-go">
+    <view class="adb-arrow"></view>
+  </view>
+</view>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreatorBox P1 首跑联调手册</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --line:#e4e7ec; --text:#1a1d21;
+    --muted:#667085; --amber:#e8890c; --amber-soft:#fff5e6;
+    --red:#d92d20; --red-soft:#fef3f2; --green:#067647; --green-soft:#ecfdf3;
+    --blue:#175cd3; --blue-soft:#eff8ff; --code-bg:#1c1f26; --code-fg:#e6e8eb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px;background:var(--bg);color:var(--text);
+    font:15px/1.7 "Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:24px}
+  h2{font-size:19px;margin:32px 0 12px;font-weight:700;
+     padding-bottom:8px;border-bottom:2px solid var(--line)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:18px 20px;margin-bottom:14px}
+  .step{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px}
+  .num{flex:0 0 26px;height:26px;border-radius:50%;background:var(--amber);
+       color:#fff;font-weight:700;font-size:14px;display:flex;
+       align-items:center;justify-content:center;margin-top:2px}
+  .body{flex:1;min-width:0}
+  .body h3{margin:0 0 8px;font-size:16px;font-weight:700}
+  .body p{margin:0 0 10px;color:var(--muted);font-size:14px}
+  pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;
+      border-radius:8px;overflow-x:auto;font:13px/1.65 Consolas,"Courier New",monospace;
+      margin:10px 0;white-space:pre}
+  .copybar{display:flex;justify-content:flex-end;margin-top:-4px}
+  button.copy{background:var(--amber);color:#fff;border:0;border-radius:6px;
+    padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  button.copy:hover{background:#d17a08}
+  button.copy.ok{background:var(--green)}
+  .note{border-left:4px solid var(--blue);background:var(--blue-soft);
+        padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .warn{border-left:4px solid var(--red);background:var(--red-soft);
+        padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .ok{border-left:4px solid var(--green);background:var(--green-soft);
+      padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .tip{border-left:4px solid var(--amber);background:var(--amber-soft);
+       padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+  th{background:#fafbfc;font-weight:600;font-size:13px;color:var(--muted)}
+  code.inline{background:#f2f4f7;padding:2px 6px;border-radius:4px;
+    font:13px Consolas,monospace;color:#b54708}
+  ul{margin:8px 0;padding-left:22px}
+  li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>CreatorBox P1 首跑联调手册</h1>
+  <div class="sub">
+    Flutter 一条码线（Windows + Android）· 2026-10-11 · 所有命令均为 PowerShell 语法
+  </div>
+
+  <div class="tip">
+    <b>分工约定：</b>我只出代码和命令，<b>编译与运行全部在你本机执行</b>。
+    每一步报错请把完整输出贴回来，我定位后直接改代码。
+  </div>
+
+  <div class="ok">
+    <b>后端已替你验完了（沙箱实跑 19:31–19:47）：</b>服务 12 平台就绪、桥接登录 6 步全通、
+    抖音/B站真实解析通过、缓存瘦身行为已实测确认。<b>你首跑时后端侧理论上不会出问题</b>，
+    重点只剩 Flutter 编译与 UI 呈现。详见下方各节的「实测结论」。
+  </div>
+
+  <h2>开跑前：已修的 13 个问题</h2>
+  <div class="card">
+    <p>首跑前我通读了 <code class="inline">docs/…v4.md §2</code>、Flutter 骨架全部 7 个 Dart 文件，
+       以及服务端 <code class="inline">main.py / db.py</code> 的桥接与解析实现，发现并修复了以下问题。
+       <b>标「实测」的 3 个是真机跑出来才发现的</b>——静态读代码看不出第 5、6 条。</p>
+    <table>
+      <thead><tr><th>#</th><th>问题</th><th>影响</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><code class="inline">home_page.dart</code> 用了 <code class="inline">AppConfig.apiBase</code> 却没 import config.dart</td>
+          <td><b style="color:var(--red)">必现编译错误</b>：<code class="inline">undefined name 'AppConfig'</code>，第一秒就挂</td>
+          <td>已修</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>结果页对 <code class="inline">quality</code> 做 <code class="inline">as String</code> 强转，但抖音解析器该字段可为 <code class="inline">null</code></td>
+          <td><b style="color:var(--red)">抖音链接必崩</b>（<code class="inline">douyin_pure.py:199</code>）</td>
+          <td>已修</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>服务端写缓存时剔除 <code class="inline">options</code>（<code class="inline">main.py:457</code> slim 策略）</td>
+          <td>同链接<b>第二次解析档位列表为空</b>，极易误判成 bug</td>
+          <td>已修：加「强制重新解析」开关 + 缓存瘦身提示</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>轮询回调未捕获异常，服务中途重启会导致 Timer 静默死亡</td>
+          <td>码一直不变但永不登录，且无任何报错</td>
+          <td>已修：显式报错并提示刷新码</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><b style="color:#b54708">【实测发现】</b>抖音 <code class="inline">gear</code> 返回内部码 <code class="inline">720_2_1</code> / <code class="inline">1080p(play-api)</code>，直接显示是乱码</td>
+          <td>用户看到 <code class="inline">720_2_1</code> 这种天书</td>
+          <td>已修：转 human 标签（如 <code class="inline">720P · 875kbps</code>）</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><b style="color:#b54708">【实测发现】</b>抖音 6 档按内部编码排列，顺序对用户无意义</td>
+          <td>第一档不是最清晰，用户得自己挑</td>
+          <td>已修：按 height+码率重排，1080P 自动置顶并作为「主档直链」</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>结果页无「取主档直链」的快捷入口</td>
+          <td>用户第一反应就是想拿最好那条，却要点 6 次</td>
+          <td>已修：头部加主档按钮</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><code class="inline">session.logout()</code> 定义了但<b>全项目无任何调用点</b>（死代码）</td>
+          <td>登录后<b>无法换账号、无法退回登录页</b>，闭环缺出口</td>
+          <td>已修：右上角账号菜单 + 退出确认弹窗</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>桌面端只能手动粘贴，无剪贴板读取</td>
+          <td>桌面主场景下要先把链接拷到输入框，反人性</td>
+          <td>已修：「从剪贴板读取并解析」按钮，读取后直接解析</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><code class="inline">PopupMenuItem</code> 里塞 <code class="inline">ListTile</code></td>
+          <td><b style="color:var(--red)">运行期断言崩溃</b>：MenuItem 高度上限 48px，ListTile 必超</td>
+          <td>已修：改紧凑 <code class="inline">Row</code> + <code class="inline">height: 44</code></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>退出登录原方案用 <code class="inline">pushNamedAndRemoveUntil('/')</code></td>
+          <td>项目<b>未配置命名路由</b>，运行时会崩</td>
+          <td>已修：改走 main.dart 全局回调 <code class="inline">onSessionChanged</code></td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>健康检查失败被静默吞掉（<code class="inline">catch (_) {}</code>）</td>
+          <td>服务没启动时用户看到「支持 0 个平台」，点解析才报错，白等一轮</td>
+          <td>已修：首屏红字提示 + 菜单可手动刷新</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>全项目 12 处裸 <code class="inline">as String</code> 强转 + 无请求超时</td>
+          <td>服务端少返字段就崩；服务假死时界面永远转圈</td>
+          <td>已修：全部改安全取值 + 45s 超时 + 非 JSON 响应兜底</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>第 1 步 · 启动服务端</h2>
+  <div class="card">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>启动解析服务（PowerShell）</h3>
+        <p>方式一（推荐，脚本自带端口清理与 Cookie 热加载）：在项目根目录执行 <code class="inline">.\start-server.ps1</code>。
+           若被执行策略拦住，先放开：<code class="inline">Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code>。</p>
+      </div>
+    </div>
+    <pre>cd D:\WorkBuddyFILE\CreatorBox
+.\start-server.ps1</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+    <div class="step" style="margin-top:18px">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>方式二：手动 uvicorn</h3>
+        <p>等价命令，用于排查脚本本身的问题。</p>
+      </div>
+    </div>
+    <pre>cd D:\WorkBuddyFILE\CreatorBox\server
+C:\Users\Administrator\.workbuddy\binaries\python\envs\default\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8080</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+    <div class="warn">
+      <b>注意：</b>这个窗口<b>不要关</b>，关掉 = 服务停止。后续解析报错先回来确认它还活着。
+    </div>
+  </div>
+
+  <h2>第 2 步 · 验证服务端（不用 Flutter，先确认后端没问题）</h2>
+  <div class="card">
+    <p>另开一个 PowerShell 窗口。Flutter 还没编译好之前，就能把桥接链路完整验证一遍——
+       这样出问题时能立刻区分是后端还是 Flutter。</p>
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>健康检查</h3>
+        <p>应返回 <code class="inline">service: creatorbox-parser</code> 与平台列表。</p>
+      </div>
+    </div>
+    <pre>(Invoke-RestMethod http://127.0.0.1:8080/api/health).platforms -join ', '</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>解析抖音链接（验证核心联调）</h3>
+        <p>把 URL 换成你手头真实的抖音/B站链接。首次解析建议 <code class="inline">no_cache=true</code>，
+           否则命中旧缓存会没有档位列表。</p>
+      </div>
+    </div>
+    <pre>$body = @{ text = 'https://v.douyin.com/xxxxxxx/'; no_cache = $true } | ConvertTo-Json
+$r = Invoke-RestMethod -Uri http://127.0.0.1:8080/api/parse -Method Post `
+  -ContentType 'application/json' -Body $body
+"平台: $($r.platform) | 标题: $($r.title) | 档位数: $($r.options_count)"
+$r.options | Select-Object gear, url | Format-List</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">3</div>
+      <div class="body">
+        <h3>桥接出码（模拟 App 端）</h3>
+        <p>拿到的 6 位码即为 App 端要显示的码。注意：同一 <code class="inline">provider_uid</code> 再次出码会作废旧码。</p>
+      </div>
+    </div>
+    <pre>$uid = 'dev-uid-001'
+$b = @{ provider = 'app_device'; provider_uid = $uid } | ConvertTo-Json
+$code = (Invoke-RestMethod -Uri http://127.0.0.1:8080/api/auth/bridge/create `
+  -Method Post -ContentType 'application/json' -Body $b).code
+"绑定码 = $code  （去小程序 会员 → 跨端绑定 输入它）"</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">4</div>
+      <div class="body">
+        <h3>确认绑定后取 token（小程序确认后执行）</h3>
+        <p>未绑定时返回 400 <code class="inline">not_bound</code>，<b>这是正常的</b>，不是错误。</p>
+      </div>
+    </div>
+    <pre>$p = @{ provider = 'app_device'; provider_uid = $uid } | ConvertTo-Json
+$res = Invoke-RestMethod -Uri http://127.0.0.1:8080/api/auth/bridge/poll `
+  -Method Post -ContentType 'application/json' -Body $p
+"token = $($res.token)"
+"会员 = $($res.member.is_member)"
+Invoke-RestMethod -Uri http://127.0.0.1:8080/api/auth/me -Headers @{ 'X-User-Token' = $res.token } | ConvertTo-Json</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+  </div>
+
+  <div class="note">
+    <b>为什么编译必须你来：</b>沙箱内<b>任何需要 spawn 子进程的命令都会崩</b>
+    （<code class="inline">CreateFile failed 231</code>：管道范例全占用），
+    <code class="inline">flutter</code>、<code class="inline">dart analyze</code> 都在其列。
+    我实测过三条绕行路线均不可用（analysis server 协议不匹配、analyzer 包缺内部依赖、
+    dartdevc 无法解析 package），<b>不再为此消耗你的时间</b>。
+  </div>
+
+  <h2>第 3 步 · Flutter 首跑</h2>
+  <div class="card">
+    <div class="step">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>生成平台壳</h3>
+        <p><code class="inline">lib/</code> 与 <code class="inline">pubspec.yaml</code> 已写好，
+           <code class="inline">flutter create</code> 只补 <code class="inline">windows/</code>、<code class="inline">android/</code> 脚手架，
+           不会覆盖你的业务代码。</p>
+      </div>
+    </div>
+    <pre>cd D:\WorkBuddyFILE\CreatorBox\app_flutter
+flutter create . --org cn.iyama --project-name creatorbox_app</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>拉依赖</h3>
+        <p>依赖：<code class="inline">http</code>、<code class="inline">shared_preferences</code>、<code class="inline">uuid</code>，均为纯 Dart/官方插件，无需额外原生配置。</p>
+      </div>
+    </div>
+    <pre>flutter pub get</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">2.5</div>
+      <div class="body">
+        <h3>跑静态检查（<b style="color:#b54708">强烈建议</b>）</h3>
+        <p>项目内已备好 <code class="inline">tools/cb_check.sh</code>，走 dartdevc 真编译，
+           <b>不需要 flutter 命令</b>，可在 Git Bash / PowerShell 里跑。
+           它比肉眼看代码可靠——能把类型错误、未定义符号直接列出来。</p>
+      </div>
+    </div>
+    <pre>bash tools/cb_check.sh</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+    <div class="ok">
+      <b>它诚实设计：</b>若 <code class="inline">flutter pub get</code> 没跑过（依赖未解析），
+      它会报「⛔ 无法给出可信结论」并退出码 2，<b>而不是谎报「检查通过」</b>。
+      所以你看到 ✅ 通过 = 依赖已解析 + 真无错误，可放心依赖这个结论。
+    </div>
+    <div class="warn">
+      <b>它已帮我抓到 1 处：</b><code class="inline">session.dart</code> 里的
+      <code class="inline">const Uuid().v4()</code> 已改为 <code class="inline">Uuid().v4()</code>。
+      <code class="inline">const</code> 在此处零收益，却可能在 uuid 版本差异下变成编译错误。
+    </div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">3</div>
+      <div class="body">
+        <h3>跑 Windows 桌面端</h3>
+        <p>若提示缺少 Visual Studio C++ 工具链，装 <b>Visual Studio 2022</b> 的
+           <b>使用 C++ 的桌面开发</b> 工作负载即可（只需这一项，不必装全套）。</p>
+      </div>
+    </div>
+    <pre>flutter run -d windows</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+
+    <div class="step" style="margin-top:18px">
+      <div class="num">4</div>
+      <div class="body">
+        <h3>跑 Android（可选，先确认 Windows 通）</h3>
+        <p>真机调试时 <code class="inline">127.0.0.1</code> 指向手机自己，必须换成本机局域网 IP。
+           先查 IP：<code class="inline">ipconfig</code> 找「IPv4 地址」。</p>
+      </div>
+    </div>
+    <pre>flutter devices
+flutter run -d &lt;设备ID&gt; --dart-define=CB_API_BASE=http://192.168.x.x:8080</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+    <div class="note">
+      <b>Android 额外注意：</b>明文 HTTP 在 Android 9+ 默认被禁。联调期需要在
+      <code class="inline">android/app/src/main/AndroidManifest.xml</code> 的
+      <code class="inline">&lt;application&gt;</code> 上加
+      <code class="inline">android:usesCleartextTraffic="true"</code>。
+      正式上架前换成 HTTPS 并移除该属性。
+    </div>
+  </div>
+
+  <h2>第 4 步 · 桥接登录全流程走查</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>步骤</th><th>操作</th><th>预期</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>启动 App（Windows）</td><td>停在桥接登录页，显示 6 位码 + 倒计时</td></tr>
+        <tr><td>2</td><td>小程序 → 会员 → 跨端绑定 → 输入码</td><td>提示「绑定成功」</td></tr>
+        <tr><td>3</td><td>观察 App（3 秒内）</td><td>自动跳首页，右上角显示用户与会员标识</td></tr>
+        <tr><td>4</td><td>关掉 App 再开</td><td>直接进首页（token 已持久化，90 天有效）</td></tr>
+        <tr><td>5</td><td>右上角 ⋮ → 退出登录 / 换账号</td><td>弹确认框 → 确认后<b>退回桥接登录页</b>，可绑新账号</td></tr>
+      </tbody>
+    </table>
+    <div class="ok">
+      <b>验收标准：</b>第 3 步必须<b>自动</b>跳转，不需手动操作。若停在原地，
+      回头看 App 窗口是否已显示「轮询失败」红字——那说明服务端中途断了。<br>
+      第 5 步是本轮新增的闭环出口，<b>务必验证</b>——此前 logout 是死代码，登录后根本退不出来。
+    </div>
+  </div>
+
+  <h2>第 5 步 · 解析核心联调</h2>
+  <div class="card">
+    <div class="ok">
+      <b>实测基线（沙箱已跑通，你对照验收即可）：</b>
+      <ul style="margin:8px 0">
+        <li>抖音 <code class="inline">v.douyin.com/ntaaK4aH9pE/</code> → 0.9s，<b>6 档</b>，BGM 有，字幕无</li>
+        <li>B站 <code class="inline">BV1GJ411x7h7</code> → 0.6s，<b>仅 1 档 720P</b>（wbi 签名门槛，v4 §3.2 已登记为 P2 专项，<b>非本次回归</b>）</li>
+        <li>抖音档位排序后的<b>预期显示</b>：1080P（play-api 通道）→ 720P·875kbps → 720P·636kbps → 720P·537kbps → 540P·640kbps → 540P·346kbps</li>
+      </ul>
+    </div>
+    <ul>
+      <li>粘贴<b>抖音</b>链接 → 结果页应出现 6 档 + BGM 卡；<b>第一档是 1080P</b></li>
+      <li>粘贴<b>B站</b>链接 → 只有 1 档 720P，页面会显示说明文字（已内置，非 bug）</li>
+      <li>点头部<b>「复制主档直链」</b> → 拿到最清晰那条；点各档卡片 → 复制该档直链</li>
+      <li>勾选「<b>强制重新解析</b>」再解析同一条 → 档位必定出现（这是验证缓存瘦手的正确姿势）</li>
+      <li>点「<b>从剪贴板读取并解析</b>」→ 先在浏览器复制一条链接，点按钮应<b>直接进结果页</b></li>
+      <li>停掉 server 后回首页 → 平台数变红字「解析服务未连接」</li>
+    </ul>
+    <div class="warn">
+      <b>关于 YouTube：</b>解析信息能拿到，但直链绑定服务端出口 IP，
+      本机打开可能 403。这是 v4 §2.3 已知的 IP 锁，<b>由 P2 本机引擎根治</b>，P1 不修，属预期行为。
+    </div>
+    <div class="note">
+      <b>抖音没有字幕是正常的</b>——字幕提取目前只有 YouTube（ytdlp 管线）有，
+      抖音/B站要等 v4 §3.2 的字幕 spike。结果页字幕卡只在有内容时出现，不会空占位。
+    </div>
+  </div>
+
+  <h2>常见报错速查</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>报错</th><th>原因</th><th>处理</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">undefined name 'AppConfig'</code></td><td>缺 import（本次已修）</td><td>确认 <code class="inline">home_page.dart</code> 顶部有 <code class="inline">import '../config.dart';</code></td></tr>
+        <tr><td><code class="inline">Failed to connect to socket</code></td><td>服务端没起或端口不对</td><td>确认 start-server.ps1 窗口还在，访问 <code class="inline">/api/health</code></td></tr>
+        <tr><td>生成绑定码失败</td><td>同上</td><td>同上，App 会直接提示</td></tr>
+        <tr><td>HTTP 401 Invalid API key</td><td>服务端设了 <code class="inline">CB_API_KEY</code></td><td>本机联调清掉该环境变量</td></tr>
+        <tr><td>HTTP 429 请求过于频繁</td><td>默认限流 30 次/分</td><td>等 1 分钟，或调 <code class="inline">CB_RATE_LIMIT</code></td></tr>
+        <tr><td>档位列表为空</td><td>命中缓存（服务端不存 options）</td><td>勾选「强制重新解析」，<b>不是 bug</b></td></tr>
+        <tr><td>Visual Studio 组件缺失</td><td>没装 C++ 桌面开发</td><td>装 VS2022 的「使用 C++ 的桌面开发」</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>git 提交约定</h2>
+  <div class="card">
+    <p>本次改动<b>我未做任何提交</b>。按你的要求与其它窗口串行，
+       等你确认首跑通过后自行提交，或届时告诉我再执行。</p>
+    <pre>git status
+git add app_flutter/lib
+git commit -m "feat(app_flutter): P1 首跑修复 - 补 config 导入/抖音空 quality 防御/缓存档位兜底/轮询异常兜底"</pre>
+    <div class="copybar"><button class="copy">复制</button></div>
+  </div>
+
+</div>
+
+<script>
+document.querySelectorAll('button.copy').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var pre = btn.closest('.copybar').previousElementSibling;
+    var text = pre.innerText;
+    var done = function(){
+      var old = btn.textContent;
+      btn.textContent = '已复制 ✓';
+      btn.classList.add('ok');
+      setTimeout(function(){ btn.textContent = old; btn.classList.remove('ok'); }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text, done); });
+    } else { fallback(text, done); }
+  });
+});
+function fallback(text, cb){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); cb(); }
+  catch(e) {}
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading">
+    <view class="spin"></view>
+    <text class="loading-t">正在解析…</text>
+  </view>
+
+  <!-- 结果已丢失 -->
+  <view wx:elif="{{errMsg}}" class="lost">
+    <view class="lost-t">{{errMsg}}</view>
+    <button class="btn-primary" bindtap="navHome">回到首页</button>
+  </view>
+
+  <block wx:else>
+    <!-- ══ 顶部信息栏 ══ -->
+    <view class="topbar">
+      <view class="topbar-l">
+        <view class="topbar-title">{{title}}</view>
+        <view class="topbar-sub">{{authorLine}}</view>
+      </view>
+      <!-- 绿底「无水印」徽章：兑现承诺的信任点（冷绿，不跟主色走暖） -->
+      <view wx:if="{{r.noWatermark}}" class="wm-badge">无水印</view>
+    </view>
+
+    <!-- 标题来源提示：诚实性设计，不能让用户误以为那就是原文标题 -->
+    <view wx:if="{{titleHint}}" class="hint">{{titleHint}}</view>
+
+    <!-- 平台特有提示（截断 / 需合并 / 需中转） -->
+    <view wx:for="{{notices}}" wx:key="*this" class="notice">{{item}}</view>
+
+    <!-- ══ 预览区 ══ -->
+    <!-- 图集：网格 -->
+    <view wx:if="{{isImage}}" class="grid">
+      <view wx:for="{{images}}" wx:key="url" class="cell"
+            data-src="{{item.url}}" bindtap="onPreviewImage">
+        <image src="{{item.url}}" mode="aspectFill" class="cell-img" lazy-load />
+      </view>
+    </view>
+
+    <!-- 视频：16:9 -->
+    <view wx:elif="{{isVideo}}" class="video-wrap">
+      <image wx:if="{{cover}}" src="{{cover}}" mode="aspectFill" class="video-cover"
+             bindtap="onVideoPlay" binderror="onCoverErr" />
+      <view wx:else class="video-nocover" bindtap="onVideoPlay"></view>
+      <view class="video-play" bindtap="onVideoPlay"></view>
+    </view>
+
+    <!-- ══ BGM 卡（2026-10-11：抖音先行，试听 + 复制链接）══ -->
+    <view wx:if="{{bgmShow}}" class="bgm">
+      <view class="bgm-play {{bgmPlaying ? 'bgm-on' : ''}}" bindtap="onBgmToggle">
+        <view class="bgm-tri"></view>
+      </view>
+      <view class="bgm-body">
+        <view class="bgm-t">{{bgmLine}}</view>
+        <view class="bgm-s">原视频背景音乐 · 试听后复制链接提取</view>
+      </view>
+      <view class="bgm-copy" bindtap="onCopyBgm">复制链接</view>
+    </view>
+
+    <!-- ══ 互动数据（只显示有值的）══ -->
+    <view wx:if="{{statsLine.length}}" class="stats">
+      <view wx:for="{{statsLine}}" wx:key="label" class="stat">
+        <text class="stat-n">{{item.text}}</text>
+        <text class="stat-l">{{item.label}}</text>
+      </view>
+    </view>
+
+    <!-- ══ 视频文案卡（双产出第二路径，P0）══ -->
+    <view wx:if="{{copyText}}" class="copycard">
+      <view class="cc-head">
+        <text class="cc-t">视频文案</text>
+        <view class="cc-btn" bindtap="onCopyCopy">复制全文</view>
+      </view>
+      <view class="cc-body">{{copyText}}</view>
+      <view wx:if="{{copyTags.length}}" class="cc-tags">
+        <text wx:for="{{copyTags}}" wx:key="*this" class="cc-tag">#{{item}}</text>
+      </view>
+    </view>
+
+    <!-- ══ 字幕文案卡（2026-10-11：YouTube/FB ytdlp 引擎下发）══ -->
+    <view wx:if="{{subtitleText}}" class="copycard subcard">
+      <view class="cc-head">
+        <text class="cc-t">字幕文案</text>
+        <view class="cc-btns">
+          <view class="cc-btn" bindtap="onCopySubtitle">复制</view>
+          <view class="cc-btn cc-btn-main" bindtap="onSaveSubtitle">存文案库</view>
+        </view>
+      </view>
+      <view class="cc-body cc-sub">{{subtitlePreview}}</view>
+      <view class="cc-submeta">
+        {{subtitleLang || '字幕'}}{{subtitleAuto ? ' · 自动生成' : ''}} · 共 {{subtitleLen}} 字 · 存入文案库可直接跑违禁词检测
+      </view>
+    </view>
+
+    <!-- 话题标签（文案卡展示 tags 时这里不再重复） -->
+    <view wx:if="{{tags.length && !copyText}}" class="tags">
+      <text wx:for="{{tags}}" wx:key="*this" class="tag">#{{item}}#</text>
+    </view>
+
+    <!-- ══ 清晰度选择 ══ -->
+    <block wx:if="{{isVideo && options.length > 1}}">
+      <view class="sec-title">
+        清晰度
+        <text class="sec-note">免登录上限 {{freeMaxHeight}}P</text>
+      </view>
+      <view class="quals">
+        <view wx:for="{{options}}" wx:key="idx"
+              class="qual {{item.locked ? 'qual-locked' : ''}} {{selectedIdx === item.idx ? 'qual-on' : ''}}"
+              data-idx="{{item.idx}}" bindtap="onPickOption">
+          {{item.label}}
+        </view>
+      </view>
+    </block>
+
+    <!-- ══ 两个虚线按钮（视觉权重相同 = 用户自由选）══ -->
+    <view class="ad-acts">
+      <view class="ad-btn" bindtap="onWatchAdUnlockHighest">
+        看广告解锁高清
+      </view>
+      <view class="ad-btn" bindtap="onWatchAdExtraSave">
+        看广告再存 1 次
+      </view>
+    </view>
+
+    <!-- ══ 保存主按钮（放在广告位上方：先满足需求）══ -->
+    <button class="btn-primary save-btn" bindtap="onSave" disabled="{{saving || loading}}">
+      {{saving ? '保存中…' : (isImage ? '保存' + images.length + '张到相册' : '保存到相册')}}
+    </button>
+
+    <!-- 今日剩余次数提示 -->
+    <view class="quota-tip">
+      今日还可保存 {{quotaLeft}}/{{quotaTotal}} 次
+      <text wx:if="{{quotaLeft <= 0}}" class="quota-tip-go" bindtap="navMember">开通会员不限次</text>
+    </view>
+
+    <!-- ═══ Banner 广告位（后台可开关；自营推广卡打底）═══ -->
+    <ad-banner placement="result_banner" />
+
+    <!-- 免责灰字（规范 3.13） -->
+    <view class="disclaimer">
+      内容来自公开平台，版权归原作者所有，请勿用于商业用途
+    </view>
+  </block>
+</view>

@@ -1,0 +1,20 @@
+<!-- Banner 轮播（服务端广告开关控制；slides 由页面传入） -->
+<swiper wx:if="{{on && banners.length}}" class="bs"
+        autoplay circular interval="4000" duration="500"
+        indicator-dots indicator-color="rgba(255,255,255,.45)"
+        indicator-active-color="#ffffff">
+  <swiper-item wx:for="{{banners}}" wx:key="key">
+    <view class="slide {{item.cls}}"
+          data-path="{{item.path}}" data-tab="{{item.tab}}"
+          bindtap="onBannerTap" hover-class="slide-hover">
+      <view class="s-tag">{{item.tag}}</view>
+      <view class="s-body">
+        <view class="s-t">{{item.title}}</view>
+        <view class="s-sub">{{item.sub}}</view>
+      </view>
+      <view class="s-go">
+        <view class="s-arrow"></view>
+      </view>
+    </view>
+  </swiper-item>
+</swiper>

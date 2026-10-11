@@ -1,0 +1,66 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/result/result",
+    "pages/batch/batch",
+    "pages/toolbox/toolbox",
+    "pages/ranking/ranking",
+    "pages/column/column",
+    "pages/article/article",
+    "pages/library/library",
+    "pages/member/member",
+    "pages/compliance/compliance",
+    "pages/teleprompter/teleprompter",
+    "pages/pdftool/pdftool",
+    "pages/points/points",
+    "pages/banned/banned"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#3D2000",
+    "navigationBarTitleText": "素材解析",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FAF7F4",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#7D736B",
+    "selectedColor": "#E8890C",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "解析",
+        "iconPath": "images/tabbar/parse.png",
+        "selectedIconPath": "images/tabbar/parse_on.png"
+      },
+      {
+        "pagePath": "pages/toolbox/toolbox",
+        "text": "工具箱",
+        "iconPath": "images/tabbar/tools.png",
+        "selectedIconPath": "images/tabbar/tools_on.png"
+      },
+      {
+        "pagePath": "pages/ranking/ranking",
+        "text": "热榜",
+        "iconPath": "images/tabbar/rank.png",
+        "selectedIconPath": "images/tabbar/rank_on.png"
+      },
+      {
+        "pagePath": "pages/library/library",
+        "text": "素材库",
+        "iconPath": "images/tabbar/library.png",
+        "selectedIconPath": "images/tabbar/library_on.png"
+      },
+      {
+        "pagePath": "pages/member/member",
+        "text": "我的",
+        "iconPath": "images/tabbar/member.png",
+        "selectedIconPath": "images/tabbar/member_on.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

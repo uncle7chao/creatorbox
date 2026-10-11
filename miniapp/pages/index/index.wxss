@@ -1,0 +1,626 @@
+@import "../../styles/skin-icons.wxss";
+/**
+ * 屏 1 · 解析首页样式
+ *
+ * 配色用橙金 v2（docs/配色规范-橙金v2.md），三条硬规则：
+ *   ① 主CTA 文字必须深色 var(--ink-900)（白字在橙金上只有 2.6:1，不达 AA）
+ *   ② 语义色不跟主色走暖（无水印徽章用冷绿 #1B8A5A）
+ *   ③ 深色区用深棕→橙渐变，不用纯橙（大面积刺眼且文字对比度不足）
+ */
+
+.page {
+  /* ⚠️ 底色必须声明在 .page（带 theme-* 类）而不是 page：
+     CSS 变量向下继承，父级 page 取不到子级 .theme-jade 上定义的变量，
+     那样无论切哪套皮肤页面底色都固定是 classic（曾导致深色皮肤下
+     「深绿 hero + 浅米底 + 深绿卡」三段割裂）。*/
+  background: var(--bg-page);
+  min-height: 100vh;
+  padding-bottom: 48rpx;
+}
+
+/* ══ 深色区 ══ */
+.hero {
+  /* 同色系三段渐变：原来末段直接跳 brand-deep（亮色），
+     在深色皮肤下形成明显撞色断层。改为向 hero-a 收拢，
+     由卡片（亮面）承担「亮」的职责 —— 一次只用一个亮面。 */
+  background: linear-gradient(165deg,
+    var(--hero-a) 0%,
+    var(--hero-a2) 60%,
+    var(--hero-b) 100%);
+  padding: 36rpx 40rpx 72rpx;
+  position: relative;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hero-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+}
+
+.hero-vip {
+  /* 会员入口：深色 hero 上的浅金药丸（读brand-3，随皮肤走） */
+  font-size: 24rpx;
+  font-weight: 500;
+  color: var(--brand-3);
+  border: 1rpx solid var(--glow);
+  border-radius: 999rpx;
+  padding: 8rpx 22rpx;
+  background: var(--glow-soft);
+}
+
+/* 主文案：20px = 40rpx，转化核心 */
+.hero-main {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-top: 28rpx;
+  line-height: 1.35;
+}
+
+.hero-sub {
+  font-size: 24rpx;
+  color: var(--brand-3);
+  margin-top: 14rpx;
+}
+
+/* ══ 悬浮白卡：上提 2.25rem ≈ 36rpx ══ */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  margin: var(--card-lift) 24rpx 0;
+  padding: 28rpx var(--card-pad) 24rpx;
+  box-shadow: var(--card-shadow);
+  border: var(--card-line) solid var(--line);
+}
+/* 额度卡：与输入卡同族，靠间距分开而不是靠另一种底色 */
+.quota {
+  border-radius: var(--r-card);
+  padding: 26rpx 0;
+}
+.q-sep {
+  height: 44rpx;
+  width: 1rpx;
+  background: var(--line);
+}
+
+/* 服务未连提示 */
+.svc-warn {
+  display: flex;
+  align-items: center;
+  background: var(--brand-soft);
+  border-radius: 10rpx;
+  padding: 14rpx 18rpx;
+  margin-bottom: 20rpx;
+  font-size: 24rpx;
+  color: var(--brand-deep);
+}
+
+.svc-warn-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--brand-deep);
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+/* ── 输入框 ── */
+.ta-wrap {
+  position: relative;
+}
+
+.ta {
+  width: 100%;
+  min-height: 168rpx;
+  background: var(--bg-soft);
+  border-radius: 14rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: var(--ink-900);
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.ta-ph {
+  color: var(--ink-300);
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+/* 清空按钮：纯 CSS 图形，不用 emoji */
+.ta-clear {
+  position: absolute;
+  right: 16rpx;
+  top: 16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: var(--ink-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ta-clear-x {
+  width: 18rpx;
+  height: 3rpx;
+  background: var(--bg-card);
+  transform: rotate(45deg);
+}
+
+/* 错误提示 */
+.err {
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: #C0392B;
+  line-height: 1.5;
+}
+
+/* ── 按钮 ── */
+/* 规则①：主 CTA 文字必须深色 */
+.btn-primary {
+  margin-top: 24rpx;
+  background: var(--brand);
+  color: var(--ink-900);
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 14rpx;
+  height: 92rpx;
+  line-height: 92rpx;
+  border: 0;
+}
+
+.btn-primary[disabled] {
+  /* 禁用态必须读变量：硬编码亮黄会在深色皮肤下变成刺眼色块 */
+  background: var(--bg-soft);
+  color: var(--ink-300);
+}
+
+/* ══ 解析进度动画卡 ══ */
+.pmask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(31, 26, 21, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.pcard {
+  position: relative;
+  width: 560rpx;
+  padding: 48rpx 44rpx 40rpx;
+  border-radius: var(--r-card);
+  background: var(--bg-card);
+  box-shadow: 0 16rpx 48rpx rgba(61, 32, 0, 0.25);
+}
+.p-title {
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+.p-bar {
+  margin-top: 32rpx;
+  height: 22rpx;
+  border-radius: 999rpx;
+  background: var(--track);
+  overflow: hidden;
+}
+.p-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: repeating-linear-gradient(
+    45deg, var(--brand-3) 0 14rpx, var(--brand) 14rpx 28rpx);
+  background-size: 200% 100%;
+  animation: pstripe 0.9s linear infinite;
+  transition: width 0.15s linear;
+}
+@keyframes pstripe { to { background-position: 56rpx 0; } }
+.p-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  font-size: 24rpx;
+}
+.p-step { color: var(--ink-500); }
+.p-pct { color: var(--brand); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* 星光装饰（clip-path 五角星，双星交错闪烁） */
+.p-spark {
+  position: absolute;
+  width: 22rpx;
+  height: 22rpx;
+  background: var(--brand-3);
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: ptwinkle 1.3s ease-in-out infinite;
+}
+.p-spark.s1 { top: -12rpx; left: 44rpx; }
+.p-spark.s2 {
+  top: 10rpx; right: 56rpx;
+  width: 15rpx; height: 15rpx;
+  animation-delay: 0.45s;
+}
+@keyframes ptwinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.7) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+}
+
+/* ══ 弹窗广告（大关闭按钮 + 暂不需要逃生口；频次由服务端控制）══ */
+.apm {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(31, 26, 21, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.apcard {
+  position: relative;
+  width: 580rpx;
+  padding: 52rpx 44rpx 36rpx;
+  border-radius: var(--r-card);
+  background: var(--bg-card);
+  box-shadow: 0 16rpx 48rpx rgba(61, 32, 0, 0.3);
+  text-align: center;
+}
+.ap-close {
+  position: absolute;
+  top: 14rpx;
+  right: 14rpx;
+  width: 56rpx;
+  height: 56rpx;
+  line-height: 50rpx;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 36rpx;
+  color: var(--ink-500);
+  background: var(--bg-soft-2);
+}
+.ap-tag {
+  display: inline-block;
+  padding: 4rpx 18rpx;
+  border-radius: 8rpx;
+  font-size: 20rpx;
+  color: var(--brand-ink);
+  background: var(--brand-soft);
+}
+.ap-t {
+  margin-top: 16rpx;
+  font-size: 38rpx;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+.ap-s {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: var(--ink-500);
+  line-height: 1.6;
+}
+.ap-btn {
+  margin: 32rpx auto 0;
+  width: 420rpx;
+  padding: 20rpx 0;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--brand-2), var(--brand));
+  box-shadow: 0 8rpx 20rpx rgba(232, 137, 12, 0.35);
+}
+.ap-skip {
+  margin-top: 18rpx;
+  font-size: 24rpx;
+  color: var(--ink-300);
+  padding: 8rpx;
+}
+
+/* ══ 额度三指标 ══ */
+.quota {
+  margin: var(--sec-gap) 24rpx;
+  background: var(--bg-card);
+  border-radius: var(--r-small);
+  padding: 28rpx 0;
+  display: flex;
+  align-items: center;
+}
+
+.q-item {
+  flex: 1;
+  text-align: center;
+}
+
+.q-sep {
+  width: 1rpx;
+  height: 56rpx;
+  background: var(--line);
+}
+
+/* 「不限」字号最大 —— v3 定位：解析不限次 */
+.q-num {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--ink-900);
+  line-height: 1.2;
+}
+
+.q-hero .q-num {
+  font-size: 44rpx;
+  color: var(--brand-3);
+}
+
+.q-num-warn {
+  color: var(--brand-deep);
+}
+
+.q-label {
+  font-size: 22rpx;
+  color: var(--ink-500);
+  margin-top: 8rpx;
+}
+
+/* ══ 琥珀提示条 ══ */
+.amber {
+  margin: 0 24rpx 24rpx;
+  background: var(--brand-soft);
+  border-radius: 12rpx;
+  padding: 18rpx 20rpx;
+  font-size: 24rpx;
+  color: var(--brand-deep);
+  line-height: 1.5;
+}
+
+/* ══ 轻量免责行（抄轻抖：与独立合规页并存）══ */
+.compline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12rpx;
+  font-size: 20rpx;
+  color: var(--ink-300);
+}
+
+.compline-link {
+  color: var(--brand-deep);
+  text-decoration: underline;
+}
+
+/* ══ 双按钮行（主按钮下方）══ */
+/* ══ 次按钮（view 结构 + flex 居中，不用原生 button）══ */
+.sub-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.sub-btn {
+  flex: 1;
+  height: 76rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  border-radius: 14rpx;
+  box-sizing: border-box;
+}
+
+.btn-ghost {
+  background: var(--bg-card);
+  color: var(--ink-700);
+  border: 1rpx solid var(--line);
+}
+
+.btn-dashed {
+  background: var(--bg-card);
+  color: var(--brand);
+  border: 2rpx dashed var(--brand);
+}
+
+.btn-hover { opacity: 0.75; }
+
+.sub-disabled { opacity: 0.5; }
+
+/* 提取文案：虚线琥珀（与「看广告解锁」同一视觉语言：虚线=可选路径） */
+.btn-dashed {
+  background: var(--bg-card);
+  color: var(--brand);
+  border: 2rpx dashed var(--brand);
+}
+
+/* ══ 工具行（抄竞品彩色图标矩阵）══ */
+.tools {
+  margin: var(--sec-gap) 24rpx 0;
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  padding: 24rpx 8rpx;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20rpx 0;
+}
+
+.tool {
+  text-align: center;
+  position: relative;
+}
+
+.tool-i {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: var(--r-card);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.ti-orange {
+  background: linear-gradient(135deg, var(--brand-3), var(--brand));
+  box-shadow: 0 8rpx 20rpx rgba(232, 121, 12, .30);
+}
+
+.ti-green {
+  background: linear-gradient(135deg, #3DCA8C, #0F9E66);
+  box-shadow: 0 8rpx 20rpx rgba(15, 158, 102, .28);
+}
+
+.ti-red {
+  background: linear-gradient(135deg, #FF7B6B, #E24B4A);
+  box-shadow: 0 8rpx 20rpx rgba(226, 75, 74, .28);
+}
+
+.ti-ghost {
+  background: var(--bg-soft);
+  border: 2rpx dashed var(--ink-300);
+  box-shadow: none;
+}
+
+/* 首页工具图标：代码生成 PNG（81px 透明底白图形，按皮肤切换） */
+.hic {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+/* 图形 */
+
+
+
+
+.more-badge {
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  font-size: 16rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #C8CDD6, #9BA3B0);
+  border-radius: 999rpx;
+  padding: 0 8rpx;
+}
+
+.tool-l {
+  font-size: 22rpx;
+  color: var(--ink-700);
+  margin-top: 10rpx;
+}
+
+.tool-l .new {
+  font-size: 16rpx;
+  background: #E24B4A;
+  color: #fff;
+  border-radius: 6rpx;
+  padding: 0 6rpx;
+  vertical-align: 4rpx;
+  margin-left: 4rpx;
+}
+
+.tool-l-ghost {
+  color: var(--ink-300);
+}
+
+/* ══ 平台标签区 ══
+ * 4 列栅格卡：原来 flex-wrap 会把 8 个平台碎成 3 排，
+ * 且徽章硬编码浅绿底（深色皮肤下是刺眼白斑）。
+ */
+.plat {
+  margin: var(--sec-gap) 24rpx 0;
+  padding: 22rpx;
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  border: var(--card-line) solid var(--line);
+  box-shadow: var(--card-shadow);
+}
+
+.plat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+}
+
+.plat-title {
+  font-size: 24rpx;
+  color: var(--ink-500);
+}
+
+.plat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.tag {
+  flex: 1 1 calc(25% - 9rpx);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 22rpx;
+  color: var(--ink-700);
+  background: var(--bg-soft);
+  border-radius: 8rpx;
+  padding: 12rpx 0;
+}
+
+.tag-ic {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+}
+
+/* 「全部已验证」徽章 —— 语义色用冷绿，但底/字必须读变量（深色皮肤下用软底） */
+.plat-badge {
+  display: flex;
+  align-items: center;
+  background: var(--brand-soft);
+  border-radius: 8rpx;
+  padding: 6rpx 14rpx;
+  font-size: 20rpx;
+  color: var(--brand-ink);
+  flex-shrink: 0;
+}
+
+.plat-badge-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: var(--brand-ink);
+  margin-right: 8rpx;
+}
+
+/* ══ 免责灰字（规范 3.13）══ */
+.disclaimer {
+  margin: 32rpx 48rpx 0;
+  font-size: 22rpx;
+  /* 11px ≈ 22rpx */
+  color: var(--ink-300);
+  line-height: 1.7;
+  text-align: center;
+}
+/* 弹窗广告自定义图（后台上传） */
+.ap-img {
+  width: calc(100% + 48rpx);
+  height: 220rpx;
+  display: block;
+  margin: -28rpx -24rpx 20rpx;
+}
+
+/* ══ 顶部自宣传轮播（2026-10-08：后台「首页顶部轮播」位配置后替换默认标题区）══ */
+.hero-swiper {
+  height: 260rpx;
+  border-radius: var(--r-card, 20rpx);
+  overflow: hidden;
+}
+.hero-swiper-img {
+  width: 100%;
+  height: 260rpx;
+  display: block;
+}

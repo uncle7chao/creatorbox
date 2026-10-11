@@ -1,0 +1,46 @@
+<!-- ══ 运营干货 · 专栏列表（M1.5，静态页方案）══ -->
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+
+  <!-- 渐变页头 -->
+  <view class="hero">
+    <view class="deco deco-1"></view>
+    <view class="deco deco-2"></view>
+    <view class="hero-title">运营干货</view>
+    <view class="hero-sub">创作者手册 · 每篇 3 分钟读完</view>
+
+    <!-- 搜索 -->
+    <view class="search">
+      <view class="s-icon"></view>
+      <input class="s-input" placeholder="搜标题或关键词" placeholder-class="s-ph"
+             value="{{kw}}" bindinput="onSearchInput" confirm-type="search" />
+      <view wx:if="{{kw}}" class="s-clear" bindtap="onClearKw">×</view>
+    </view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <scroll-view scroll-x class="cats" enhanced show-scrollbar="{{false}}">
+    <view wx:for="{{categories}}" wx:key="*this"
+          class="cat {{item === activeCat ? 'cat-active' : ''}}"
+          data-cat="{{item}}" bindtap="onCatTap">{{item}}</view>
+  </scroll-view>
+
+  <!-- 文章列表 -->
+  <view class="list">
+    <view wx:for="{{shown}}" wx:key="id" class="card"
+          data-id="{{item.id}}" bindtap="onArticleTap">
+      <view class="card-cat">{{item.cat}}</view>
+      <view class="card-title">{{item.title}}</view>
+      <view class="card-summary">{{item.summary}}</view>
+      <view class="card-meta">{{item.minutes}} 分钟 · {{item.sections.length}} 个要点</view>
+    </view>
+
+    <!-- 搜索/筛选无结果 -->
+    <view wx:if="{{!shown.length}}" class="empty">
+      <view class="empty-t">没有匹配的内容</view>
+      <view class="empty-s">换个关键词，或切回「全部」分类</view>
+    </view>
+  </view>
+
+  <view class="foot">共 {{total}} 篇 · 内容持续更新</view>
+</view>

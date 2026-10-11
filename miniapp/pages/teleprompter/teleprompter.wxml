@@ -1,0 +1,92 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+
+  <!-- ══ 播放态：全屏滚动台词 ══ -->
+  <block wx:if="{{playing}}">
+    <scroll-view
+      id="tpScroll"
+      class="tp-screen"
+      scroll-y
+      scroll-top="{{scrollTop}}"
+      scroll-with-animation
+      bindtap="toggle">
+      <view id="tpBody" class="tp-body" style="font-size: {{[34,44,58][fontSize]}}rpx;">
+        <view class="tp-lead"></view>
+        <text class="tp-text">{{script}}</text>
+        <view class="tp-tail"></view>
+      </view>
+    </scroll-view>
+
+    <!-- 顶部操作条 -->
+    <view class="tp-top">
+      <view class="tp-exit" bindtap="exit">退出</view>
+      <view class="tp-state">{{paused ? '已暂停 · 点屏幕继续' : '滚动中 · 点屏幕暂停'}}</view>
+      <view class="tp-ph"></view>
+    </view>
+
+    <!-- 底部速度条 -->
+    <view class="tp-bottom">
+      <view class="tp-speed-l">速度</view>
+      <view class="tp-speeds">
+        <view wx:for="{{[1,2,3]}}" wx:key="*this"
+              class="tp-sp {{speed === item ? 'tp-sp-on' : ''}}"
+              data-v="{{item}}" catchtap="changeSpeed">
+          {{['慢','常','快'][item - 1]}}
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ══ 编辑态 ══ -->
+  <block wx:else>
+    <view class="hero">
+      <view class="hero-title">提词器</view>
+      <view class="hero-sub">口播拍摄滚动台词 · 纯本地工具不耗配额</view>
+    </view>
+
+    <view class="card">
+      <textarea
+        class="tp-input"
+        value="{{script}}"
+        placeholder="粘贴或输入台词…&#10;建议按口播节奏分段落，滚动时更易跟读"
+        placeholder-class="tp-ph"
+        maxlength="-1"
+        auto-height
+        bindinput="onInput"
+      />
+      <view wx:if="{{errMsg}}" class="err">{{errMsg}}</view>
+
+      <!-- 字号 -->
+      <view class="opt-row">
+        <view class="opt-l">字号</view>
+        <view class="opt-group">
+          <view wx:for="{{[1,2,3]}}" wx:key="*this"
+                class="opt {{fontSize === item ? 'opt-on' : ''}}"
+                data-v="{{item}}" bindtap="setFont">
+            {{['小','中','大'][item - 1]}}
+          </view>
+        </view>
+      </view>
+      <!-- 速度 -->
+      <view class="opt-row">
+        <view class="opt-l">速度</view>
+        <view class="opt-group">
+          <view wx:for="{{[1,2,3]}}" wx:key="*this"
+                class="opt {{speed === item ? 'opt-on' : ''}}"
+                data-v="{{item}}" bindtap="setSpeed">
+            {{['慢','常','快'][item - 1]}}
+          </view>
+        </view>
+      </view>
+
+      <view class="btn-primary" bindtap="start">开始滚动提词</view>
+    </view>
+
+    <view class="tips">
+      <view class="tips-t">使用建议</view>
+      <view class="tips-i">· 手机横屏架在镜头正上方，视线偏移最小</view>
+      <view class="tips-i">· 点屏幕随时暂停，底部可即时调速</view>
+      <view class="tips-i">· 台词只存在你的手机里，不上传服务器</view>
+    </view>
+  </block>
+</view>

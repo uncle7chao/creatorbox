@@ -1,0 +1,79 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+  <view class="hero">
+    <view class="hh-top">
+      <text class="hh-t">工具箱</text>
+      <text class="hh-badge">持续扩充</text>
+    </view>
+    <view class="hh-s">解析 · 文案 · 热榜 · 更多创作工具</view>
+  </view>
+
+  <view class="cnt">
+    <view class="cnt-l">
+      <text class="cnt-t">工具矩阵</text>
+      <text class="cnt-s">{{live.length}} 个可用 · {{placeholders.length}} 个规划中</text>
+    </view>
+    <text class="cnt-r">已验证 {{platformCount}} 平台</text>
+  </view>
+
+  <!-- 可用工具（每工具独立语义化图形，纯 CSS 绘制） -->
+  <view class="sec">
+    <view class="sec-h">可用工具<text class="live">立即可用</text></view>
+    <view class="grid live-grid">
+      <view wx:for="{{live}}" wx:key="name" class="tool"
+            data-type="{{item.type}}" bindtap="onLive">
+        <view class="ti {{item.type === 'copy' ? 'ti-blue' : item.type === 'rank' ? 'ti-red' : 'ti-orange'}}">
+          <!-- 皮肤专属图形（dark/sakura 逐个定制；classic 用基础图形） -->
+          <view wx:if="{{theme === 'dark' || theme === 'jade'}}" class="sk sk-d-{{item.type}}"></view>
+          <view wx:elif="{{theme === 'sakura'}}" class="sk sk-s-{{item.type}}"></view>
+          <!-- 素材解析：下载（箭头入托盘） -->
+          <view wx:elif="{{item.type === 'parse'}}" class="g-dl">
+            <view class="stem"></view><view class="head"></view><view class="tray"></view>
+          </view>
+          <!-- 批量解析：三条层叠列表 -->
+          <view wx:elif="{{item.type === 'batch'}}" class="g-layers">
+            <view class="l1"></view><view class="l2"></view><view class="l3"></view>
+          </view>
+          <!-- 文案提取：文档（外框 + 行） -->
+          <view wx:elif="{{item.type === 'copy'}}" class="g-doc">
+            <view class="d1"></view><view class="d2"></view><view class="d3"></view>
+          </view>
+          <!-- 热门榜单：领奖台柱条 -->
+          <view wx:elif="{{item.type === 'rank'}}" class="g-pod">
+            <view class="b1"></view><view class="b2"></view><view class="b3"></view>
+          </view>
+          <!-- 违禁词检测：盾牌（外框 + 对勾） -->
+          <view wx:elif="{{item.type === 'banned'}}" class="g-shield">
+            <view class="sh-body"></view><view class="sh-check"></view>
+          </view>
+          <!-- 运营干货：摊开的书页 -->
+          <view wx:else class="g-book">
+            <view class="pgl"></view><view class="pgr"></view><view class="sp"></view>
+          </view>
+        </view>
+        <view class="tl">{{item.name}}<text wx:if="{{item.isNew}}" class="new">新</text></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 广告位 · Banner（后台可开关） -->
+  <ad-banner placement="toolbox_banner" />
+
+  <!-- 即将上线（占位卡，展示不开发） -->
+  <view class="sec">
+    <view class="sec-h sec-ghost">即将上线<text class="ghost-tag">规划中 · 点击了解</text></view>
+    <view class="grid ghost-grid">
+      <view wx:for="{{placeholders}}" wx:key="name" class="tool" bindtap="onPlaceholder">
+        <view class="ti ti-ghost">
+          <view class="g-ghost"></view>
+          <view class="lock"></view>
+          <view class="soon">规划中</view>
+        </view>
+        <view class="tl tl-ghost">{{item.name}}</view>
+        <view class="td">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="disc">「即将上线」为功能规划展示，上线时间以后续版本公告为准</view>
+</view>

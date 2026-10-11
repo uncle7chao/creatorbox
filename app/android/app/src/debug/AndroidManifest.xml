@@ -1,0 +1,24 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!--
+      ⭐ 明文 HTTP 白名单（仅 debug 生效）
+
+      Android 9（API 28）起默认禁止 http:// 明文请求。
+      本项目的解析服务是 http://127.0.0.1:8080（adb reverse 转发到电脑），
+      不加这条会直接被系统拦掉，表现为：
+          · DioException / SocketException: Connection refused
+          · 但服务器日志里根本收不到请求
+
+      ⚠️ 只在 debug 加 —— 正式包必须走 HTTPS，
+         生产环境开启明文等于放弃了传输安全。
+    -->
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic"
+        xmlns:tools="http://schemas.android.com/tools" />
+</manifest>

@@ -1,0 +1,104 @@
+# CreatorBox .gitignore（2026-10-11 首次初始化）
+
+# ────────── 运行时数据（绝不入库：含用户 openid / token / 账号数据）──────────
+server/data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+server/xhs-cookie.txt
+server/weibo-cookie.txt
+*cookie*.txt
+!docs/**/*.txt
+
+# ────────── Flutter ──────────
+# 平台壳由各人本机 flutter create 生成，机器相关不入库
+app_flutter/windows/
+app_flutter/android/
+app_flutter/linux/
+app_flutter/macos/
+app_flutter/ios/
+app_flutter/web/
+app_flutter/.dart_tool/
+app_flutter/.flutter-plugins
+app_flutter/.flutter-plugins-dependencies
+app_flutter/.packages
+app_flutter/build/
+app_flutter/.pub-cache/
+app_flutter/.pub/
+**/*.iml
+
+# 原生构建产物
+app/windows/flutter/ephemeral/
+build/
+.gradle/
+local.properties
+
+# ────────── Android 旧工程（app/ 15MB，含 gradle 缓存）──────────
+app/.gradle/
+app/local.properties
+app/build/
+
+# ────────── 日志与临时 ──────────
+*.log
+flutter_*.log
+cand.txt
+tmp/
+temp/
+
+# ────────── 密钥与环境 ──────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+secrets/
+
+# ────────── 编辑器 / 系统 ──────────
+.idea/
+.vscode/
+!.vscode/extensions.json
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ────────── Python ──────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# ────────── 小程序 ──────────
+miniapp/miniprogram_npm/
+miniapp/node_modules/
+project.private.config.json
+
+# ────────── 说明 ──────────
+# 以下【有意入库】，不要误删规则：
+#   app_flutter/lib/       业务代码（唯一需入库的 Flutter 目录）
+#   app_flutter/pubspec.yaml / README.md
+#   app_flutter/tools/     自研静态检查脚本
+#   docs/                  方案与知识库
+#   deploy/                部署套件
+#   server/app/ tests/     服务端代码与测试
+#   miniapp/               小程序源码
+#   *.html                 一键复制页（交付物，体积小）
+
+# ────────── AI 工作记忆（个人笔记，不属于源码）──────────
+.workbuddy/
+
+# ────────── 早期 Flutter 试验工程 ──────────
+# app/ 是 2026-10-06 的旧试验（仅 main.dart），app_flutter/ 才是 10-11 起的正式工程。
+# 两者都入库保历史，但【不要在 app/ 里继续开发】—— 正式开发在 app_flutter/。
+app/windows/flutter/ephemeral/
+app/.dart_tool/

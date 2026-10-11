@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>CreatorBox 小程序 · 五屏预览</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#EFE9E3;font:14px/1.6 -apple-system,"Microsoft YaHei",sans-serif;color:#1A1614;padding:24px}
+.hd{max-width:1400px;margin:0 auto 22px}
+.hd h1{font-size:22px;margin-bottom:6px}
+.hd p{font-size:13px;color:#7D736B;line-height:1.8}
+.row{max-width:1400px;margin:0 auto 34px;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.phone{
+  width:340px;background:#FAF7F4;border-radius:26px;overflow:hidden;
+  box-shadow:0 12px 40px rgba(61,32,0,.16);border:6px solid #2b2622;flex-shrink:0;
+}
+.bar{
+  height:28px;background:#2b2622;color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;letter-spacing:.5px;
+}
+.nb{height:44px;background:#3D2000;color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-weight:600;position:relative}
+.nb::before{content:'';position:absolute;left:14px;width:9px;height:9px;
+  border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(45deg)}
+.cap{text-align:center;font-size:12px;color:#7D736B;margin-top:8px}
+.cap b{display:block;font-size:13px;color:#1A1614;margin-bottom:2px}
+.tab{height:52px;background:#fff;border-top:1px solid #ECE5DD;display:flex}
+.tab div{flex:1;text-align:center;font-size:11px;color:#7D736B;padding-top:7px}
+.tab div.on{color:#E8890C}
+
+/* ——— 屏1 首页 ——— */
+.hero{background:linear-gradient(160deg,#3D2000,#5C3200 55%,#8A4B00);padding:20px 20px 50px}
+.hero-t{font-size:17px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.vip{font-size:11px;color:#FFC46B;border:1px solid #8A4B00;border-radius:999px;
+  padding:4px 11px;background:rgba(255,196,107,.08)}
+.hero-m{font-size:20px;font-weight:700;color:#fff;margin-top:16px}
+.hero-s{font-size:12px;color:#FFC46B;margin-top:7px}
+.card{background:#fff;border-radius:10px;margin:-36px 12px 0;padding:14px 12px 12px;
+  box-shadow:0 4px 16px rgba(61,32,0,.10)}
+.ta{background:#F3EEE9;border-radius:7px;padding:10px;font-size:13px;color:#B8AEA6;
+  min-height:84px;line-height:1.6}
+.bp{margin-top:12px;background:#E8890C;color:#1A1614;font-size:16px;font-weight:600;
+  border-radius:7px;height:46px;line-height:46px;text-align:center}
+.bg{margin-top:8px;background:#fff;color:#4A423C;font-size:14px;border:1px solid #D6CEC4;
+  border-radius:7px;height:40px;line-height:40px;text-align:center}
+.quota{margin:12px;background:#fff;border-radius:8px;padding:14px 0;display:flex}
+.qi{flex:1;text-align:center}
+.qs{width:1px;background:#ECE5DD}
+.qn{font-size:18px;font-weight:700;color:#1A1614}
+.qh .qn{font-size:22px;color:#E8890C}
+.ql{font-size:11px;color:#7D736B;margin-top:4px}
+.plat{margin:0 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:11px;color:#4A423C;background:#F3EEE9;border-radius:4px;padding:4px 8px}
+.badge{font-size:11px;color:#1B8A5A;background:#E4F5EC;border-radius:4px;padding:4px 8px;
+  display:flex;align-items:center;gap:4px}
+.badge i{width:5px;height:5px;border-radius:50%;background:#1B8A5A}
+.dis{margin:16px 24px 0;font-size:11px;color:#B8AEA6;line-height:1.7;text-align:center}
+
+/* ——— 屏2 结果页 ——— */
+.top{background:#fff;padding:14px;display:flex;align-items:flex-start;gap:8px}
+.tt{font-size:16px;font-weight:600;line-height:1.4;flex:1;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ts{font-size:12px;color:#7D736B;margin-top:5px}
+.wmb{background:#1B8A5A;color:#fff;font-size:11px;border-radius:4px;padding:4px 8px;flex-shrink:0}
+.hint{margin:0 14px 8px;font-size:11px;color:#C77700;background:#FFF4E0;
+  border-radius:4px;padding:6px 8px}
+.nt{margin:0 14px 8px;font-size:12px;color:#C77700;background:#FFF4E0;
+  border-radius:5px;padding:8px 10px;line-height:1.5}
+.vw{margin:10px 14px;height:190px;background:#1A1614;border-radius:7px;position:relative;
+  background-size:cover;background-position:center}
+.vp{position:absolute;left:50%;top:50%;margin-left:-15px;margin-top:-20px;width:0;height:0;
+  border-left:30px solid rgba(255,255,255,.9);border-top:20px solid transparent;
+  border-bottom:20px solid transparent}
+.st{margin:12px 14px 0;background:#fff;border-radius:7px;padding:12px 0;display:flex}
+.si{flex:1;text-align:center}
+.sn{display:block;font-size:15px;font-weight:600}
+.sl{display:block;font-size:11px;color:#7D736B;margin-top:3px}
+.sec{margin:16px 14px 8px;font-size:14px;font-weight:600;display:flex;align-items:baseline}
+.sec span{font-size:11px;color:#7D736B;font-weight:400;margin-left:8px}
+.qls{margin:0 14px;display:flex;gap:8px}
+.q{flex:1;text-align:center;padding:9px 0;border-radius:5px;font-size:13px;
+  border:1px solid #D6CEC4;background:#fff;color:#4A423C}
+.q.on{background:#B86300;border-color:#B86300;color:#fff}
+.q.lk{border:1px dashed #E8890C;color:#E8890C}
+.ads{margin:14px 14px 0;display:flex;gap:8px}
+.ad{flex:1;text-align:center;border:1px dashed #E8890C;border-radius:6px;padding:10px 0;
+  font-size:12px;color:#E8890C;background:#fff}
+.sv{margin:14px 14px 0;background:#E8890C;color:#1A1614;font-size:16px;font-weight:600;
+  border-radius:7px;height:46px;line-height:46px;text-align:center}
+.qt{margin:8px 14px 0;text-align:center;font-size:11px;color:#7D736B}
+.qt em{color:#E8890C;font-style:normal}
+.bn{margin:16px 14px 0;height:100px;background:#F3EEE9;border-radius:6px;display:flex;
+  align-items:center;justify-content:center;font-size:11px;color:#B8AEA6}
+.grid{margin:10px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.cell{aspect-ratio:3/4;border-radius:4px;overflow:hidden;background:#F3EEE9;
+  background-size:cover;background-position:center}
+
+/* ——— 屏3 会员 ——— */
+.mh{background:linear-gradient(160deg,#3D2000,#5C3200 60%,#8A4B00);padding:24px 20px 28px;text-align:center}
+.mt{font-size:17px;color:#FFC46B;letter-spacing:1px}
+.mp{font-size:30px;font-weight:700;color:#fff;margin-top:6px}
+.mp small{font-size:13px;font-weight:400;color:#FFC46B}
+.mv{font-size:13px;color:#FFC46B;margin-top:8px}
+.sec2{margin:12px;border-radius:7px;padding:14px}
+.free{background:#fff}
+.memb{background:#E4F5EC;border:2px solid #1B8A5A}
+.stl{font-size:14px;font-weight:600;color:#4A423C;margin-bottom:10px}
+.stl.g{color:#1B8A5A}
+.ben{display:flex;align-items:center;font-size:13px;color:#4A423C;line-height:1.9}
+.ben.g{color:#1A1614;font-weight:500}
+.dot{width:11px;height:11px;border-radius:50%;margin-right:8px;flex-shrink:0}
+.dg{border:2px solid #B8AEA6}
+.dgr{background:#1B8A5A}
+.am{margin:0 12px;background:#FFF4E0;border-radius:6px;padding:12px;font-size:13px;
+  color:#C77700;line-height:1.6}
+.bk{margin:16px 12px 0;background:#E8890C;color:#1A1614;font-size:16px;font-weight:600;
+  border-radius:7px;height:46px;line-height:46px;text-align:center}
+.bkn{text-align:center;font-size:12px;color:#7D736B;margin-top:8px}
+
+/* ——— 屏4 素材库 ——— */
+.lh{background:#fff;padding:14px;display:flex;align-items:baseline}
+.lht{font-size:17px;font-weight:600}
+.lhs{font-size:12px;color:#7D736B;margin-left:10px}
+.it{margin:8px 12px;background:#fff;border-radius:7px;padding:10px;display:flex}
+.icov{width:80px;height:100px;border-radius:5px;background:#F3EEE9;flex-shrink:0;
+  background-size:cover;background-position:center}
+.ib{flex:1;margin-left:10px;display:flex;flex-direction:column}
+.itl{font-size:14px;font-weight:600;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.im{margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ipl{font-size:10px;color:#B86300;background:#FFF0D9;border-radius:3px;padding:2px 5px}
+.iau{font-size:11px;color:#7D736B}
+.itt{font-size:11px;color:#B8AEA6}
+.ia{margin-top:auto;padding-top:8px;display:flex;gap:6px}
+.ibn{font-size:11px;color:#E8890C;border:1px solid #FFC46B;border-radius:4px;padding:4px 9px}
+.ibn.d{color:#B8AEA6;border-color:#ECE5DD}
+.ltip{margin:12px 24px 0;font-size:11px;color:#B8AEA6;line-height:1.7;text-align:center}
+
+/* ——— 屏5 合规 ——— */
+.cc{margin:8px 12px;background:#fff;border-radius:7px;padding:14px}
+.ct{font-size:15px;font-weight:600;margin-bottom:8px}
+.cp{font-size:13px;color:#4A423C;line-height:1.8;margin-bottom:8px}
+.cli{font-size:13px;color:#4A423C;line-height:1.9}
+.cact{margin:16px 12px 0;background:#E8890C;color:#1A1614;font-size:14px;font-weight:600;
+  border-radius:6px;padding:12px 0;text-align:center}
+.cactg{background:#fff;color:#4A423C;border:1px solid #D6CEC4;font-weight:400}
+.cver{text-align:center;font-size:11px;color:#B8AEA6;margin-top:20px}
+</style>
+
+<div class="hd">
+  <h1>CreatorBox 小程序 · 五屏预览</h1>
+  <p>橙金配色（<code>docs/配色规范-橙金v2.md</code>）· 数据来自服务端<b>真实响应</b>夹具 · 严格按 <code>docs/小程序UI设计规范.md</code> 的硬约束</p>
+</div>
+
+<!-- 屏 1 -->
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="hero">
+        <div class="hero-t"><span>素材解析</span><span class="vip">9.9 开通会员</span></div>
+        <div class="hero-m">去掉水印 只要干净素材</div>
+        <div class="hero-s">抖音 · B站 · 好看视频 · 8 个平台</div>
+      </div>
+      <div class="card">
+        <div class="ta">粘贴视频链接或分享内容
+例：https://v.douyin.com/xxxxx/</div>
+        <div class="bp">开始解析</div>
+        <div class="bg">从剪贴板粘贴</div>
+      </div>
+      <div class="quota">
+        <div class="qi qh"><div class="qn">不限</div><div class="ql">解析次数</div></div>
+        <div class="qs"></div>
+        <div class="qi"><div class="qn">1/2</div><div class="ql">今日保存</div></div>
+        <div class="qs"></div>
+        <div class="qi"><div class="qn">720P</div><div class="ql">免费画质</div></div>
+      </div>
+      <div class="plat">
+        <span class="tag">抖音</span><span class="tag">B站</span><span class="tag">好看视频</span>
+        <span class="tag">微博</span><span class="tag">AcFun</span><span class="tag">小红书</span>
+        <span class="tag">快手</span><span class="tag">搜狐</span>
+        <span class="badge"><i></i>全部已验证</span>
+      </div>
+      <div class="dis">本工具仅获取平台公开内容，用户需自行确保使用权限与合规性</div>
+      <div class="tab"><div class="on">解析</div><div>素材库</div><div>会员</div></div>
+    </div>
+    <div class="cap"><b>屏 1 · 解析首页</b>深色区 + 悬浮白卡 · 「不限」字号最大</div>
+  </div>
+
+  <!-- 屏 2 视频 -->
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="nb">解析结果</div>
+      <div class="top">
+        <div style="flex:1;min-width:0">
+          <div class="tt">【官方 MV】Never Gonna Give You Up</div>
+          <div class="ts">索尼音乐中国 · 3 分 33 秒</div>
+        </div>
+        <div class="wmb">无水印</div>
+      </div>
+      <div class="vw" style="background:#2b2622"></div>
+      <div class="vp" style="position:absolute;left:50%;top:calc(50% + 0px)"></div>
+      <div class="st">
+        <div class="si"><span class="sn">1.1亿</span><span class="sl">播放</span></div>
+        <div class="si"><span class="sn">294.7万</span><span class="sl">点赞</span></div>
+        <div class="si"><span class="sn">23.7万</span><span class="sl">评论</span></div>
+        <div class="si"><span class="sn">155万</span><span class="sl">收藏</span></div>
+      </div>
+      <div class="sec">清晰度<span>免登录上限 720P</span></div>
+      <div class="qls">
+        <div class="q on">720P</div>
+        <div class="q lk">1080P</div>
+      </div>
+      <div class="ads">
+        <div class="ad">看广告解锁高清</div>
+        <div class="ad">看广告再存 1 次</div>
+      </div>
+      <div class="sv">保存到相册</div>
+      <div class="qt">今日还可保存 1/2 次</div>
+      <div class="bn">广告位</div>
+      <div class="dis">内容来自公开平台，版权归原作者所有，请勿用于商业用途</div>
+    </div>
+    <div class="cap"><b>屏 2 · 结果页（视频）</b>实线=强制 720P ·虚线=可选 1080P</div>
+  </div>
+
+  <!-- 屏 2' 图集 -->
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="nb">解析结果</div>
+      <div class="top">
+        <div style="flex:1;min-width:0">
+          <div class="tt">林萧，你真成主编了</div>
+          <div class="ts">鲲鹏</div>
+        </div>
+        <div class="wmb">无水印</div>
+      </div>
+      <div class="grid">
+        <div class="cell" style="background:#C4A882"></div>
+        <div class="cell" style="background:#8B6F47"></div>
+        <div class="cell" style="background:#D9C4A3"></div>
+        <div class="cell" style="background:#6B5B3E"></div>
+        <div class="cell" style="background:#B89B72"></div>
+        <div class="cell" style="background:#D0BC9B"></div>
+        <div class="cell" style="background:#7A6A4C"></div>
+        <div class="cell" style="background:#C9B693"></div>
+        <div class="cell" style="background:#8F7A55"></div>
+      </div>
+      <div class="st">
+        <div class="si"><span class="sn">2.3万</span><span class="sl">点赞</span></div>
+        <div class="si"><span class="sn">1106</span><span class="sl">收藏</span></div>
+        <div class="si"><span class="sn">68</span><span class="sl">评论</span></div>
+      </div>
+      <div class="ads">
+        <div class="ad">看广告解锁高清</div>
+        <div class="ad">看广告再存 1 次</div>
+      </div>
+      <div class="sv">保存 9 张到相册</div>
+      <div class="qt">今日还可保存 1/2 次</div>
+      <div class="bn">广告位</div>
+      <div class="dis">内容来自公开平台，版权归原作者所有，请勿用于商业用途</div>
+    </div>
+    <div class="cap"><b>屏 2 · 结果页（图集）</b>9 张无水印原图 · 不显示清晰度选择</div>
+  </div>
+
+  <!-- 屏 2'' 需合并 -->
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="nb">解析结果</div>
+      <div class="top">
+        <div style="flex:1;min-width:0">
+          <div class="tt">蕉换幸运</div>
+          <div class="ts">九星之歌 · 4 分 58 秒</div>
+        </div>
+        <div class="wmb">无水印</div>
+      </div>
+      <div class="nt">该平台需服务端合并下载，稍候片刻</div>
+      <div class="vw" style="background:#3a332c"></div>
+      <div class="sec">清晰度<span>免登录上限 720P</span></div>
+      <div class="qls">
+        <div class="q on">720P</div>
+        <div class="q lk">1080P</div>
+      </div>
+      <div class="ads">
+        <div class="ad">看广告解锁高清</div>
+        <div class="ad">看广告再存 1 次</div>
+      </div>
+      <div class="sv">保存到相册</div>
+      <div class="qt">今日还可保存 1/2 次</div>
+      <div class="bn">广告位</div>
+      <div class="dis">内容来自公开平台，版权归原作者所有，请勿用于商业用途</div>
+    </div>
+    <div class="cap"><b>屏 2 · 平台特有提示</b>AcFun 需合并 → 琥珀条诚实告知</div>
+  </div>
+
+  <!-- 屏 3 -->
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="mh">
+        <div class="mt">创作者会员</div>
+        <div class="mp">¥9.9<small> / 月</small></div>
+        <div class="mv">一次付费，批量处理整条素材</div>
+      </div>
+      <div class="sec2 free">
+        <div class="stl">免费用户</div>
+        <div class="ben"><i class="dot dg"></i>解析不限次数</div>
+        <div class="ben"><i class="dot dg"></i>视频每日 2 次</div>
+        <div class="ben"><i class="dot dg"></i>图集每月 3 次</div>
+        <div class="ben"><i class="dot dg"></i>批量每日 1 条</div>
+        <div class="ben"><i class="dot dg"></i>720P 画质</div>
+        <div class="ben"><i class="dot dg"></i>有广告</div>
+      </div>
+      <div class="sec2 memb">
+        <div class="stl g">会员权益</div>
+        <div class="ben g"><i class="dot dgr"></i>视频保存不限次</div>
+        <div class="ben g"><i class="dot dgr"></i>图集保存不限次</div>
+        <div class="ben g"><i class="dot dgr"></i>批量解析不限条数</div>
+        <div class="ben g"><i class="dot dgr"></i>1080P 高清画质</div>
+        <div class="ben g"><i class="dot dgr"></i>全免广告· 永久有效</div>
+      </div>
+      <div class="am">做自媒体一次要处理几十条，免费额度根本不够用</div>
+      <div class="bk">开通会员</div>
+      <div class="bkn">可随时取消 · 不自动续费</div>
+      <div class="dis">开通即表示同意《会员服务协议》，可随时取消</div>
+      <div class="tab"><div>解析</div><div>素材库</div><div class="on">会员</div></div>
+    </div>
+    <div class="cap"><b>屏 3 · 会员页</b>免费在上 · 会员绿卡在下 · 无虚假划线价</div>
+  </div>
+
+  <!-- 屏 4 -->
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="lh"><span class="lht">素材库</span><span class="lhs">今日已保存 2 条</span></div>
+      <div class="it">
+        <div class="icov" style="background:#4a5568"></div>
+        <div class="ib">
+          <div class="itl">【官方 MV】Never Gonna Give You Up</div>
+          <div class="im"><span class="ipl">B站</span><span class="iau">索尼音乐中国</span><span class="itt">今天 14:20</span></div>
+          <div class="ia"><span class="ibn">重新解析</span><span class="ibn d">删除</span></div>
+        </div>
+      </div>
+      <div class="it">
+        <div class="icov" style="background:#C4A882"></div>
+        <div class="ib">
+          <div class="itl">林萧，你真成主编了</div>
+          <div class="im"><span class="ipl">小红书</span><span class="iau">鲲鹏</span><span class="itt">今天 13:05</span></div>
+          <div class="ia"><span class="ibn">重新解析</span><span class="ibn d">删除</span></div>
+        </div>
+      </div>
+      <div class="ltip">重新解析会获取新的下载地址（原地址有时效）</div>
+      <div class="tab"><div>解析</div><div class="on">素材库</div><div>会员</div></div>
+    </div>
+    <div class="cap"><b>屏 4 · 素材库</b>不存播放地址（会过期），只存可重新解析的原文</div>
+  </div>
+
+  <!-- 屏 5 -->
+  <div>
+    <div class="phone">
+      <div class="bar">9:41</div>
+      <div class="nb">免责与协议</div>
+      <div class="cc">
+        <div class="ct">免责声明</div>
+        <div class="cp">本工具仅获取各内容平台公开展示的内容地址，不对内容进行二次创作、上传或传播。</div>
+        <div class="cp">内容的著作权归原作者及原平台所有。用户应自行确保使用该内容已获得合法授权。</div>
+      </div>
+      <div class="cc">
+        <div class="ct">服务内容说明</div>
+        <div class="cp">本工具提供「内容地址解析」服务 —— 获取平台在分发环节使用的原始地址。这与「去除已有图片/视频上的水印」是不同的事。</div>
+      </div>
+      <div class="cc">
+        <div class="ct">投诉与举报</div>
+        <div class="cli">· 微信内：右上角「···」→ 投诉</div>
+        <div class="cli">· 邮箱：complaint@creatorbox.example</div>
+        <div class="cp">我们将在 7 个工作日内核查并回复。</div>
+      </div>
+      <div class="cact">我要投诉</div>
+      <div class="cact cactg">复制投诉邮箱</div>
+      <div class="cver">CreatorBox v1.0.0</div>
+    </div>
+    <div class="cap"><b>屏 5 · 合规页</b>规范 3.13 硬要求：投诉渠道必须可达</div>
+  </div>
+</div>

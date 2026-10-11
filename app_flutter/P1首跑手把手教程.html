@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreatorBox P1 首跑 · 手把手教程</title>
+<style>
+  :root{
+    --bg:#f5f6f8;--card:#fff;--line:#e3e6ea;--text:#16191d;--muted:#5f6b7a;
+    --amber:#e8890c;--amber-bg:#fff6e8;--red:#d92d20;--red-bg:#fef3f2;
+    --green:#067647;--green-bg:#ecfdf3;--blue:#175cd3;--blue-bg:#eff8ff;
+    --purple:#6941c6;--purple-bg:#f4f3ff;--code-bg:#15181d;--code-fg:#e8eaed;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:28px 18px 80px;background:var(--bg);color:var(--text);
+    font:15px/1.75 "Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:900px;margin:0 auto}
+
+  .hero{background:linear-gradient(135deg,#1a1d21 0%,#3d2a10 100%);
+    color:#fff;border-radius:16px;padding:30px 32px;margin-bottom:26px}
+  .hero h1{margin:0 0 8px;font-size:25px;font-weight:800}
+  .hero p{margin:0;opacity:.85;font-size:14px}
+  .badges{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+    border-radius:20px;padding:4px 12px;font-size:12px}
+
+  h2{font-size:20px;margin:34px 0 14px;font-weight:700;display:flex;
+     align-items:center;gap:10px}
+  h2 .num{background:var(--amber);color:#fff;width:28px;height:28px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 28px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;margin-bottom:16px}
+  .card h3{margin:0 0 10px;font-size:16px;font-weight:700}
+  .card p{margin:0 0 12px;color:var(--muted);font-size:14px}
+  .card p:last-child{margin-bottom:0}
+
+  pre{background:var(--code-bg);color:var(--code-fg);padding:15px 18px;
+    border-radius:9px;overflow-x:auto;margin:10px 0;
+    font:13.5px/1.7 Consolas,"Cascadia Mono","Courier New",monospace;white-space:pre}
+  .copyrow{display:flex;justify-content:flex-end;margin:-2px 0 12px}
+  button.copy{background:var(--amber);color:#fff;border:0;border-radius:6px;
+    padding:7px 17px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  button.copy:hover{background:#cf7c09}
+  button.copy.ok{background:var(--green)}
+
+  .expect{background:var(--green-bg);border-left:4px solid var(--green);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .expect b{color:var(--green)}
+  .good{background:var(--green-bg);border:2px solid var(--green);border-left-width:5px;
+    padding:14px 18px;border-radius:0 10px 10px 0;margin:14px 0;font-size:14.5px}
+  .good b{color:var(--green)}
+  .bad{background:var(--red-bg);border-left:4px solid var(--red);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .bad b{color:var(--red)}
+  .info{background:var(--blue-bg);border-left:4px solid var(--blue);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .info b{color:var(--blue)}
+  .tip{background:var(--amber-bg);border-left:4px solid var(--amber);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .note{background:var(--purple-bg);border-left:4px solid var(--purple);
+    padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .note b{color:var(--purple)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{background:#fafbfc;font-weight:600;color:var(--muted);font-size:13px}
+  code{background:#eef0f3;padding:2px 6px;border-radius:4px;
+    font:13px Consolas,monospace;color:#b54708}
+  pre code{background:none;color:inherit;padding:0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:6px 0}
+  .kbd{background:#f2f4f7;border:1px solid #d0d5dd;border-bottom-width:2px;
+    border-radius:5px;padding:1px 6px;font:12px Consolas,monospace}
+  .checklist{background:#fcfcfd;border:1px dashed var(--line);border-radius:10px;
+    padding:16px 20px;margin:14px 0}
+  .checklist div{margin:7px 0;font-size:14px}
+  .divider{height:1px;background:var(--line);margin:30px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <h1>CreatorBox P1 首跑 · 手把手教程</h1>
+  <p>照着从上往下做即可。每一步都标了「你会看到什么」和「出错怎么办」。</p>
+  <div class="badges">
+    <span class="badge">Flutter 3.47.5 stable</span>
+    <span class="badge">Android 工具链已就绪</span>
+    <span class="badge">Windows 需补装 VS</span>
+    <span class="badge">2026-10-11</span>
+  </div>
+</div>
+
+<div class="good">
+  <b>✅ 好消息：Android 端今天就能跑，不用等任何安装。</b>
+  <p style="margin:8px 0 0">
+  我查了你的环境变量，Android 工具链<b>完整可用</b>：
+  <code>ANDROID_HOME=D:\dev\android-sdk</code>（含 build-tools / cmake / ndk）、
+  <code>JAVA_HOME=C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot</code>、adb 也在。
+  BiLoom 的 Android 包就是这么出的。
+  </p>
+  <p style="margin:8px 0 0">
+  <b>→ 建议：今天先走 Android 路线验证全部功能（登录/解析），Windows 端等你有空再补 VS。</b>
+  往下看「路线 A：Android（推荐今天做）」。
+  </p>
+</div>
+
+<div class="info">
+  <b>我先替你查过你本机的环境：</b>
+  <table>
+    <tr><th>项目</th><th>状态</th><th>影响</th></tr>
+    <tr><td>Flutter SDK</td><td><b style="color:var(--green)">3.47.5 stable</b>（D:\dev\flutter）</td><td>✅ 可用</td></tr>
+    <tr><td><b>Android SDK</b></td><td><b style="color:var(--green)">D:\dev\android-sdk</b>（含 ndk/cmake/build-tools）</td><td>✅ <b>今天就能用</b></td></tr>
+    <tr><td><b>JDK</b></td><td><b style="color:var(--green)">jdk-17.0.20.101-hotspot</b></td><td>✅ 可用</td></tr>
+    <tr><td>adb</td><td><b style="color:var(--green)">存在</b></td><td>✅ 可用</td></tr>
+    <tr><td>服务端 venv</td><td><b style="color:var(--green)">已就绪</b>，fastapi/uvicorn/yt_dlp 都在</td><td>✅ 可用</td></tr>
+    <tr><td>curl_cffi</td><td>缺失，但<b>全项目零引用</b></td><td>✅ 无影响，不用管</td></tr>
+    <tr><td>Visual Studio</td><td><b style="color:var(--amber)">当前未安装</b></td><td>仅影响 Windows 端</td></tr>
+    <tr><td>VS Build Tools 安装包</td><td><b style="color:var(--green)">D:\dev\vs_BuildTools.exe 已就位</b></td><td>不用下载，以后直接装</td></tr>
+    <tr><td>平台壳目录</td><td>windows/ android/ <b>都还没有</b></td><td>需要 <code>flutter create</code> 生成</td></tr>
+  </table>
+</div>
+
+<div class="tip">
+  <b>关于 Visual Studio —— 补充说明（这点我核实过，你要放心）</b>
+  <p style="margin:8px 0 0">
+  这台机器<b>以前装过 VS</b>：<code>vswhere.exe</code> 还在（2025-09-22 安装），
+  而且 BiLoom 在 <b>10 月 10 日</b>刚构建出 62MB 的 Windows 安装包
+  ——那必须用 C++ 工具链。说明工具链<b>曾经可用，之后被卸载或清理了</b>。
+  </p>
+  <p style="margin:8px 0 0">
+  <b>所以不是「折腾你」，是把环境补回原状。</b>而且安装包已在 <code>D:\dev\vs_BuildTools.exe</code>，双击即装。
+  </p>
+</div>
+
+<div class="bad">
+  <b>⛔ 关于 Visual Studio —— 补充说明（这点我核实过，你要放心）</b>
+  <p style="margin:8px 0 0">
+  这台机器<b>以前装过 VS</b>：<code>vswhere.exe</code> 还在（2025-09-22 安装），
+  而且 BiLoom 在 <b>10 月 10 日</b>刚成功构建出 62MB 的 Windows 安装包
+  （<code>dist\BiLoom-01.00.37-windows-amd64.zip</code>）——那必须用 C++ 工具链。
+  说明工具链<b>曾经可用，之后被卸载或清理了</b>（<code>flutter doctor</code> 现在的输出也是
+  <code>✗ Visual Studio not installed</code>）。
+  </p>
+  <p style="margin:8px 0 0">
+  <b>所以这不是「折腾你」，是把环境补回原来的状态</b>——装回之后，BiLoom 那条路同样通畅。
+  而且你 <code>D:\dev\vs_BuildTools.exe</code> 已经下好了，<b>不用重新下载</b>，双击装完即可。
+  </p>
+</div>
+
+<!-- ================= 0 ================= -->
+<h2><span class="num">0</span>选路线：今天建议走 Android</h2>
+<div class="card">
+  <table>
+    <tr><th style="width:90px"></th><th>路线 A：Android（推荐今天做）</th><th>路线 B：Windows（有空再做）</th></tr>
+    <tr><td><b>前置</b></td><td><b style="color:var(--green)">已就绪，不用装任何东西</b></td><td>需装 VS Build Tools（D:\dev\vs_BuildTools.exe）</td></tr>
+    <tr><td><b>怎么跑</b></td><td>USB 连手机 → <code>flutter run</code></td><td><code>flutter run -d windows</code></td></tr>
+    <tr><td><b>耗时</b></td><td>首次编译 3–8 分钟</td><td>装 VS 20 分钟 + 编译 3–10 分钟</td></tr>
+    <tr><td><b>代价</b></td><td>要插线（或开模拟器）；手机和电脑要在同一 WiFi</td><td>无</td></tr>
+    <tr><td><b>功能覆盖</b></td><td><b>100%</b>（同一码线，功能完全一致）</td><td><b>100%</b></td></tr>
+  </table>
+
+  <div class="good">
+    <b>为什么建议先 Android：</b>功能一模一样（同一条码线），但今天<b>零安装成本</b>。
+    把登录、解析、桥接全流程验证完，Windows 端回头只是换个壳的事。
+  </div>
+
+  <div class="note">
+    <b>需要设备吗：</b>① 有安卓手机 → 用 USB 连，开「USB 调试」；<br>
+    ② 没有 → 开 Android 模拟器（<code>flutter emulators</code> 看列表，或用 Android Studio 里自带的）；<br>
+    ③ 都没有 → 那就得装 VS 走 Windows 路线了。
+  </div>
+</div>
+
+<h2><span class="num">0.5</span>（仅路线 B）装回 Visual Studio</h2>
+<div class="card">
+  <div class="tip">
+    <b>好消息：你机器上已经有安装包了，不用下载。</b>
+    <code>D:\dev\vs_BuildTools.exe</code> —— 双击就能开始装。
+  </div>
+
+  <h3>做法</h3>
+  <ol>
+    <li>打开资源管理器，进 <code>D:\dev\</code></li>
+    <li>双击 <code>vs_BuildTools.exe</code>（Visual Studio Build Tools，Flutter 完全支持）</li>
+    <li>装到默认位置即可（一般是 <code>C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools</code>）</li>
+    <li>等它跑完。装完<b>重启一次 PowerShell</b>（让环境变量生效）</li>
+  </ol>
+
+  <h3>装完验证</h3>
+  <pre>flutter doctor -v</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="expect">
+    <b>你要找的是这一行变成 ✓：</b>
+    <div style="background:#fff;padding:10px 12px;border-radius:6px;margin-top:8px;
+                font-family:Consolas,monospace;font-size:13px">
+      [✓] Visual Studio - develop Windows apps
+    </div>
+    其它项目红叉无所谓，不影响跑 Windows。
+  </div>
+
+  <div class="info">
+    <b>如果 Build Tools 不行：</b>去 <code>https://visualstudio.microsoft.com/zh-cn/downloads/</code>
+    下载 Visual Studio Community（免费），安装时<b>只勾「使用 C++ 的桌面开发」</b>这一个工作负载。
+  </div>
+</div>
+
+<!-- ================= 1 ================= -->
+<h2><span class="num">1</span>启动解析服务</h2>
+<div class="card">
+  <p>先起后端。<b>这个窗口要一直开着</b>，关掉 = 服务停止。</p>
+
+  <h3>打开一个新的 PowerShell 窗口</h3>
+  <p>用 <span class="kbd">Win</span> + <span class="kbd">R</span> → 输入 <code>powershell</code> → 回车。
+     然后执行：</p>
+
+  <pre>cd D:\WorkBuddyFILE\CreatorBox
+.\start-server.ps1</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="bad">
+    <b>如果报「禁止运行脚本」</b>（红色文字，提示 <code>UnauthorizedAccess</code>），
+    先在<b>同一个窗口</b>执行这一句放开权限，然后重跑上面的命令：
+  </div>
+  <pre>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+  <div class="info"><code>-Scope Process</code> 表示只对当前窗口生效，<b>关掉窗口就恢复原状</b>，不留隐患。</div>
+
+  <div class="expect">
+    <b>你会看到：</b>
+    <div class="checklist">
+      <div>▸ <code>CreatorBox 解析服务</code> 标题（青色）</div>
+      <div>▸ <code>监听地址: http://127.0.0.1:8080</code>（绿色）</div>
+      <div>▸ <code>运维看板: http://127.0.0.1:8080/admin</code>（绿色）</div>
+      <div>▸ 最后一行是 <code>Uvicorn running on http://127.0.0.1:8080</code></div>
+      <div>▸ 然后<b>停在这里不动</b>——这是正常的，它在等请求</div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <b>不要关这个窗口。</b> 想停服务按 <span class="kbd">Ctrl</span>+<span class="kbd">C</span>。
+  </div>
+</div>
+
+<!-- ================= 2 ================= -->
+<h2><span class="num">2</span>验证服务真的活了（可选但建议）</h2>
+<div class="card">
+  <p>再开<b>第二个</b> PowerShell 窗口（别关第一个），执行健康检查：</p>
+  <pre>(Invoke-RestMethod http://127.0.0.1:8080/api/health).platforms -join ', '</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="expect">
+    <b>你会看到</b>类似这样一行（平台名可能略有出入）：
+    <div style="background:#fff;padding:10px 12px;border-radius:6px;margin-top:8px;
+                font-family:Consolas,monospace;font-size:13px">
+      douyin, bilibili, haokan, sohu, weibo, acfun, xiaohongshu, kuaishou, x, tiktok, youtube, facebook
+    </div>
+    看到 <b>12 个平台</b>就说明服务完全正常，可以进下一步了。
+  </div>
+
+  <div class="bad">
+    <b>如果报连接错误</b>：<code>无法连接…拒绝访问</code> 或 <code>Connection refused</code><br>
+    → 回第一个窗口看，是不是启动报错了（比如端口被占）。<br>
+    → 把第一个窗口的报错文字发我。
+  </div>
+</div>
+
+<!-- ================= 3 ================= -->
+<h2><span class="num">3</span>生成 Windows 平台壳</h2>
+<div class="card">
+  <p>Flutter 的 Windows 应用需要一堆原生工程文件（CMakeLists、runner 目录等），
+     这些由 <code>flutter create</code> 自动生成。<b>你的业务代码不会被覆盖</b>。</p>
+
+  <p>执行：</p>
+  <pre>cd D:\WorkBuddyFILE\CreatorBox\app_flutter
+flutter create . --org cn.iyama --project-name creatorbox_app</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="note">
+    <b>为什么加 <code>--org cn.iyama</code>：</b>决定应用 ID（包名）。
+    Windows 上影响不大，但<b>Android 上决定了你的应用包名</b>（如 <code>cn.iyama.creatorbox_app</code>），
+    上架后就不能改了，所以现在定好。
+  </div>
+
+  <div class="expect">
+    <b>你会看到：</b>一堆进度输出，最后是
+    <div class="checklist">
+      <div>▸ <code>Creating windows/…</code> 之类的行</div>
+      <div>▸ <code>All done!</code> 或 <code>✓</code></div>
+      <div>▸ 提示 <code>Running pub get in creatorbox_app…</code>（它会自动帮你拉依赖）</div>
+    </div>
+    执行完 <code>lib\</code> 目录应该<b>依然存在且文件没变</b>——如果 <code>flutter create</code> 提示
+    <code>lib\main.dart</code> 已存在并跳过，那是正确的。
+  </div>
+
+  <div class="tip">
+    <b>提示：</b>如果你看到 <code>Recreating project .</code> 之类的字样，不用慌，
+    它只是在补缺失的脚手架文件，你写好的 lib 代码不受影响。
+  </div>
+</div>
+
+<!-- ================= 4 ================= -->
+<h2><span class="num">4</span>拉依赖</h2>
+<div class="card">
+  <pre>flutter pub get</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="expect">
+    <b>你会看到：</b>
+    <div class="checklist">
+      <div>▸ <code>Resolving dependencies…</code></div>
+      <div>▸ <code>Got dependencies!</code>（绿色）</div>
+      <div>▸ 最后列出 <code>+ http 1.6.0</code>、<code>+ shared_preferences …</code>、<code>+ uuid …</code> 等</div>
+    </div>
+    第一次会从网络下载，稍等十几秒到一分钟。
+  </div>
+
+  <div class="tip">
+    <b>如果卡住或超时</b>（国内网络拉 pub.dev 有时不通）：<p></p>
+    <p>在<b>同一个窗口</b>先设镜像源，再重跑 <code>flutter pub get</code>：</p>
+    <pre>$env:PUB_HOSTED_URL = "https://pub.flutter-io.cn"
+$env:FLUTTER_STORAGE_BASE_URL = "https://storage.flutter-io.cn"
+flutter pub get</pre>
+    <div class="copyrow"><button class="copy">复制</button></div>
+    <p style="margin-top:8px">这两行只对当前窗口有效，<b>不会污染你的系统设置</b>。</p>
+  </div>
+
+  <div class="info">
+    <b>用国内镜像的话</b>，第 4 步之后建议顺手确认一下依赖版本没变：
+    <code>http</code> 包在镜像上可能是 1.2.x 而非 1.6.x。<b>不影响功能</b>，我写的代码用的是最基础 API。
+  </div>
+</div>
+
+<!-- ================= 4.5 ================= -->
+<h2><span class="num">4.5</span>（仅路线 A）Android 真机两项必改</h2>
+<div class="card">
+  <div class="bad">
+    <b>这两项不改，手机上必然连不上服务。</b>这是 Android 独有的坑，Windows 没有。
+  </div>
+
+  <h3>① 允许明文 HTTP（否则请求被系统拦掉）</h3>
+  <p>Android 9+ 默认禁止访问 <code>http://</code> 明文地址。打开
+     <code>android\app\src\main\AndroidManifest.xml</code>，
+     在 <code>&lt;application&gt;</code> 标签里加一行：</p>
+  <pre>&lt;application
+  android:label="CreatorBox"
+  android:name="${applicationName}"
+  android:icon="@mipmap/ic_launcher"
+  android:usesCleartextTraffic="true"&gt;</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+  <div class="note">
+    <b>这是联调临时措施。</b>正式上架前要换成 HTTPS 域名，并把这行删掉——
+    留着会被应用商店审核挑出来。
+  </div>
+
+  <h3>② 查你的电脑局域网 IP</h3>
+  <p>手机上的 <code>127.0.0.1</code> 指向手机自己，不是你的电脑。必须用电脑的局域网 IP：</p>
+  <pre>ipconfig</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+  <div class="expect">
+    找到当前 WiFi（或以太网）下的 <b>IPv4 地址</b>，形如 <code>192.168.1.100</code>。
+    <b>这个 IP 填到下一步的运行命令里。</b>
+  </div>
+  <div class="bad">
+    <b>手机和电脑必须连同一个 WiFi</b>，否则即使 IP 对也连不通。<br>
+    <b>如果电脑用的是 VPN</b>，可能会拦住局域网流量，临时关掉试试。
+  </div>
+</div>
+
+<!-- ================= 5 ================= -->
+<h2><span class="num">5</span>静态检查（强烈建议做）</h2>
+<div class="card">
+  <p>项目里我放了个检查脚本 <code>tools\cb_check.sh</code>，能在<b>真正编译之前</b>
+     把类型错误、未定义符号等问题揪出来，比等 <code>flutter run</code> 报错快得多。</p>
+
+  <div class="info">
+    <b>这个脚本用 Git Bash 跑</b>（不是 PowerShell）。如果你习惯 PowerShell，
+    在 PowerShell 里直接跑：
+  </div>
+  <pre>bash D:\WorkBuddyFILE\CreatorBox\app_flutter\tools\cb_check.sh</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="note">
+    <b>它诚实设计：</b>如果依赖没齐（没跑 <code>pub get</code>），
+    它会明确报 <b>「⛔ 无法给出可信结论」</b> 并退出码 2，<b>而不是谎报「检查通过」</b>。
+    所以你看到 <b>✅ 静态检查通过</b> 时，是真的通过了，可以放心往下走。
+  </div>
+
+  <div class="expect">
+    <b>期望看到：</b><code>✅ 静态检查通过：无错误</code><br>
+    <b>如果报具体错误</b>：把输出整段发我，我立刻改。
+  </div>
+</div>
+
+<!-- ================= 6 ================= -->
+<h2><span class="num">6</span>跑起来！</h2>
+<div class="card">
+  <h3>路线 A：Android（先看设备列表）</h3>
+  <pre>flutter devices</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="expect">
+    <b>你应该能看到</b>你的手机型号（形如 <code>xxx (mobile)</code>）。
+    <br>看不到手机 → 检查：数据线是不是「充电线」不是「数据线」？手机里「USB 调试」开了吗？
+  </div>
+
+  <p>然后运行（把 IP 换成第 4.5 步查到的）：</p>
+  <pre>flutter run -d &lt;设备ID&gt; --dart-define=CB_API_BASE=http://192.168.1.100:8080</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="tip">
+    <b>为什么必须带 <code>--dart-define</code>：</b>App 默认连 <code>127.0.0.1:8080</code>，
+    在手机上这个地址指的是手机自己。<b>不传这个参数 = 连不上，必然报「连接失败」。</b>
+    <br>IP 会变（路由器重分配），连不上时重新 <code>ipconfig</code> 查一次即可。
+  </div>
+
+  <h3>路线 B：Windows</h3>
+  <pre>flutter run -d windows</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+
+  <div class="info">
+    <b>首次会编译，可能要 3–10 分钟</b>，屏幕上一堆 CMake/编译输出是正常的。
+    之后每次启动只要几秒。
+  </div>
+
+  <div class="expect">
+    <b>你会看到：</b>标题写着 <b>CreatorBox</b> 的窗口/应用弹出来，
+    里面有 <b>6 位数字绑定码</b>和倒计时 —— 这就成功了。
+  </div>
+
+  <div class="bad">
+    <b>常见失败：</b>
+    <table>
+      <tr><th>报错关键字</th><th>原因</th><th>怎么办</th></tr>
+      <tr><td><code>连接失败 / SocketException</code></td><td>手机连不上电脑的服务</td><td>① 确认第 1 步服务窗口开着 ② 手机与电脑同一 WiFi ③ 检查 <code>--dart-define</code> 的 IP 写对 ④ 关掉 VPN/防火墙试试</td></tr>
+      <tr><td><code>Cleartext HTTP traffic not permitted</code></td><td>明文被系统拦</td><td>回去改 <code>AndroidManifest.xml</code>（第 4.5 步 ①）</td></tr>
+      <tr><td><code>Unable to find suitable Visual Studio</code></td><td>第 0.5 步没装好</td><td>跑 <code>flutter doctor -v</code> 看 VS 那行是不是 ✓</td></tr>
+      <tr><td><code>No devices found</code></td><td>设备没被识别</td><td>换数据线 / 开 USB 调试 / <code>adb devices</code> 看是否列出</td></tr>
+    </table>
+  </div>
+
+  <div class="tip">
+    <b>调试小技巧：</b>App 跑起来后，改代码只需在运行窗口按 <span class="kbd">r</span>（小写）热重载，
+    不用重新编译。改了 <code>pubspec.yaml</code> 才需要按 <span class="kbd">R</span> 或完全重启。
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ================= 7 ================= -->
+<h2><span class="num">7</span>桥接登录全流程走查</h2>
+<div class="card">
+  <p>App 已经出码了。现在去小程序确认绑定：</p>
+
+  <table>
+    <tr><th style="width:40px">步骤</th><th>操作</th><th>预期结果</th></tr>
+    <tr><td>1</td><td>App 上看 6 位码 + 倒计时</td><td>码在跳秒</td></tr>
+    <tr><td>2</td><td>微信开发者工具打开小程序 → <b>会员</b> → <b>跨端绑定</b></td><td>弹出输入框</td></tr>
+    <tr><td>3</td><td>输入 App 上显示的 6 位码 → 确定</td><td>提示「绑定成功」</td></tr>
+    <tr><td>4</td><td><b>盯着 App 窗口，别操作</b></td><td>3 秒内<b>自动跳到首页</b></td></tr>
+    <tr><td>5</td><td>关闭 App 再打开</td><td>直接进首页（免登录，已记住）</td></tr>
+    <tr><td>6</td><td>右上角 <b>⋮</b> → 退出登录 / 换账号</td><td>退回绑定码页面</td></tr>
+  </table>
+
+  <div class="expect">
+    <b>关键验收点：第 4 步必须「自动」跳转。</b>全程不需要你再点任何按钮。<br>
+    如果 App 一直停在码页面，说明轮询没成功——看 App 窗口有没有显示红色「轮询失败」，
+    有的话说明服务端断了，把那行字发我。
+  </div>
+
+  <div class="info">
+    <b>小程序连的是同一个服务吗？</b>是的。小程序开发者工具里的后端地址也指向
+    <code>127.0.0.1:8080</code>，也就是你第 1 步起的那个服务。
+    <b>所以第 1 步的服务窗口绝对不能关</b>——关了小程序也连不上。
+  </div>
+</div>
+
+<!-- ================= 8 ================= -->
+<h2><span class="num">8</span>解析核心联调</h2>
+<div class="card">
+  <p>回到 App 首页，粘贴链接测试。建议用抖音和 B站各测一次。</p>
+
+  <h3>测试用链接（我实测过都能解析）</h3>
+  <table>
+    <tr><th>平台</th><th>链接</th><th>预期</th></tr>
+    <tr><td>抖音</td><td><code>https://v.douyin.com/ntaaK4aH9pE/</code></td><td><b>6 个档位</b> + BGM 卡</td></tr>
+    <tr><td>B站</td><td><code>https://www.bilibili.com/video/BV1GJ411x7h7</code></td><td>仅 1 档 720P（<b>正常</b>）</td></tr>
+  </table>
+
+  <h3>操作要点</h3>
+  <ul>
+    <li><b>桌面端最省事的做法</b>：先在浏览器复制链接 → 回到 App 点<b>「从剪贴板读取并解析」</b> → 直接进结果页</li>
+    <li>结果页档位应该<b>从清晰到模糊排序</b>，第一档是 1080P，标题形如
+        <code>1080P（play-api 通道）</code>、<code>720P · 875kbps</code></li>
+    <li>点<b>「复制主档直链」</b>按钮 → 拿到最清晰那条直链</li>
+    <li>点任一档位卡片 → 复制该档直链</li>
+  </ul>
+
+  <div class="note">
+    <b>为什么档位是空的？</b>如果你看到档位列表空、但页面顶部有提示卡片，
+    那是因为命中了服务端缓存（缓存不保存档位列表）。
+    <b>这不是 bug</b>——勾上首页的<b>「强制重新解析」</b>开关再解析一次就有了。
+  </div>
+
+  <div class="bad">
+    <b>两个「不正常」其实是正常的，别误判：</b>
+    <ul>
+      <li><b>B站只有 1 档 720P</b> —— B站多档需要 wbi 签名，是已知限制，
+          v4 方案 §3.2 已登记为后续专项。<b>与本次改动无关。</b></li>
+      <li><b>抖音没有字幕卡</b> —— 字幕提取目前只有 YouTube 支持。抖音/B站的字幕还没做。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ================= 9 ================= -->
+<h2><span class="num">9</span>收尾：提交代码</h2>
+<div class="card">
+  <div class="note">
+    <b>按你之前的要求，我没有执行任何 git 提交</b>（避免和你其它窗口串行冲突）。
+    你确认没问题后自行提交，或者告诉我我来提交。
+  </div>
+
+  <p>本次改动的文件（可参考提交信息）：</p>
+  <ul>
+    <li><code>lib/main.dart</code> — 全局登录态回调</li>
+    <li><code>lib/config.dart</code> — 请求超时常量</li>
+    <li><code>lib/api/client.dart</code> — 超时 + 非 JSON 兜底 + 空值加固</li>
+    <li><code>lib/state/session.dart</code> — 会员判定加固、const Uuid 修正</li>
+    <li><code>lib/pages/home_page.dart</code> — 剪贴板读取、账号菜单、强制重解析</li>
+    <li><code>lib/pages/parse_result_page.dart</code> — 档位排序/标签、主档按钮</li>
+    <li><code>lib/pages/bridge_login_page.dart</code> — 轮询异常兜底</li>
+    <li><code>tools/cb_check.sh</code>、<code>README.md</code>、本教程</li>
+  </ul>
+
+  <pre>cd D:\WorkBuddyFILE\CreatorBox
+git status
+git add app_flutter/lib app_flutter/tools
+git commit -m "feat(app_flutter): P1 桥接登录+解析闭环，首跑缺陷修复"</pre>
+  <div class="copyrow"><button class="copy">复制</button></div>
+</div>
+
+<!-- ================= 速查 ================= -->
+<h2>卡住了看这里</h2>
+<div class="card">
+  <table>
+    <tr><th>症状</th><th>原因</th><th>解决</th></tr>
+    <tr><td><code>UnauthorizedAccess</code> 跑脚本被拦</td><td>PowerShell 执行策略</td><td><code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></td></tr>
+    <tr><td>端口 8080 被占用</td><td>上次服务没退干净</td><td><code>start-server.ps1</code> 会自动清理；若仍失败，重启电脑</td></tr>
+    <tr><td><code>Got dependencies!</code> 很慢/超时</td><td>pub.dev 网络</td><td>设 <code>PUB_HOSTED_URL</code> 镜像（见第 4 步）</td></tr>
+    <tr><td>App 显示「解析服务未连接」红字</td><td>服务窗口关了</td><td>回第 1 步重新启动</td></tr>
+    <tr><td>App 一直停在绑定码页</td><td>轮询失败</td><td>看 App 上是否有红色「轮询失败」字样，发我</td></tr>
+    <tr><td>档位列表空 + 有提示卡</td><td>命中缓存</td><td>勾「强制重新解析」（<b>不是 bug</b>）</td></tr>
+    <tr><td>B站只 1 档</td><td>wbi 签名限制</td><td><b>正常</b>，已知问题</td></tr>
+    <tr><td>YouTube 直链打不开</td><td>IP 锁</td><td><b>正常</b>，P2 本机引擎解决</td></tr>
+    <tr><td>退出登录后回不去登录页</td><td>—</td><td>已修（本次新增），若仍有问题发我</td></tr>
+  </table>
+
+  <div class="tip">
+    <b>任何一步卡住，把<b>完整报错文字</b>（从命令行开头到结尾）贴给我即可。
+    截图也行，但要能看清文字。</b>
+  </div>
+</div>
+
+</div>
+
+<script>
+document.querySelectorAll('button.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var pre=b.closest('.copyrow').previousElementSibling;
+    var text=pre.innerText;
+    var done=function(){
+      var o=b.textContent;
+      b.textContent='已复制 ✓';b.classList.add('ok');
+      setTimeout(function(){b.textContent=o;b.classList.remove('ok');},1600);
+    };
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){fb(text,done);});
+    }else fb(text,done);
+  });
+});
+function fb(text,cb){
+  var t=document.createElement('textarea');
+  t.value=text;t.style.position='fixed';t.style.left='-9999px';
+  document.body.appendChild(t);t.select();
+  try{document.execCommand('copy');cb();}catch(e){}
+  document.body.removeChild(t);
+}
+</script>
+</body>
+</html>

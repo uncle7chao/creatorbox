@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>CreatorBox · 底部菜单图标（tabBar）</title>
+<style>
+  body{margin:0;background:#F7F2EA;font:14px/1.7 -apple-system,"Microsoft YaHei",sans-serif;color:#241C15}
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 60px}
+  h1{font-size:22px;margin:0 0 4px}
+  .sub{color:#8B7D6E;font-size:13px;margin-bottom:24px}
+  h2{font-size:15px;margin:28px 0 12px;color:#A85D18}
+  .bar{display:flex;background:#fff;border-radius:16px;padding:14px 0;box-shadow:0 6px 20px rgba(61,32,0,.08)}
+  .bar.dark{background:#121A17;box-shadow:none}
+  .bar.dark .lbl{color:#8A9A93}
+  .bar.dark .lbl.on{color:#6FD3B2}
+  .it{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .it img{width:26px;height:26px;display:block}
+  .lbl{font-size:11px;color:#8B7D6E}
+  .lbl.on{color:#D97A26;font-weight:600}
+  .note{margin-top:14px;font-size:12px;color:#8B7D6E;line-height:1.8}
+  .grid{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+  .cell{background:#fff;border-radius:14px;padding:14px 18px;text-align:center;width:104px}
+  .cell.dark{background:#121A17}
+  .cell img{width:34px;height:34px}
+  .cell .n{font-size:11px;color:#8B7D6E;margin-top:6px}
+</style>
+<div class="wrap">
+  <h1>底部菜单图标（tabBar）</h1>
+  <div class="sub">81×81 抗锯齿 PNG · 3 倍超采样生成 · 默认灰 #9A9088 / 选中琥珀 #D97A26</div>
+
+  <h2>浅色底（琥珀纸感皮肤）</h2>
+  <div class="bar">
+    <div class="it"><img src="parse_on.png"><span class="lbl on">解析</span></div>
+    <div class="it"><img src="tools.png"><span class="lbl">工具箱</span></div>
+    <div class="it"><img src="rank.png"><span class="lbl">热榜</span></div>
+    <div class="it"><img src="library.png"><span class="lbl">素材库</span></div>
+    <div class="it"><img src="member.png"><span class="lbl">我的</span></div>
+  </div>
+
+  <h2>深色底（曜石黑金 / 墨绿祖母绿皮肤）</h2>
+  <div class="bar dark">
+    <div class="it"><img src="parse_on.png"><span class="lbl on">解析</span></div>
+    <div class="it"><img src="tools.png"><span class="lbl">工具箱</span></div>
+    <div class="it"><img src="rank.png"><span class="lbl">热榜</span></div>
+    <div class="it"><img src="library.png"><span class="lbl">素材库</span></div>
+    <div class="it"><img src="member_on.png"><span class="lbl on">我的</span></div>
+  </div>
+
+  <h2>图标母版（放大看细节）</h2>
+  <div class="grid">
+    <div class="cell"><img src="parse_on.png"><div class="n">解析 · 视频窗 + 取走箭头</div></div>
+    <div class="cell"><img src="tools_on.png"><div class="n">工具箱 · 四宫格</div></div>
+    <div class="cell"><img src="rank_on.png"><div class="n">热榜 · 三柱</div></div>
+    <div class="cell"><img src="library_on.png"><div class="n">素材库 · 文件夹</div></div>
+    <div class="cell"><img src="member_on.png"><div class="n">我的 · 人形</div></div>
+  </div>
+
+  <div class="note">
+    重新生成：<code>python server/tools/gen_tabbar_icons.py</code>（改颜色/线宽改脚本常量即可）<br>
+    说明：小程序 tabBar 图标不支持 SVG、也不能按皮肤动态换图（无运行时换 icon 的 API），
+    所以选中色固定为琥珀色 —— 它在浅色底与两种深色底上都能读。
+  </div>
+</div>

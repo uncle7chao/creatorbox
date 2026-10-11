@@ -1,0 +1,37 @@
+<!-- ══ 运营干货 · 文章详情（M1.5）══ -->
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+
+  <!-- 未找到（错误态，不静默空白） -->
+  <view wx:if="{{notFound}}" class="state">
+    <view class="state-t">内容不存在或已下架</view>
+    <view class="state-btn" bindtap="navColumn">回到专栏</view>
+  </view>
+
+  <block wx:elif="{{loaded}}">
+    <!-- 文头 -->
+    <view class="head">
+      <view class="head-cat">{{article.cat}}</view>
+      <view class="head-title">{{article.title}}</view>
+      <view class="head-summary">{{article.summary}}</view>
+      <view class="head-meta">{{article.minutes}} 分钟 · {{article.sections.length}} 个要点</view>
+    </view>
+
+    <!-- 正文：小节渲染 -->
+    <view class="body">
+      <view wx:for="{{article.sections}}" wx:key="h" class="sec">
+        <view class="sec-h"><text class="sec-idx">{{index + 1}}</text>{{item.h}}</view>
+        <view wx:for="{{item.ps}}" wx:for-item="p" wx:key="*this" class="sec-p">{{p}}</view>
+      </view>
+    </view>
+
+    <!-- 合规提示（固定，内容页必备） -->
+    <view class="compliance">
+      以上为运营方法建议，不构成收益承诺。请遵守平台规则与著作权法规，
+      使用他人素材前确认来源与授权。
+    </view>
+
+    <view class="back" bindtap="navColumn">查看更多干货</view>
+  </block>
+
+</view>

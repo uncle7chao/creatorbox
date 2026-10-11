@@ -1,0 +1,124 @@
+{
+  "desc": "项目配置。appid 用 touristappid（游客模式）做到打开即预览；正式提审前替换为自己的 AppID。",
+  "appid": "wx0bd9b302d9cc916d",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "ignoreDevUnusedFiles": false,
+    "compileWorklet": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "projectname": "CreatorBox",
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "首页",
+          "pathName": "pages/index/index",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "结果页 · B站视频",
+          "pathName": "pages/result/result",
+          "query": "url=https%3A%2F%2Fwww.bilibili.com%2Fvideo%2FBV1GJ411x7h7",
+          "scene": null
+        },
+        {
+          "name": "结果页 · 小红书视频（分享文案）",
+          "pathName": "pages/result/result",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "批量解析",
+          "pathName": "pages/batch/batch",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "工具箱",
+          "pathName": "pages/toolbox/toolbox",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "热门榜单",
+          "pathName": "pages/ranking/ranking",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "运营干货 · 专栏",
+          "pathName": "pages/column/column",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "运营干货 · 详情",
+          "pathName": "pages/article/article",
+          "query": "id=publish-time",
+          "scene": null
+        },
+        {
+          "name": "素材库",
+          "pathName": "pages/library/library",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "会员页",
+          "pathName": "pages/member/member",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "合规页",
+          "pathName": "pages/compliance/compliance",
+          "query": "",
+          "scene": null
+        },
+        {
+          "name": "提词器",
+          "pathName": "pages/teleprompter/teleprompter",
+          "query": ""
+        }
+      ]
+    }
+  },
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "editorSetting": {}
+}

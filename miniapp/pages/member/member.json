@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "会员",
+  "usingComponents": {
+    "theme-deco": "/components/theme-deco/theme-deco",
+    "ad-banner": "/components/ad-banner/ad-banner"
+  }
+}

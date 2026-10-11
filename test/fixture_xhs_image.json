@@ -1,0 +1,197 @@
+{
+ "success": true,
+ "platform": "xiaohongshu",
+ "method": "ssr_initial_state",
+ "note_id": "6a827209000000002701cde0",
+ "note_type": "normal",
+ "title": "林萧，你真成主编了",
+ "title_source": "ssr",
+ "title_is_desc": false,
+ "description": "时尚都市，摩登女主编#杨幂[话题]##杂志[话题]# #林萧[话题]# #ELLE[话题]#",
+ "author": "鲲鹏",
+ "author_id": "5b003bf511be10445468a9d1",
+ "author_avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo324ubcdlc3o604a5faitvbaehdqepgho?imageView2/2/w/120/format/jpg",
+ "publish_time_ms": 1786933769000,
+ "last_update_ms": 1786949145000,
+ "like_count": 23000,
+ "collect_count": 827,
+ "comment_count": 863,
+ "share_count": 1810,
+ "nice_count": 0,
+ "cover": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k604a5faitvbaeha7obsig?imageView2/2/w/1080/format/jpg",
+ "type": "image",
+ "images": [
+  {
+   "width": 1200,
+   "height": 1870,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k604a5faitvbaeha7obsig?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/d2634f455fb4745bce7924e0f3867cf6/1040g008323v2ja8r7k604a5faitvbaeha7obsig!h5_1080jpg"
+  },
+  {
+   "width": 1627,
+   "height": 2088,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k304a5faitvbaehsu866t8?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/50618722edc4cd468351b66d75f22375/1040g008323v2ja8r7k304a5faitvbaehsu866t8!h5_1080jpg"
+  },
+  {
+   "width": 1394,
+   "height": 1790,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g2sg323v9sr750ab04a5faitvbaehk0hu8qo?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/7d1b0a371ab0c9abc9fa2b483b9d4f44/1040g2sg323v9sr750ab04a5faitvbaehk0hu8qo!h5_1080jpg"
+  },
+  {
+   "width": 1585,
+   "height": 2034,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k4g4a5faitvbaehplu3blg?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/07a8ed3e9dc841797760cf94877fdcd5/1040g008323v2ja8r7k4g4a5faitvbaehplu3blg!h5_1080jpg"
+  },
+  {
+   "width": 1009,
+   "height": 1368,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g2sg323v9sr750adg4a5faitvbaehfcql7io?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/c68a63758456bae95f13f9138c92a937/1040g2sg323v9sr750adg4a5faitvbaehfcql7io!h5_1080jpg"
+  },
+  {
+   "width": 1667,
+   "height": 2140,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g2sg323v9sr750a9g4a5faitvbaehrd2bci0?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/a7bf68e5e3d0659dd1222e5895c07873/1040g2sg323v9sr750a9g4a5faitvbaehrd2bci0!h5_1080jpg"
+  },
+  {
+   "width": 1686,
+   "height": 2164,
+   "no_watermark": true,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k204a5faitvbaehgq1n5pg?imageView2/2/w/1080/format/jpg",
+   "source": "fileId 拼接（无水印）",
+   "url_with_watermark": "http://sns-webpic-qc.xhscdn.com/202610061846/216b5c0ccb6f42074afb38d40c17e90a/1040g008323v2ja8r7k204a5faitvbaehgq1n5pg!h5_1080jpg"
+  }
+ ],
+ "image_count": 7,
+ "video_url": "",
+ "need_proxy": true,
+ "anonymous": true,
+ "no_watermark": true,
+ "watermark_free": true,
+ "state_layout": "noteData.data.noteData",
+ "expiry_note": "xsec_token 有有效期，过期后笔记不可读",
+ "options": [
+  {
+   "index": 0,
+   "gear": "1200x1870",
+   "width": 1200,
+   "height": 1870,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k604a5faitvbaeha7obsig?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  },
+  {
+   "index": 1,
+   "gear": "1627x2088",
+   "width": 1627,
+   "height": 2088,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k304a5faitvbaehsu866t8?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  },
+  {
+   "index": 2,
+   "gear": "1394x1790",
+   "width": 1394,
+   "height": 1790,
+   "url": "https://sns-na-i6.xhscdn.com/1040g2sg323v9sr750ab04a5faitvbaehk0hu8qo?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  },
+  {
+   "index": 3,
+   "gear": "1585x2034",
+   "width": 1585,
+   "height": 2034,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k4g4a5faitvbaehplu3blg?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  },
+  {
+   "index": 4,
+   "gear": "1009x1368",
+   "width": 1009,
+   "height": 1368,
+   "url": "https://sns-na-i6.xhscdn.com/1040g2sg323v9sr750adg4a5faitvbaehfcql7io?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  },
+  {
+   "index": 5,
+   "gear": "1667x2140",
+   "width": 1667,
+   "height": 2140,
+   "url": "https://sns-na-i6.xhscdn.com/1040g2sg323v9sr750a9g4a5faitvbaehrd2bci0?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  },
+  {
+   "index": 6,
+   "gear": "1686x2164",
+   "width": 1686,
+   "height": 2164,
+   "url": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k204a5faitvbaehgq1n5pg?imageView2/2/w/1080/format/jpg",
+   "no_watermark": true
+  }
+ ],
+ "options_count": 7,
+ "short_url": "https://www.xiaohongshu.com/discovery/item/6a827209000000002701cde0?xsec_token=AB7esHwJgaSaSlhVeq7GJlZN8Fi1J6MrUIjviv8R_APxM=&xsec_source=pc_share",
+ "meta": {
+  "title": "林萧，你真成主编了",
+  "title_source": "ssr",
+  "description": "时尚都市，摩登女主编#杨幂[话题]##杂志[话题]# #林萧[话题]# #ELLE[话题]#",
+  "cover": "https://sns-na-i6.xhscdn.com/1040g008323v2ja8r7k604a5faitvbaeha7obsig?imageView2/2/w/1080/format/jpg",
+  "author_name": "鲲鹏",
+  "author_id": "5b003bf511be10445468a9d1",
+  "author_avatar": "https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo324ubcdlc3o604a5faitvbaehdqepgho?imageView2/2/w/120/format/jpg",
+  "duration_s": null,
+  "publish_ts": 1786933769,
+  "publish_time_text": "2026-08-17 10:29",
+  "publish_time": "2026-08-17 10:29",
+  "stats": {
+   "like": 23000,
+   "comment": 863,
+   "collect": 827,
+   "share": 1810
+  },
+  "stats_text": {},
+  "tags": [
+   "杨幂",
+   "杂志",
+   "林萧",
+   "ELLE"
+  ],
+  "extra": {
+   "note_type_raw": "normal"
+  }
+ },
+ "publish_time": "2026-08-17 10:29",
+ "author_name": "鲲鹏",
+ "stats": {
+  "like": 23000,
+  "comment": 863,
+  "collect": 827,
+  "share": 1810
+ },
+ "tags": [
+  "杨幂",
+  "杂志",
+  "林萧",
+  "ELLE"
+ ],
+ "extra": {
+  "note_type_raw": "normal"
+ },
+ "meta_schema_version": 1,
+ "cached": false
+}

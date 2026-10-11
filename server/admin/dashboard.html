@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorBox · 运维看板</title>
+<style>
+/* 运维看板 · 深色控制台风 + 品牌橙金
+   数据源：/api/health/platforms · /api/health/history · /api/health/alerts
+           /api/trending · /api/domains（全部只读公开端点） */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #12100E;
+  color: #E8E2DA;
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+
+/* ── 顶栏 ── */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, #FFC457, #E8890C);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #3D2000; font-size: 18px;
+  box-shadow: 0 4px 14px rgba(232,137,12,.35);
+}
+.brand h1 { font-size: 18px; letter-spacing: 1px; }
+.brand small { display: block; color: #8C8279; font-size: 12px; font-weight: 400; }
+.toolbar { display: flex; align-items: center; gap: 10px; }
+#refreshBtn {
+  padding: 8px 20px; border-radius: 999px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: #fff;
+  background: linear-gradient(135deg, #F5A623, #E8890C);
+  box-shadow: 0 4px 12px rgba(232,137,12,.3);
+}
+#refreshBtn:active { transform: scale(.97); }
+#countdown { color: #8C8279; font-size: 12px; }
+
+/* ── 状态芯片行 ── */
+.chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.chip {
+  flex: 1; min-width: 140px; padding: 14px 18px; border-radius: 14px;
+  background: #1C1916; border: 1px solid #2A2520;
+}
+.chip .k { color: #8C8279; font-size: 12px; }
+.chip .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+.v-ok { color: #22C55E; } .v-deg { color: #F59E0B; }
+.v-down { color: #EF4444; } .v-neutral { color: #E8E2DA; }
+.chip.alerting { border-color: #EF4444; box-shadow: 0 0 0 1px rgba(239,68,68,.3); }
+
+/* ── 告警横幅 ── */
+#alertBanner { display: none; margin-bottom: 20px; }
+.alert-item {
+  padding: 12px 16px; border-radius: 12px; margin-bottom: 8px;
+  background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.35);
+  display: flex; gap: 10px; align-items: baseline;
+}
+.alert-item.warning { background: rgba(245,158,11,.07); border-color: rgba(245,158,11,.35); }
+.alert-lv { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; flex-shrink: 0; }
+.alert-lv.critical { color: #EF4444; background: rgba(239,68,68,.15); }
+.alert-lv.warning { color: #F59E0B; background: rgba(245,158,11,.15); }
+.alert-msg { flex: 1; }
+.alert-msg b { color: #E8E2DA; }
+.alert-msg span { color: #A79B8E; font-size: 12.5px; }
+.alert-action { color: #8C8279; font-size: 12px; }
+
+/* ── 区块 ── */
+section { margin-bottom: 28px; }
+.sec-title {
+  font-size: 14px; font-weight: 700; color: #E8890C; letter-spacing: 1px;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+}
+.sec-title::before { content: ''; width: 4px; height: 14px; border-radius: 2px;
+  background: linear-gradient(#FFC457, #E8890C); }
+.sec-note { color: #8C8279; font-size: 12px; font-weight: 400; margin-left: auto; }
+
+/* ── 平台探针卡片 ── */
+.probe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.probe {
+  background: #1C1916; border: 1px solid #2A2520; border-radius: 14px;
+  padding: 16px; position: relative; overflow: hidden;
+}
+.probe::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.probe.st-ok::before { background: #22C55E; }
+.probe.st-degraded::before { background: #F59E0B; }
+.probe.st-down::before { background: #EF4444; }
+.probe.st-unknown::before { background: #5A544C; }
+.probe-head { display: flex; justify-content: space-between; align-items: center; }
+.probe-name { font-weight: 700; font-size: 15px; }
+.probe-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+.st-ok .probe-status { color: #22C55E; background: rgba(34,197,94,.12); }
+.st-degraded .probe-status { color: #F59E0B; background: rgba(245,158,11,.12); }
+.st-down .probe-status { color: #EF4444; background: rgba(239,68,68,.12); }
+.st-unknown .probe-status { color: #8C8279; background: rgba(140,130,121,.12); }
+.probe-rows { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+.pr { display: flex; justify-content: space-between; font-size: 12.5px; }
+.pr .pk { color: #8C8279; }
+.pr .pv { color: #E8E2DA; font-variant-numeric: tabular-nums; }
+.probe-err {
+  margin-top: 8px; font-size: 12px; color: #F59E0B;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.probe-err.crit { color: #EF4444; }
+
+/* ── 历史热力图 ── */
+.heat-card { background: #1C1916; border: 1px solid #2A2520; border-radius: 14px; padding: 16px; }
+.heat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.heat-name { width: 110px; flex-shrink: 0; font-size: 12.5px; color: #A79B8E;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+.heat-cells { display: flex; gap: 3px; flex: 1; }
+.cell { flex: 1; height: 18px; border-radius: 3px; min-width: 6px; }
+.cell.ok { background: rgba(34,197,94,.55); }
+.cell.degraded { background: rgba(245,158,11,.75); }
+.cell.down { background: #EF4444; }
+.cell.empty { background: #26221D; }
+.heat-legend { display: flex; gap: 16px; margin-top: 10px; color: #8C8279; font-size: 12px; }
+.heat-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+  vertical-align: -1px; margin-right: 5px; }
+
+#adsSave{background:#3a342e;color:#E8E2DA;border:1px solid #4a423b;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:12px}
+.ads-in{background:#2a2521;color:#E8E2DA;border:1px solid #4a423b;border-radius:6px;padding:5px 8px;font-size:11px}
+.ads-prev{background:#1a1714}
+#adsBody button{background:#3a342e;color:#E8E2DA;border:1px solid #4a423b;border-radius:6px}
+#adsMsg{margin-left:10px;font-size:12px;color:#22C55E}
+.ads-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #2A2520;font-size:13px}
+.ads-row .k{color:#A79B8E}
+.ads-master{font-weight:600}
+.sw{width:44px;height:24px;border-radius:999px;background:#3a342e;position:relative;cursor:pointer;transition:.15s;flex-shrink:0}
+.sw.on{background:linear-gradient(135deg,#F5A623,#E8890C)}
+.sw:after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+.sw.on:after{left:23px}
+
+/* ── 双列区 ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+.mini-card { background: #1C1916; border: 1px solid #2A2520; border-radius: 14px; padding: 16px; }
+.mini-card h3 { font-size: 13px; color: #A79B8E; font-weight: 600; margin-bottom: 10px; }
+.kv { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px;
+  border-bottom: 1px dashed #2A2520; }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: #8C8279; }
+.warn-text { color: #F59E0B; }
+.good-text { color: #22C55E; }
+
+/* ── 错误/加载态 ── */
+.err-box {
+  padding: 14px 18px; border-radius: 12px; color: #F59E0B;
+  background: rgba(245,158,11,.07); border: 1px dashed rgba(245,158,11,.4);
+  font-size: 13px;
+}
+footer { text-align: center; color: #5A544C; font-size: 12px; margin-top: 30px; line-height: 1.8; }
+footer a { color: #8C8279; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">CB</div>
+      <h1>CreatorBox 运维看板<small>解析服务健康度 · 实时监控</small></h1>
+    </div>
+    <div class="toolbar">
+      <span id="countdown"></span>
+      <button id="refreshBtn">立即刷新</button>
+    </div>
+  </header>
+
+  <div class="chips" id="chips"></div>
+  <div id="alertBanner"></div>
+
+  <section>
+    <div class="sec-title">平台探针<span class="sec-note" id="probeNote"></span></div>
+    <div class="probe-grid" id="probeGrid"></div>
+  </section>
+
+  <section>
+    <div class="sec-title">探针历史热力图<span class="sec-note">每格一轮探针 · 左旧右新</span></div>
+    <div class="heat-card">
+      <div id="heatBody"></div>
+      <div class="heat-legend">
+        <span><i class="cell ok"></i>正常</span>
+        <span><i class="cell degraded"></i>降级/偶发失败</span>
+        <span><i class="cell down"></i>不可用</span>
+        <span><i class="cell empty"></i>无数据</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">登录态 Cookie<span class="sec-note">粘贴保存即热生效，无需重启服务</span></div>
+    <div class="heat-card">
+      <div id="cookieBody"><span class="err-box">加载中…</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">会员卡密<span class="sec-note">生成 → 复制发用户 → 用户在小程序兑换；¥9.9/月=30 天卡</span></div>
+    <div class="heat-card">
+      <div id="codesBody"><span class="err-box">加载中…</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">用户 / 会员名单<span class="sec-note">按最近活跃排序；支持搜索 openid / 昵称</span></div>
+    <div class="heat-card">
+      <div id="usersBody"><span class="err-box">加载中…</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">违禁词库<span class="sec-note">增删/停用即时热生效，无需重启；词库约 230 词起步</span></div>
+    <div class="heat-card">
+      <div id="bannedBody"><span class="err-box">加载中…</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">广告位开关<span class="sec-note">保存需 API Key（未配置 CB_API_KEY 时留空即可）</span></div>
+    <div class="heat-card">
+      <div id="adsBody"><span class="err-box">加载中…</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">配套检查</div>
+    <div class="two-col">
+      <div class="mini-card"><h3>榜单数据源（bilibili）</h3><div id="trendBox"></div></div>
+      <div class="mini-card"><h3>域名注册表 / 微信白名单</h3><div id="domainBox"></div></div>
+    </div>
+  </section>
+
+  <footer>
+    数据端点：<span id="baseLabel"></span> · 每 60 秒自动刷新（Cookie 卡片仅页面加载时读取）<br>
+    写操作（广告配置 / Cookie 保存）均走 API Key 认证
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* BASE 判定：只有确定由本服务自己提供页面（8080/标准端口）才用同源；
+   file:// 或第三方静态预览代理 → 回退 http://127.0.0.1:8080。
+   ?base= 永远可覆盖。 */
+var BASE = new URLSearchParams(location.search).get('base');
+if (!BASE) {
+  var port = location.port;
+  var isOurServer = (port === '8080' || port === '' || port === '80' || port === '443')
+    && location.protocol !== 'file:';
+  BASE = isOurServer ? '' : 'http://127.0.0.1:8080';
+}
+document.getElementById('baseLabel').textContent = (BASE || '同源') + '/api/*';
+
+var REFRESH_S = 60, left = REFRESH_S;
+function el(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;   // 只用 textContent 防注入
+  return e;
+}
+function get(path, timeout) {
+  return fetch(BASE + path, { signal: AbortSignal.timeout(timeout || 10000) })
+    .then(function (r) { return r.json(); });
+}
+function fmtTime(ts) {
+  if (!ts) return '-';
+  var d = new Date(ts * 1000), p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+
+/* ── 状态芯片 ── */
+function renderChips(s, alerts) {
+  var box = document.getElementById('chips');
+  box.textContent = '';
+  var c = s.counts || { ok: 0, degraded: 0, down: 0 };
+  var items = [
+    ['探针平台', s.checked, 'v-neutral'],
+    ['正常', c.ok, 'v-ok'],
+    ['降级', c.degraded, c.degraded ? 'v-deg' : 'v-neutral'],
+    ['不可用', c.down, c.down ? 'v-down' : 'v-neutral'],
+    ['open 告警', alerts.length, alerts.length ? 'v-down' : 'v-ok'],
+    ['最近探针', fmtTime(s.ts), 'v-neutral']
+  ];
+  items.forEach(function (it) {
+    var chip = el('div', 'chip' + (it[0] === 'open 告警' && alerts.length ? ' alerting' : ''));
+    chip.appendChild(el('div', 'k', it[0]));
+    chip.appendChild(el('div', 'v ' + it[2], String(it[1])));
+    box.appendChild(chip);
+  });
+}
+
+/* ── 告警横幅（持久化 open 告警优先，次用本轮计算值） ── */
+function renderAlerts(persisted, computed) {
+  var banner = document.getElementById('alertBanner');
+  banner.textContent = '';
+  var list = [];
+  (persisted || []).forEach(function (a) {
+    list.push({ lv: a.level || 'critical', name: a.platform,
+      msg: a.message + '（第 ' + a.count + ' 轮）', act: a.action });
+  });
+  if (!list.length) {
+    (computed || []).forEach(function (a) { list.push(a); });
+  }
+  if (!list.length) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  list.forEach(function (a) {
+    var item = el('div', 'alert-item' + (a.level === 'warning' ? ' warning' : ''));
+    item.appendChild(el('span', 'alert-lv ' + (a.level || 'critical'),
+      (a.level === 'warning' ? '警告' : '严重')));
+    var msg = el('div', 'alert-msg');
+    var b = el('b', '', a.name_cn || a.name || '');
+    msg.appendChild(b);
+    msg.appendChild(el('span', '', '  ' + (a.message || '')));
+    item.appendChild(msg);
+    if (a.action) item.appendChild(el('span', 'alert-action', a.action));
+    banner.appendChild(item);
+  });
+}
+
+/* ── 探针卡片 ── */
+function renderProbes(s) {
+  var grid = document.getElementById('probeGrid');
+  grid.textContent = '';
+  document.getElementById('probeNote').textContent =
+    '间隔 ' + (s.probe_interval_s || '-') + 's · ' +
+    (s.probe_enabled ? '自动探针开启' : '自动探针关闭');
+  var probes = (s.probes || []).slice().sort(function (a, b) {
+    var order = { down: 0, degraded: 1, unknown: 2, ok: 3 };
+    return (order[a.status] || 2) - (order[b.status] || 2);
+  });
+  if (!probes.length) {
+    grid.appendChild(el('div', 'err-box', '探针数据为空 —— 服务可能刚启动，等下一轮'));
+    return;
+  }
+  probes.forEach(function (p) {
+    var st = p.status || 'unknown';
+    var card = el('div', 'probe st-' + st);
+    var head = el('div', 'probe-head');
+    head.appendChild(el('div', 'probe-name', p.name_cn || p.platform));
+    head.appendChild(el('span', 'probe-status',
+      { ok: '正常', degraded: '降级', down: '不可用', unknown: '未知' }[st] || st));
+    card.appendChild(head);
+
+    var rows = el('div', 'probe-rows');
+    [['耗时', p.latency_ms != null ? p.latency_ms + 'ms' : '-'],
+     ['清晰度', (p.quality || '-') + ' / ' + (p.options != null ? p.options + '档' : '-')],
+     ['连续失败', String(p.consecutive_fail || 0)],
+     ['截断', p.truncated ? '是' : '否']
+    ].forEach(function (kv) {
+      var r = el('div', 'pr');
+      r.appendChild(el('span', 'pk', kv[0]));
+      r.appendChild(el('span', 'pv', kv[1]));
+      rows.appendChild(r);
+    });
+    // L2 真实流量（有样本才显示）
+    var t = (s.traffic || {})[p.platform.split('_')[0]];
+    if (t && t.samples) {
+      var r2 = el('div', 'pr');
+      r2.appendChild(el('span', 'pk', '真实流量'));
+      r2.appendChild(el('span', 'pv',
+        Math.round((t.success_rate || 0) * 100) + '% · ' + t.samples + '条'));
+      rows.appendChild(r2);
+    }
+    card.appendChild(rows);
+
+    var err = p.error || p.warning;
+    if (err) card.appendChild(el('div', 'probe-err' + (st === 'down' ? ' crit' : ''), err));
+    grid.appendChild(card);
+  });
+}
+
+/* ── 历史热力图：每平台取最近 40 轮 ── */
+var HEAT_CELLS = 40;
+function renderHeat(items) {
+  var body = document.getElementById('heatBody');
+  body.textContent = '';
+  if (!items || !items.length) {
+    body.appendChild(el('div', 'err-box', '暂无历史数据（探针每 10 分钟落一轮）'));
+    return;
+  }
+  var byPlat = {};
+  items.forEach(function (it) {
+    (byPlat[it.platform] = byPlat[it.platform] || []).push(it);
+  });
+  Object.keys(byPlat).forEach(function (plat) {
+    byPlat[plat].sort(function (a, b) { return a.ts - b.ts; });  // 左旧右新
+  });
+  var names = Object.keys(byPlat).sort(function (a, b) {
+    var last = function (p) { return byPlat[p][byPlat[p].length - 1].status; };
+    var order = { down: 0, degraded: 1, ok: 2 };
+    return (order[last(a)] || 2) - (order[last(b)] || 2);
+  });
+  names.forEach(function (plat) {
+    var arr = byPlat[plat].slice(-HEAT_CELLS);
+    var row = el('div', 'heat-row');
+    row.appendChild(el('div', 'heat-name', plat));
+    var cells = el('div', 'heat-cells');
+    for (var i = 0; i < HEAT_CELLS - arr.length; i++) cells.appendChild(el('div', 'cell empty'));
+    arr.forEach(function (it) {
+      cells.appendChild(el('div', 'cell ' + (it.status === 'ok' ? 'ok'
+        : it.status === 'down' ? 'down' : it.status === 'degraded' ? 'degraded' : 'empty')));
+    });
+    row.appendChild(cells);
+    body.appendChild(row);
+  });
+}
+
+/* ── 广告位开关面板 ── */
+var adsSwitches = {};
+function swRow(box, label, on, key, cls) {
+  var r = el('div', 'ads-row' + (cls ? ' ' + cls : ''));
+  r.appendChild(el('span', 'k', label));
+  var sw = el('div', 'sw' + (on ? ' on' : ''));
+  sw.addEventListener('click', function () { sw.classList.toggle('on'); });
+  r.appendChild(sw);
+  if (key) adsSwitches[key] = sw;
+  box.appendChild(r);
+  return r;
+}
+function renderAds(cfg) {
+  adsSwitches = {};
+  var box = document.getElementById('adsBody');
+  box.textContent = '';
+  if (!cfg) {
+    box.appendChild(el('span', 'err-box', '广告配置读取失败'));
+    return;
+  }
+  var names = {
+    hero_banner: '首页顶部轮播（自宣传 1~3 张，替换标题区）',
+    index_banner: '首页轮播', result_banner: '结果页 Banner',
+    toolbox_banner: '工具箱 Banner', ranking_banner: '热榜 Banner',
+    library_banner: '素材库 Banner', member_banner: '会员中心 Banner'
+  };
+  var editors = {};               // key → {enabled, label, mode, images, unitId, link}
+
+  function edRow(key, saved, name, withMode, hero) {
+    saved = saved || {};
+    var maxImgs = hero ? 3 : 5;
+    var wrap = el('div', 'ads-edit');
+    wrap.style.cssText = 'border:1px solid #3a342e;border-radius:8px;padding:10px;margin-bottom:8px';
+
+    // 行1：开关 + 名称
+    var r1 = el('div', 'ads-row');
+    r1.style.borderBottom = 'none';
+    swRow(r1, name, !!(saved.enabled !== undefined ? saved.enabled : saved), key);
+    var lbl = document.createElement('input');
+    lbl.className = 'ads-in'; lbl.placeholder = '位置名称';
+    lbl.value = saved.label || name; lbl.style.width = '110px';
+    r1.appendChild(lbl);
+    wrap.appendChild(r1);
+
+    // 状态（v3）：mode 二选一 + 多图
+    var st = {
+      mode: (saved.mode === 'code' || saved.mode === 'image') ? saved.mode
+            : (saved.unit_id ? 'code' : 'image'),
+      images: Array.isArray(saved.images) ? saved.images.slice(0, 5)
+              : (saved.image ? [saved.image] : [])
+    };
+    var unit = null, lnk = null;
+    var dynBox = el('div', '');          // 模式相关字段容器（随模式重建）
+    dynBox.style.borderBottom = 'none';
+    wrap.appendChild(dynBox);
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
+    fileInput.style.display = 'none';
+    wrap.appendChild(fileInput);
+
+    function navLinkInput() {
+      lnk = document.createElement('input');
+      lnk.className = 'ads-in';
+      lnk.placeholder = '图片点击跳转（如 /pages/member/member，可留空）';
+      lnk.value = saved.link || ''; lnk.style.flex = '1';
+      return lnk;
+    }
+    function rebuild() {
+      dynBox.textContent = '';
+      if (withMode && st.mode === 'code') {
+        // ── 广告代码模式：只填 unit_id ──
+        var hint = el('div', '', '已选「广告代码」：小程序内只显示微信流量主广告（自定义图片不展示）。将广告位的 unit-id 粘贴到下面。');
+        hint.style.cssText = 'font-size:11px;color:#8a857c;margin-bottom:6px';
+        dynBox.appendChild(hint);
+        var r = el('div', 'ads-row'); r.style.borderBottom = 'none';
+        unit = document.createElement('input');
+        unit.className = 'ads-in';
+        unit.placeholder = '流量主广告 unit-id（adunit-…）';
+        unit.value = saved.unit_id || ''; unit.style.flex = '1';
+        r.appendChild(unit);
+        dynBox.appendChild(r);
+      } else {
+        // ── 自定义图片模式：多图上传 + 跳转 ──
+        var hint2 = el('div', '', hero
+          ? '上传 1~3 张自宣传图，保存后替换首页顶部标题区，轮播展示（不显示外部广告；删光图片则恢复默认标题）。'
+          : '已选「自定义图片」：只显示下面这些图（1 张静图 / 2~5 张自动轮播），不显示广告平台广告。');
+        hint2.style.cssText = 'font-size:11px;color:#8a857c;margin-bottom:6px';
+        dynBox.appendChild(hint2);
+        var thumbs = el('div', '');
+        thumbs.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px';
+        function drawThumbs() {
+          thumbs.textContent = '';
+          st.images.forEach(function (u, i) {
+            var cell = el('div', '');
+            cell.style.cssText = 'position:relative;width:56px;height:34px';
+            var im = document.createElement('img');
+            im.src = BASE + u;
+            im.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:4px;border:1px solid #3a342e';
+            cell.appendChild(im);
+            var x = el('div', '', '×');
+            x.style.cssText = 'position:absolute;top:-6px;right:-6px;width:16px;height:16px;line-height:14px;'
+              + 'text-align:center;background:#EF4444;color:#fff;border-radius:50%;cursor:pointer;font-size:11px';
+            x.addEventListener('click', function () {
+              st.images.splice(i, 1); drawThumbs();
+            });
+            cell.appendChild(x);
+            thumbs.appendChild(cell);
+          });
+          if (!st.images.length) {
+            thumbs.appendChild(el('span', '', '（还没有图片，点「添加图片」上传）')).style.cssText = 'font-size:11px;color:#8a857c';
+          }
+        }
+        drawThumbs();
+        dynBox.appendChild(thumbs);
+        var r = el('div', 'ads-row'); r.style.borderBottom = 'none';
+        var addBtn = el('button', '');
+        addBtn.textContent = '添加图片（' + st.images.length + '/' + maxImgs + '）';
+        addBtn.style.cssText = 'font-size:11px;padding:4px 10px;cursor:pointer';
+        addBtn.addEventListener('click', function () {
+          if (st.images.length >= maxImgs) {
+            msg.textContent = '最多 ' + maxImgs + ' 张';
+            msg.style.color = '#F59E0B';
+            setTimeout(function () { msg.textContent = ''; }, 3000);
+            return;
+          }
+          fileInput.click();
+        });
+        r.appendChild(addBtn);
+        r.appendChild(navLinkInput());
+        dynBox.appendChild(r);
+      }
+    }
+    fileInput.addEventListener('change', function () {
+      var f = fileInput.files[0];
+      if (!f) return;
+      var fd = new FormData();
+      fd.append('file', f);
+      fetch(BASE + '/api/ads/upload', {
+        method: 'POST', headers: { 'x-api-key': keyInp.value }, body: fd
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.ok) {
+          if (withMode) {
+            if (st.images.indexOf(j.url) < 0) st.images.push(j.url);
+            rebuild();
+          }
+          msg.textContent = '图片已上传（记得保存）'; msg.style.color = '#22C55E';
+        } else {
+          msg.textContent = (j && j.detail) || '上传失败'; msg.style.color = '#EF4444';
+        }
+        setTimeout(function () { msg.textContent = ''; }, 3000);
+      }).catch(function () {
+        msg.textContent = '上传网络错误'; msg.style.color = '#EF4444';
+      });
+    });
+
+    if (withMode) {
+      // 行2：模式切换（二选一，渲染互斥；两种配置都保留，切换不丢数据）
+      var r2 = el('div', 'ads-row');
+      r2.style.borderBottom = 'none';
+      r2.appendChild(el('span', 'k', '广告模式'));
+      var pillCode = el('button', '');
+      pillCode.textContent = '广告代码';
+      var pillImg = el('button', '');
+      pillImg.textContent = '自定义图片';
+      [pillCode, pillImg].forEach(function (b) {
+        b.style.cssText = 'font-size:11px;padding:4px 12px;cursor:pointer;border-radius:12px;margin-right:6px';
+      });
+      function paintPills() {
+        pillCode.style.background = st.mode === 'code' ? '#E8890C' : '#241f1a';
+        pillCode.style.color = st.mode === 'code' ? '#fff' : '#b8b2a8';
+        pillCode.style.border = '1px solid ' + (st.mode === 'code' ? '#E8890C' : '#3a342e');
+        pillImg.style.background = st.mode === 'image' ? '#E8890C' : '#241f1a';
+        pillImg.style.color = st.mode === 'image' ? '#fff' : '#b8b2a8';
+        pillImg.style.border = '1px solid ' + (st.mode === 'image' ? '#E8890C' : '#3a342e');
+      }
+      pillCode.addEventListener('click', function () {
+        st.mode = 'code'; paintPills(); rebuild();
+      });
+      pillImg.addEventListener('click', function () {
+        st.mode = 'image'; paintPills(); rebuild();
+      });
+      paintPills();
+      r2.appendChild(pillCode); r2.appendChild(pillImg);
+      wrap.appendChild(r2);
+      rebuild();
+    } else if (hero) {
+      // 首页顶部轮播：纯自宣传多图，无模式切换、无广告代码
+      rebuild();
+    } else {
+      // 弹窗广告：维持旧单图 + 广告代码 + 跳转
+      var rr = el('div', 'ads-row'); rr.style.borderBottom = 'none';
+      var imgInput = document.createElement('input');
+      imgInput.type = 'file'; imgInput.accept = 'image/png,image/jpeg,image/webp,image/gif';
+      imgInput.style.display = 'none';
+      var prev = document.createElement('img');
+      prev.className = 'ads-prev';
+      prev.style.cssText = 'height:30px;border-radius:4px;vertical-align:middle;margin-right:8px;' +
+        (st.images.length ? '' : 'display:none');
+      if (st.images.length) prev.src = BASE + st.images[0];
+      var upBtn = el('button', '');
+      upBtn.textContent = '上传图片';
+      upBtn.style.cssText = 'font-size:11px;padding:4px 10px;cursor:pointer';
+      upBtn.addEventListener('click', function () { imgInput.click(); });
+      imgInput.addEventListener('change', function () {
+        var f = imgInput.files[0];
+        if (!f) return;
+        var fd = new FormData();
+        fd.append('file', f);
+        fetch(BASE + '/api/ads/upload', {
+          method: 'POST', headers: { 'x-api-key': keyInp.value }, body: fd
+        }).then(function (r) { return r.json(); }).then(function (j) {
+          if (j && j.ok) {
+            st.images = [j.url]; prev.src = BASE + j.url; prev.style.display = '';
+            msg.textContent = '图片已上传（记得保存）'; msg.style.color = '#22C55E';
+          } else {
+            msg.textContent = (j && j.detail) || '上传失败'; msg.style.color = '#EF4444';
+          }
+          setTimeout(function () { msg.textContent = ''; }, 3000);
+        }).catch(function () {
+          msg.textContent = '上传网络错误'; msg.style.color = '#EF4444';
+        });
+      });
+      unit = document.createElement('input');
+      unit.className = 'ads-in'; unit.placeholder = '流量主广告 unit-id（adunit-…，填了优先渲染）';
+      unit.value = saved.unit_id || ''; unit.style.flex = '1';
+      rr.appendChild(prev); rr.appendChild(upBtn); rr.appendChild(unit); rr.appendChild(imgInput);
+      dynBox.appendChild(rr);
+      var rr2 = el('div', 'ads-row'); rr2.style.borderBottom = 'none';
+      rr2.appendChild(navLinkInput());
+      dynBox.appendChild(rr2);
+    }
+
+    editors[key] = {
+      lbl: lbl,
+      mode: function () { return withMode ? st.mode : undefined; },
+      images: function () { return (withMode || hero) ? st.images : (st.images[0] || ''); },
+      unit: unit, lnk: lnk
+    };
+    box.appendChild(wrap);
+  }
+
+  swRow(box, '总开关（关闭 = 全站无广告，含弹窗）', !!cfg.master, 'master', 'ads-master');
+  Object.keys(names).forEach(function (k) {
+    edRow(k, cfg.placements && cfg.placements[k], names[k], true, k === 'hero_banner');
+  });
+  var pop = cfg.popup || {};
+  edRow('popup', pop, '弹窗广告（每 ' + (pop.every_n_parses || 3)
+    + ' 次解析弹一次，前 ' + (pop.start_after || 0) + ' 次不弹）');
+
+  var bar = el('div', 'ads-row');
+  bar.style.borderBottom = 'none';
+  var keyInp = document.createElement('input');
+  keyInp.id = 'adsKey';
+  keyInp.placeholder = 'API Key（未配置可留空）';
+  bar.appendChild(keyInp);
+  var save = el('button', '');
+  save.id = 'adsSave';
+  save.textContent = '保存广告配置';
+  var msg = el('span', '');
+  msg.id = 'adsMsg';
+  bar.appendChild(save);
+  bar.appendChild(msg);
+  box.appendChild(bar);
+  save.addEventListener('click', function () {
+    var body = { master: adsSwitches.master.classList.contains('on'),
+                 placements: {}, popup: {} };
+    Object.keys(editors).forEach(function (k) {
+      var ed = editors[k];
+      if (k === 'popup') {
+        // 弹窗维持旧结构（单图 + 广告代码 + 跳转）
+        body.popup = {
+          enabled: adsSwitches[k] ? adsSwitches[k].classList.contains('on') : false,
+          label: ed.lbl.value,
+          image: ed.images(),
+          unit_id: ed.unit ? ed.unit.value.trim() : '',
+          link: ed.lnk ? ed.lnk.value.trim() : ''
+        };
+        return;
+      }
+      // v3：模式二选一 + 多图（mode=code 只渲染 <ad>；mode=image 只渲染 images）
+      body.placements[k] = {
+        enabled: adsSwitches[k] ? adsSwitches[k].classList.contains('on') : false,
+        label: ed.lbl.value,
+        mode: ed.mode(),
+        images: ed.images(),
+        unit_id: ed.unit ? ed.unit.value.trim() : '',
+        link: ed.lnk ? ed.lnk.value.trim() : ''
+      };
+    });
+    fetch(BASE + '/api/ads/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': keyInp.value },
+      body: JSON.stringify(body)
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      msg.textContent = j && j.ok ? '已保存并生效' : '保存失败（检查 API Key）';
+      msg.style.color = j && j.ok ? '#22C55E' : '#EF4444';
+      setTimeout(function () { msg.textContent = ''; }, 3000);
+    }).catch(function () {
+      msg.textContent = '网络错误';
+      msg.style.color = '#EF4444';
+    });
+  });
+}
+
+/* ── 榜单源 / 域名 ── */
+function kvRow(k, v, cls) {  var r = el('div', 'kv');
+  r.appendChild(el('span', 'k', k));
+  r.appendChild(el('span', 'pv ' + (cls || ''), String(v)));
+  return r;
+}
+function renderTrend(t) {
+  var box = document.getElementById('trendBox');
+  box.textContent = '';
+  if (!t || t.ok !== true) {
+    box.appendChild(kvRow('数据源', '不可用（' + ((t && t.code) || '网络错误') + '）', 'warn-text'));
+    return;
+  }
+  box.appendChild(kvRow('条目数', t.items.length, 'good-text'));
+  box.appendChild(kvRow('缓存', t.cached ? '命中' : '冷抓'));
+  var top = t.items[0];
+  if (top) box.appendChild(kvRow('榜首', top.title.slice(0, 18) + ' · ' + top.hot_text));
+}
+function renderDomains(d) {
+  var box = document.getElementById('domainBox');
+  box.textContent = '';
+  if (!d || !d.snapshot) {
+    box.appendChild(kvRow('状态', '读取失败', 'warn-text'));
+    return;
+  }
+  var w = d.wechat_whitelist || {};
+  var s = d.snapshot || {};
+  box.appendChild(kvRow('可白名单平台', (s.whitelist_ok || []).length));
+  box.appendChild(kvRow('需中转平台', (s.must_proxy || []).length));
+  box.appendChild(kvRow('域名总数',
+    (w.total_domains || 0) + ' / ' + (w.limit || 20),
+    w.within_limit ? 'good-text' : 'warn-text'));
+  var un = s.unlisted_hosts || [];
+  if (un.length) {
+    box.appendChild(kvRow('未登记域名（改版信号）', un.join(', ').slice(0, 40), 'warn-text'));
+  }
+}
+
+/* ── 登录态 Cookie 卡片（2026-10-08）──
+   只在页面加载时渲染一次，不进 60s 自动刷新 ——
+   避免把用户贴到一半的 Cookie 文本框刷掉 */
+function renderCookie(j) {
+  var box = document.getElementById('cookieBody');
+  box.innerHTML = '';
+  (j.cookies || []).forEach(function (c) {
+    var wrap = el('div', '');
+    wrap.style.cssText = 'border:1px solid #3a342e;border-radius:8px;padding:10px;margin-bottom:8px';
+
+    // 行1：状态点 + 配置概况 + 最近探针结论
+    var st = el('div', '');
+    st.style.cssText = 'font-size:12px;color:#b8b2a8;display:flex;align-items:center;flex-wrap:wrap';
+    var probeOk = c.last_probe ? c.last_probe.ok : null;
+    var dot = el('span', '');
+    dot.style.cssText = 'display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:' +
+      (c.configured ? (probeOk === false ? '#EF4444' : '#22C55E') : '#9CA3AF');
+    st.appendChild(dot);
+    var probeTxt = (probeOk === true ? ' · 探针正常'
+                  : probeOk === false ? ' · 探针报失效：' + (c.last_probe.error || '')
+                  : '');
+    st.appendChild(el('span', '', c.label + '（' + c.file + '）· '
+      + (c.configured ? '已配置 ' + c.length + ' 字符' : '未配置') + probeTxt
+      + (c.updated_at ? ' · 存档 ' + fmtTime(c.updated_at) : '')));
+    wrap.appendChild(st);
+
+    // 行2：用途说明
+    var use = el('div', '', c.usage + '。提取方法：电脑登录 → F12 → Network → 任一请求 → 复制 Cookie 请求头整串');
+    use.style.cssText = 'font-size:11px;color:#8a857c;margin:4px 0 6px';
+    wrap.appendChild(use);
+
+    // 行3：粘贴框
+    var ta = document.createElement('textarea');
+    ta.placeholder = '把' + c.label + '的 Cookie 整串粘贴到这里（保存后会即时验证并热生效）';
+    ta.style.cssText = 'width:100%;box-sizing:border-box;height:54px;background:#241f1a;color:#e8e2d8;'
+      + 'border:1px solid #3a342e;border-radius:6px;padding:6px;font-size:11px;resize:vertical';
+    wrap.appendChild(ta);
+
+    // 行4：API Key + 保存按钮 + 结果
+    var bar = el('div', '');
+    bar.style.cssText = 'margin-top:6px;display:flex;align-items:center;gap:8px';
+    var keyInp = document.createElement('input');
+    keyInp.placeholder = 'API Key（未配置 CB_API_KEY 时留空）';
+    keyInp.style.cssText = 'flex:1;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;'
+      + 'border-radius:6px;padding:5px 8px;font-size:11px';
+    bar.appendChild(keyInp);
+    var btn = el('button', '');
+    btn.textContent = '保存并验证';
+    btn.style.cssText = 'font-size:11px;padding:5px 12px;cursor:pointer;white-space:nowrap';
+    var msg = el('span', '');
+    msg.style.cssText = 'font-size:11px;flex:1';
+    bar.appendChild(btn); bar.appendChild(msg);
+    wrap.appendChild(bar);
+
+    btn.addEventListener('click', function () {
+      var v = ta.value.trim();
+      if (!v) { msg.textContent = '先粘贴 Cookie 内容'; msg.style.color = '#EF4444'; return; }
+      btn.disabled = true;
+      msg.textContent = '保存并验证中…'; msg.style.color = '#b8b2a8';
+      fetch(BASE + '/api/admin/cookies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': keyInp.value },
+        body: JSON.stringify({ platform: c.platform, cookie: v })
+      }).then(function (r) { return r.json(); }).then(function (jj) {
+        if (jj && jj.ok) {
+          msg.textContent = jj.message || '已保存';
+          msg.style.color = (jj.verify && jj.verify.ok) ? '#22C55E' : '#F59E0B';
+          ta.value = '';
+          // 不整卡重渲染 —— 另一个平台的文本框可能贴了一半；
+          // 状态行等下次进页面或手动刷新时再更新
+          c.configured = true;
+          dot.style.background = (jj.verify && jj.verify.ok) ? '#22C55E' : '#F59E0B';
+        } else {
+          msg.textContent = (jj && jj.detail) || '保存失败（检查 API Key）';
+          msg.style.color = '#EF4444';
+        }
+      }).catch(function () {
+        msg.textContent = '网络错误'; msg.style.color = '#EF4444';
+      }).then(function () { btn.disabled = false; });
+    });
+
+    box.appendChild(wrap);
+  });
+}
+function loadCookieCard() {
+  get('/api/admin/cookies', 8000).then(renderCookie).catch(function () {
+    var b = document.getElementById('cookieBody');
+    b.innerHTML = '<span class="err-box">加载失败（服务未启动？）</span>';
+  });
+}
+loadCookieCard();
+
+/* ── 会员卡密卡片（2026-10-08）──
+   同 Cookie 卡：仅页面加载时渲染一次，不进 60s 刷新。
+   重渲染时保留用户已输入的 API Key（_codesKeyVal）。 */
+var _codesKeyVal = '';
+function renderCodes(j) {
+  var box = document.getElementById('codesBody');
+  box.innerHTML = '';
+  var stats = j.stats || {};
+  var head = el('div', '', '未用 ' + (stats.unused || 0)
+    + ' · 已用 ' + (stats.used || 0)
+    + ' · 已作废 ' + (stats.disabled || 0)
+    + '　（¥9.9/月 = 30 天卡）');
+  head.style.cssText = 'font-size:12px;color:#b8b2a8;margin-bottom:8px';
+  box.appendChild(head);
+
+  // 行1：生成参数
+  var gen = el('div', '');
+  gen.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+  var daysInp = document.createElement('input');
+  daysInp.placeholder = '面值天数（月卡 30）';
+  daysInp.value = '30';
+  daysInp.style.cssText = 'width:130px;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  var cntInp = document.createElement('input');
+  cntInp.placeholder = '数量';
+  cntInp.value = '10';
+  cntInp.style.cssText = 'width:70px;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  var noteInp = document.createElement('input');
+  noteInp.placeholder = '批次备注（如「首发月卡」）';
+  noteInp.style.cssText = 'flex:1;min-width:120px;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  var genBtn = el('button', '');
+  genBtn.textContent = '生成卡密';
+  genBtn.style.cssText = 'font-size:11px;padding:5px 12px;cursor:pointer;white-space:nowrap';
+  gen.appendChild(daysInp); gen.appendChild(cntInp); gen.appendChild(noteInp); gen.appendChild(genBtn);
+  box.appendChild(gen);
+
+  // 行2：生成的卡密（可全选复制）
+  var ta = document.createElement('textarea');
+  ta.placeholder = '生成的卡密会出现在这里 —— 点击「复制全部」发给用户';
+  ta.style.cssText = 'width:100%;box-sizing:border-box;height:110px;background:#241f1a;color:#e8e2d8;'
+    + 'border:1px solid #3a342e;border-radius:6px;padding:6px;font-size:11px;margin-top:8px;resize:vertical';
+  box.appendChild(ta);
+  var cpyBar = el('div', '');
+  cpyBar.style.cssText = 'margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+  var cpyBtn = el('button', '');
+  cpyBtn.textContent = '复制全部';
+  cpyBtn.style.cssText = 'font-size:11px;padding:5px 12px;cursor:pointer';
+  var genMsg = el('span', '');
+  genMsg.style.cssText = 'font-size:11px;flex:1';
+  cpyBar.appendChild(cpyBtn); cpyBar.appendChild(genMsg);
+  box.appendChild(cpyBar);
+
+  // 行3：API Key（生成需要；重渲染时恢复已输入的值）
+  var keyRow = el('div', '');
+  keyRow.style.cssText = 'margin-top:8px';
+  var ki = document.createElement('input');
+  ki.id = 'codesKey';
+  ki.placeholder = 'API Key（生成/作废需要；未配置 CB_API_KEY 时留空）';
+  ki.value = _codesKeyVal;
+  ki.addEventListener('input', function () { _codesKeyVal = ki.value; });
+  ki.style.cssText = 'width:100%;box-sizing:border-box;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  keyRow.appendChild(ki);
+  box.appendChild(keyRow);
+
+  genBtn.addEventListener('click', function () {
+    var days = parseInt(daysInp.value, 10);
+    var cnt = parseInt(cntInp.value, 10);
+    if (!days || days < 1 || !cnt || cnt < 1) {
+      genMsg.textContent = '天数和数量必须是正整数'; genMsg.style.color = '#EF4444';
+      return;
+    }
+    genBtn.disabled = true;
+    genMsg.textContent = '生成中…'; genMsg.style.color = '#b8b2a8';
+    fetch(BASE + '/api/admin/codes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': _codesKeyVal },
+      body: JSON.stringify({ days: days, count: cnt, batch: noteInp.value })
+    }).then(function (r) { return r.json(); }).then(function (jj) {
+      if (jj && jj.ok) {
+        ta.value = (jj.codes || []).join('\n');
+        genMsg.textContent = '已生成 ' + jj.count + ' 张（' + jj.days + ' 天/张），点击「复制全部」';
+        genMsg.style.color = '#22C55E';
+        loadCodesCard();                  // 刷新统计（API Key 值已存 _codesKeyVal）
+      } else {
+        genMsg.textContent = (jj && jj.detail) || '生成失败（检查 API Key）';
+        genMsg.style.color = '#EF4444';
+      }
+    }).catch(function () {
+      genMsg.textContent = '网络错误'; genMsg.style.color = '#EF4444';
+    }).then(function () { genBtn.disabled = false; });
+  });
+
+  cpyBtn.addEventListener('click', function () {
+    if (!ta.value) { genMsg.textContent = '还没有可复制的卡密'; genMsg.style.color = '#EF4444'; return; }
+    ta.select();
+    try { document.execCommand('copy'); genMsg.textContent = '已复制到剪贴板'; genMsg.style.color = '#22C55E'; }
+    catch (e) { genMsg.textContent = '复制失败，请手动全选复制'; genMsg.style.color = '#EF4444'; }
+  });
+}
+function loadCodesCard() {
+  get('/api/admin/codes?limit=50', 8000).then(renderCodes).catch(function () {
+    document.getElementById('codesBody').innerHTML =
+      '<span class="err-box">加载失败（服务未启动？）</span>';
+  });
+}
+loadCodesCard();
+
+/* ── 用户 / 会员名单（2026-10-08）──
+   进页面拉一次；点「查询」按关键词重新拉，不进 60s 自动刷新 */
+var _usersKeyword = '';
+function renderUsers(j) {
+  var box = document.getElementById('usersBody');
+  box.innerHTML = '';
+  var s = j.stats || {};
+  var head = el('div', '', '总用户 ' + (s.total || 0)
+    + ' · 有效会员 ' + (s.members || 0)
+    + ' · 今日活跃 ' + (s.active_today || 0));
+  head.style.cssText = 'font-size:12px;color:#b8b2a8;margin-bottom:8px';
+  box.appendChild(head);
+
+  var bar = el('div', '');
+  bar.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap';
+  var kw = document.createElement('input');
+  kw.placeholder = '搜索 openid / 昵称';
+  kw.value = _usersKeyword;
+  kw.style.cssText = 'flex:1;min-width:140px;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  var memChk = document.createElement('label');
+  memChk.style.cssText = 'font-size:11px;color:#b8b2a8;display:flex;align-items:center;gap:4px';
+  var chk = document.createElement('input');
+  chk.type = 'checkbox';
+  memChk.appendChild(chk);
+  memChk.appendChild(el('span', '', '只看会员'));
+  var qBtn = el('button', '');
+  qBtn.textContent = '查询';
+  qBtn.style.cssText = 'font-size:11px;padding:5px 12px;cursor:pointer';
+  bar.appendChild(kw); bar.appendChild(memChk); bar.appendChild(qBtn);
+  box.appendChild(bar);
+
+  var list = el('div', '');
+  list.style.cssText = 'font-size:11px';
+  var items = j.items || [];
+  if (!items.length) {
+    list.appendChild(el('div', 'err-box', '没有匹配的用户'));
+  }
+  items.forEach(function (u) {
+    var row = el('div', '');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 4px;'
+      + 'border-bottom:1px solid #3a342e;flex-wrap:wrap';
+    var active = (u.last_seen_at || 0) * 1000 > Date.now() - 86400e3;
+    var dot = el('span', '');
+    dot.style.cssText = 'width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'
+      + (u.is_member && u.member_expire_at * 1000 > Date.now() ? '#F59E0B'
+        : active ? '#22C55E' : '#9CA3AF');
+    row.appendChild(dot);
+    var name = u.nickname || '(未授权昵称)';
+    row.appendChild(el('span', '', name));
+    var oid = el('span', '', String(u.openid).slice(0, 26) + (String(u.openid).length > 26 ? '…' : ''));
+    oid.style.cssText = 'color:#8a857c;word-break:break-all;flex:1;min-width:120px';
+    row.appendChild(oid);
+    var st = u.is_member && u.member_expire_at * 1000 > Date.now()
+      ? '会员至 ' + new Date(u.member_expire_at * 1000).toISOString().slice(0, 10)
+      : '免费用户';
+    var stEl = el('span', '', st);
+    stEl.style.cssText = 'color:' + (u.is_member ? '#F59E0B' : '#8a857c') + ';white-space:nowrap';
+    row.appendChild(stEl);
+    var seen = el('span', '', fmtTime(u.last_seen_at));
+    seen.style.cssText = 'color:#8a857c;white-space:nowrap';
+    row.appendChild(seen);
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+
+  function query() {
+    _usersKeyword = kw.value.trim();
+    loadUsersCard(_usersKeyword, chk.checked ? 1 : 0);
+  }
+  qBtn.addEventListener('click', query);
+  kw.addEventListener('keydown', function (e) { if (e.key === 'Enter') query(); });
+}
+function loadUsersCard(keyword, memberOnly) {
+  var q = '?limit=50'
+    + (keyword ? '&keyword=' + encodeURIComponent(keyword) : '')
+    + (memberOnly ? '&member_only=1' : '');
+  get('/api/admin/users' + q, 8000).then(renderUsers).catch(function () {
+    document.getElementById('usersBody').innerHTML =
+      '<span class="err-box">加载失败（服务未启动？）</span>';
+  });
+}
+loadUsersCard(_usersKeyword, 0);
+
+/* ── 违禁词库热管理卡（2026-10-11）──
+   GET /api/admin/banned/words 公开读；增删/停用需 API Key，保存即热生效 */
+function renderBanned(j) {
+  var box = document.getElementById('bannedBody');
+  box.textContent = '';
+  var cats = j.categories || {};
+  var words = j.words || [];
+  var enabledCount = words.filter(function (w) { return w.enabled; }).length;
+
+  var head = el('div', '', '共 ' + words.length + ' 词（启用 ' + enabledCount
+    + ' · 停用 ' + (words.length - enabledCount) + '）');
+  head.style.cssText = 'font-size:12px;color:#b8b2a8;margin-bottom:8px';
+  box.appendChild(head);
+
+  // 行1：新增词表单
+  var addRow = el('div', '');
+  addRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px';
+  var wInp = document.createElement('input');
+  wInp.placeholder = '新增词（1~20 字）';
+  wInp.style.cssText = 'width:150px;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  var catSel = document.createElement('select');
+  catSel.style.cssText = 'background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px;font-size:11px';
+  Object.keys(cats).forEach(function (k) {
+    var o = document.createElement('option');
+    o.value = k; o.textContent = cats[k].name || k;
+    catSel.appendChild(o);
+  });
+  var sInp = document.createElement('input');
+  sInp.placeholder = '替换建议（可选）';
+  sInp.style.cssText = 'width:150px;background:#241f1a;color:#e8e2d8;border:1px solid #3a342e;border-radius:6px;padding:5px 8px;font-size:11px';
+  var addBtn = el('button', '');
+  addBtn.textContent = '添加词';
+  addBtn.style.cssText = 'font-size:11px;padding:5px 12px;cursor:pointer;white-space:nowrap';
+  var msg = el('span', '');
+  msg.style.cssText = 'font-size:11px';
+  addRow.appendChild(wInp); addRow.appendChild(catSel); addRow.appendChild(sInp);
+  addRow.appendChild(addBtn); addRow.appendChild(msg);
+  box.appendChild(addRow);
+
+  // 行2：按类目分组的词列表（含停用切换/删除）
+  var listBox = el('div', '');
+  listBox.style.cssText = 'max-height:260px;overflow-y:auto;border:1px solid #3a342e;border-radius:8px;padding:8px';
+  var byCat = {};
+  words.forEach(function (w) { (byCat[w.category] = byCat[w.category] || []).push(w); });
+  Object.keys(byCat).forEach(function (cat) {
+    var meta = cats[cat] || {};
+    var line = el('div', '');
+    line.style.cssText = 'margin-bottom:8px';
+    var title = el('div', '', (meta.name || cat) + '（' + byCat[cat].length + '）'
+      + (meta.risk ? ' · 风险：' + meta.risk : ''));
+    title.style.cssText = 'font-size:11px;color:#8a857c;margin-bottom:4px';
+    line.appendChild(title);
+    var wrap = el('div', '');
+    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px';
+    byCat[cat].forEach(function (w) {
+      var chip = el('span', '', w.word + (w.suggest ? '→' + w.suggest : ''));
+      var base = 'font-size:10px;padding:3px 8px;border-radius:10px;cursor:pointer;display:inline-block;';
+      if (!w.enabled) {
+        chip.style.cssText = base + 'background:#241f1a;color:#6b665e;border:1px solid #3a342e;text-decoration:line-through';
+        chip.title = '已停用 · 点击启用';
+      } else if (w.source === 'custom') {
+        chip.style.cssText = base + 'background:#1e3a2a;color:#22C55E;border:1px solid #22C55E';
+        chip.title = '自定义词 · 点击停用';
+      } else {
+        chip.style.cssText = base + 'background:#241f1a;color:#e8e2d8;border:1px solid #3a342e';
+        chip.title = '内置词 · 点击停用';
+      }
+      chip.addEventListener('click', function () {
+        var needKey = !(w.source === 'custom' && w.enabled);
+        if (needKey && !keyVal()) {
+          msg.textContent = '停用/启用需要 API Key（下方卡密卡可填）';
+          msg.style.color = '#EF4444';
+          setTimeout(function () { msg.textContent = ''; }, 3500);
+          return;
+        }
+        chip.style.opacity = '0.5';
+        fetch(BASE + '/api/admin/banned/words/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': keyVal() },
+          body: JSON.stringify({ word: w.word, enabled: !w.enabled })
+        }).then(function (r) { return r.json(); }).then(function (jj) {
+          chip.style.opacity = '1';
+          if (jj && jj.ok) {
+            w.enabled = jj.enabled;
+            renderBanned(j);           // 重渲染刷新颜色
+          } else {
+            msg.textContent = (jj && jj.detail) || '操作失败';
+            msg.style.color = '#EF4444';
+          }
+        }).catch(function () {
+          chip.style.opacity = '1';
+          msg.textContent = '网络错误'; msg.style.color = '#EF4444';
+        });
+      });
+      wrap.appendChild(chip);
+    });
+    line.appendChild(wrap);
+    listBox.appendChild(line);
+  });
+  box.appendChild(listBox);
+
+  // 新增
+  addBtn.addEventListener('click', function () {
+    var w = wInp.value.trim();
+    if (!w) { msg.textContent = '请输入词'; msg.style.color = '#EF4444'; return; }
+    addBtn.disabled = true;
+    fetch(BASE + '/api/admin/banned/words', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': keyVal() },
+      body: JSON.stringify({ word: w, category: catSel.value, suggest: sInp.value.trim() })
+    }).then(function (r) { return r.json(); }).then(function (jj) {
+      if (jj && jj.ok) {
+        msg.textContent = '「' + w + '」已生效（热更新）';
+        msg.style.color = '#22C55E';
+        wInp.value = ''; sInp.value = '';
+        setTimeout(function () { msg.textContent = ''; }, 3000);
+        loadBannedCard();            // 重载全量
+      } else {
+        msg.textContent = (jj && jj.detail) || '添加失败（检查 API Key）';
+        msg.style.color = '#EF4444';
+      }
+    }).catch(function () {
+      msg.textContent = '网络错误'; msg.style.color = '#EF4444';
+    }).then(function () { addBtn.disabled = false; });
+  });
+}
+function loadBannedCard() {
+  get('/api/admin/banned/words', 8000).then(function (j) {
+    renderBanned(j);
+  }).catch(function () {
+    document.getElementById('bannedBody').innerHTML =
+      '<span class="err-box">加载失败（服务未启动？）</span>';
+  });
+}
+loadBannedCard();
+
+/* ── 汇总加载 ── */
+function loadAll() {
+  Promise.allSettled([
+    get('/api/health/platforms'),
+    get('/api/health/alerts'),
+    get('/api/health/history?limit=1000'),
+    get('/api/trending?platform=bilibili'),
+    get('/api/domains'),
+    get('/api/ads/config')
+  ]).then(function (rs) {
+    var s = rs[0].status === 'fulfilled' ? rs[0].value : null;
+    var persisted = rs[1].status === 'fulfilled' ? (rs[1].value.alerts || []) : [];
+    var hist = rs[2].status === 'fulfilled' ? (rs[2].value.items || []) : [];
+    var trend = rs[3].status === 'fulfilled' ? rs[3].value : null;
+    var dom = rs[4].status === 'fulfilled' ? rs[4].value : null;
+    var adsCfg = rs[5].status === 'fulfilled' ? (rs[5].value.ads || null) : null;
+
+    if (!s) {
+      var grid = document.getElementById('probeGrid');
+      grid.textContent = '';
+      grid.appendChild(el('div', 'err-box',
+        '连不上解析服务（' + (BASE || '同源') + '）—— 请确认 start-server.ps1 已启动'));
+    } else {
+      renderChips(s, persisted);
+      renderAlerts(persisted, s.alerts);
+      renderProbes(s);
+    }
+    renderHeat(hist);
+    renderTrend(trend);
+    renderDomains(dom);
+    renderAds(adsCfg);
+    left = REFRESH_S;
+  });
+}
+
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+setInterval(function () {
+  left--;
+  if (left <= 0) { loadAll(); return; }
+  document.getElementById('countdown').textContent = left + 's 后自动刷新';
+}, 1000);
+loadAll();
+</script>
+</body>
+</html>

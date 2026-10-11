@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "热门榜单",
+  "navigationBarBackgroundColor": "#3D2000",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#FAF7F4",
+  "usingComponents": {
+    "ad-banner": "/components/ad-banner/ad-banner",
+    "theme-deco": "/components/theme-deco/theme-deco"
+  }
+}

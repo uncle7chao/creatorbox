@@ -1,0 +1,500 @@
+/**
+ * 皮肤专属图标集（逐个定制）
+ * dark    → 星夜线性风：扫描框 / 2×2 矩阵 / 终端 / 月星 / 星芒 / 双闪电 …
+ * sakura  → 花元素风：樱花 / 花枝 / 花瓣镜 / 云上花 / 书签花 …
+ *
+ * 实现约束：每个图标 = 1 个元素 + 至多 2 个伪元素（形状靠
+ * background 多层渐变 / clip-path / 边框实现），保证动态类名可用
+ * （页面按 theme 拼 `class="sk sk-d-{type}"`，无需在 wxml 里铺结构）。
+ * 图标颜色统一走 --brand / --bg-card，跟随皮肤。
+ */
+.sk {
+  position: relative;
+  width: 36rpx;
+  height: 36rpx;
+}
+
+/* ══════════ 暗黑 · 星夜线性风 ══════════ */
+
+/* 解析：扫描框 + 中心点 + 角刻 */
+.sk-d-parse {
+  border: 3rpx solid var(--brand);
+  border-radius: 8rpx;
+}
+.sk-d-parse::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.sk-d-parse::after {
+  content: '';
+  position: absolute;
+  right: -3rpx;
+  top: -3rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 3rpx;
+  background: var(--brand);
+}
+
+/* 批量：2×2 矩阵 */
+.sk-d-batch {
+  background-image:
+    linear-gradient(var(--brand), var(--brand)),
+    linear-gradient(var(--brand), var(--brand)),
+    linear-gradient(var(--brand), var(--brand)),
+    linear-gradient(var(--brand), var(--brand));
+  background-size: 40% 40%;
+  background-position: 0 0, 100% 0, 0 100%, 100% 100%;
+  background-repeat: no-repeat;
+  border-radius: 4rpx;
+}
+
+/* 文案：终端 >_ */
+.sk-d-copy {
+  border: 3rpx solid var(--brand);
+  border-radius: 8rpx;
+}
+.sk-d-copy::before {
+  content: '';
+  position: absolute;
+  left: 8rpx;
+  top: 12rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-top: 3rpx solid var(--brand);
+  border-right: 3rpx solid var(--brand);
+  transform: rotate(45deg);
+}
+.sk-d-copy::after {
+  content: '';
+  position: absolute;
+  left: 19rpx;
+  top: 21rpx;
+  width: 9rpx;
+  height: 3rpx;
+  background: var(--brand);
+  border-radius: 2rpx;
+}
+
+/* 榜单：月牙 + 双星 */
+.sk-d-rank {
+  border-radius: 50%;
+  background: radial-gradient(circle at 128% 128%,
+    transparent 54%, var(--brand) 55%);
+}
+.sk-d-rank::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 2rpx;
+  width: 12rpx;
+  height: 12rpx;
+  background: var(--brand);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+.sk-d-rank::after {
+  content: '';
+  position: absolute;
+  right: 12rpx;
+  top: 14rpx;
+  width: 6rpx;
+  height: 6rpx;
+  background: var(--brand);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+
+/* 干货：翻开的书 + 星点 */
+.sk-d-column {
+  border: 3rpx solid var(--brand);
+  border-radius: 4rpx 10rpx 4rpx 10rpx;
+  border-right-width: 8rpx;
+}
+.sk-d-column::before {
+  content: '';
+  position: absolute;
+  left: 6rpx;
+  top: 8rpx;
+  width: 3rpx;
+  height: 16rpx;
+  background: var(--brand);
+  border-radius: 2rpx;
+}
+.sk-d-column::after {
+  content: '';
+  position: absolute;
+  right: 2rpx;
+  top: 2rpx;
+  width: 9rpx;
+  height: 9rpx;
+  background: var(--brand);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+
+/* 高清：星芒（大小双星） */
+.sk-d-hd {
+  background: var(--brand);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+}
+.sk-d-hd::before {
+  content: '';
+  position: absolute;
+  right: -4rpx;
+  top: -4rpx;
+  width: 12rpx;
+  height: 12rpx;
+  background: var(--brand);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+
+/* 不限次：细箭头入托盘 */
+.sk-d-save::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 2rpx;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8rpx solid transparent;
+  border-right: 8rpx solid transparent;
+  border-top: 16rpx solid var(--brand);
+}
+.sk-d-save::after {
+  content: '';
+  position: absolute;
+  left: 3rpx;
+  bottom: 4rpx;
+  width: 30rpx;
+  height: 3rpx;
+  background: var(--brand);
+  border-radius: 2rpx;
+}
+
+/* 云端：云 + 月牙点 */
+.sk-d-cloud {
+  background-image:
+    radial-gradient(circle 9rpx at 30% 42%, var(--brand) 98%, transparent),
+    radial-gradient(circle 7rpx at 58% 30%, var(--brand) 98%, transparent),
+    radial-gradient(circle 8rpx at 74% 50%, var(--brand) 98%, transparent),
+    linear-gradient(var(--brand), var(--brand));
+  background-size: auto, auto, auto, 30rpx 8rpx;
+  background-position: 0 0, 0 0, 0 0, 3rpx 24rpx;
+  background-repeat: no-repeat;
+}
+.sk-d-cloud::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 2rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  border: 2rpx solid var(--brand);
+}
+
+/* 优先：双闪电 */
+.sk-d-fast::before,
+.sk-d-fast::after {
+  content: '';
+  position: absolute;
+  background: var(--brand);
+  clip-path: polygon(58% 0, 12% 55%, 44% 55%, 38% 100%, 90% 40%, 55% 40%);
+}
+.sk-d-fast::before { left: 0; top: 2rpx; width: 17rpx; height: 30rpx; }
+.sk-d-fast::after { right: 0; bottom: 0; width: 13rpx; height: 22rpx; opacity: .6; }
+
+/* 书架：三横档 */
+.sk-d-lib {
+  border: 3rpx solid var(--brand);
+  border-radius: 6rpx;
+  background: repeating-linear-gradient(0deg,
+    var(--brand) 0 3rpx, transparent 3rpx 12rpx);
+  background-position: 0 6rpx;
+}
+
+/* 更多：六点阵 */
+.sk-d-more {
+  background-image:
+    radial-gradient(circle 3rpx at 25% 25%, var(--brand) 98%, transparent),
+    radial-gradient(circle 3rpx at 75% 25%, var(--brand) 98%, transparent),
+    radial-gradient(circle 3rpx at 25% 75%, var(--brand) 98%, transparent),
+    radial-gradient(circle 3rpx at 75% 75%, var(--brand) 98%, transparent),
+    radial-gradient(circle 3rpx at 50% 50%, var(--brand) 98%, transparent);
+}
+
+/* ══════════ 樱花粉 · 花元素风 ══════════ */
+
+/* 樱花五瓣（单元素多层渐变） */
+.sk-flower {
+  background-image:
+    radial-gradient(circle 6.5rpx at 50% 14%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 84% 36%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 72% 80%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 28% 80%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 16% 36%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+
+/* 解析：一朵花 */
+.sk-s-parse { background: none; }
+.sk-s-parse::before {
+  content: '';
+  position: absolute;
+  inset: 2rpx;
+  background-image:
+    radial-gradient(circle 6.5rpx at 50% 14%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 84% 36%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 72% 80%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 28% 80%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 6.5rpx at 16% 36%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+
+/* 批量：一花两苞 */
+.sk-s-batch { background: none; }
+.sk-s-batch::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 26rpx; height: 26rpx;
+  background-image:
+    radial-gradient(circle 5.5rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5.5rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5.5rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5.5rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5.5rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3.5rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+.sk-s-batch::after {
+  content: '';
+  position: absolute;
+  right: 0; bottom: 0;
+  width: 12rpx; height: 12rpx;
+  border-radius: 50%;
+  border: 3rpx solid var(--brand-3);
+}
+
+/* 文案：花书签 + 两行 */
+.sk-s-copy { background: none; }
+.sk-s-copy::before {
+  content: '';
+  position: absolute;
+  left: 6rpx; top: 2rpx;
+  width: 18rpx; height: 26rpx;
+  border: 3rpx solid var(--brand);
+  border-radius: 4rpx 4rpx 10rpx 10rpx;
+}
+.sk-s-copy::after {
+  content: '';
+  position: absolute;
+  left: 26rpx; top: 10rpx;
+  width: 9rpx; height: 3rpx;
+  background: var(--brand-3);
+  border-radius: 2rpx;
+  box-shadow: 0 8rpx 0 var(--brand-3);
+}
+
+/* 榜单：花枝（斜枝 + 两朵） */
+.sk-s-rank { background: none; }
+.sk-s-rank::before {
+  content: '';
+  position: absolute;
+  left: 2rpx; bottom: 6rpx;
+  width: 32rpx; height: 3rpx;
+  background: var(--brand);
+  border-radius: 2rpx;
+  transform: rotate(-24deg);
+  transform-origin: left center;
+}
+.sk-s-rank::after {
+  content: '';
+  position: absolute;
+  right: 2rpx; top: 4rpx;
+  width: 18rpx; height: 18rpx;
+  background-image:
+    radial-gradient(circle 4.5rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+
+/* 干货：书 + 花 */
+.sk-s-column { background: none; }
+.sk-s-column::before {
+  content: '';
+  position: absolute;
+  left: 3rpx; bottom: 4rpx;
+  width: 26rpx; height: 20rpx;
+  border: 3rpx solid var(--brand);
+  border-radius: 4rpx;
+}
+.sk-s-column::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0;
+  width: 16rpx; height: 16rpx;
+  background-image:
+    radial-gradient(circle 4rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 2.5rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+
+/* 高清：花瓣镜 */
+.sk-s-hd { background: none; }
+.sk-s-hd::before {
+  content: '';
+  position: absolute;
+  inset: 2rpx;
+  border: 3rpx solid var(--brand);
+  border-radius: 50%;
+}
+.sk-s-hd::after {
+  content: '';
+  position: absolute;
+  left: 13rpx; top: 13rpx;
+  width: 12rpx; height: 12rpx;
+  background-image:
+    radial-gradient(circle 3rpx at 50% 18%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 80% 40%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 68% 76%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 32% 76%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 20% 40%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 2rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+
+/* 不限次：花 + 下箭头 */
+.sk-s-save { background: none; }
+.sk-s-save::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 20rpx; height: 20rpx;
+  background-image:
+    radial-gradient(circle 5rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+.sk-s-save::after {
+  content: '';
+  position: absolute;
+  right: 2rpx; bottom: 2rpx;
+  width: 0; height: 0;
+  border-left: 7rpx solid transparent;
+  border-right: 7rpx solid transparent;
+  border-top: 14rpx solid var(--brand);
+}
+
+/* 云端：云上花 */
+.sk-s-cloud { background: none; }
+.sk-s-cloud::before {
+  content: '';
+  position: absolute;
+  left: 0; bottom: 2rpx;
+  width: 30rpx; height: 20rpx;
+  background-image:
+    radial-gradient(circle 8rpx at 32% 46%, var(--brand-3) 98%, transparent),
+    radial-gradient(circle 6rpx at 58% 32%, var(--brand-3) 98%, transparent),
+    radial-gradient(circle 7rpx at 74% 52%, var(--brand-3) 98%, transparent),
+    linear-gradient(var(--brand-3), var(--brand-3));
+  background-size: auto, auto, auto, 28rpx 8rpx;
+  background-position: 0 0, 0 0, 0 0, 1rpx 12rpx;
+  background-repeat: no-repeat;
+}
+.sk-s-cloud::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0;
+  width: 10rpx; height: 10rpx;
+  border-radius: 50%;
+  background: var(--brand);
+}
+
+/* 优先：花 + 风线 */
+.sk-s-fast { background: none; }
+.sk-s-fast::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 4rpx;
+  width: 18rpx; height: 18rpx;
+  background-image:
+    radial-gradient(circle 4.5rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4.5rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+.sk-s-fast::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 10rpx;
+  width: 16rpx; height: 3rpx;
+  background: var(--brand);
+  border-radius: 2rpx;
+  box-shadow: 0 9rpx 0 var(--brand), 0 18rpx 0 var(--brand-3);
+}
+
+/* 书架：三瓣扇形 */
+.sk-s-lib { background: none; }
+.sk-s-lib::before {
+  content: '';
+  position: absolute;
+  left: 2rpx; bottom: 2rpx;
+  width: 30rpx; height: 22rpx;
+  background-image:
+    radial-gradient(circle 7rpx at 20% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 7rpx at 50% 62%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 7rpx at 80% 78%, var(--brand-3) 97%, transparent);
+}
+.sk-s-lib::after {
+  content: '';
+  position: absolute;
+  left: 4rpx; bottom: 1rpx;
+  width: 28rpx; height: 3rpx;
+  background: var(--brand);
+  border-radius: 2rpx;
+}
+
+/* 更多：两朵花 */
+.sk-s-more { background: none; }
+.sk-s-more::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 2rpx;
+  width: 20rpx; height: 20rpx;
+  background-image:
+    radial-gradient(circle 5rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 5rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 3rpx at 50% 50%, var(--brand) 97%, transparent);
+}
+.sk-s-more::after {
+  content: '';
+  position: absolute;
+  right: 0; bottom: 0;
+  width: 16rpx; height: 16rpx;
+  background-image:
+    radial-gradient(circle 4rpx at 50% 16%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 82% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 70% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 30% 78%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 4rpx at 18% 38%, var(--brand-3) 97%, transparent),
+    radial-gradient(circle 2.5rpx at 50% 50%, var(--brand) 97%, transparent);
+}

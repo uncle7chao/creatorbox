@@ -1,0 +1,120 @@
+{
+ "success": true,
+ "platform": "weibo",
+ "method": "component_api",
+ "type": "video",
+ "oid": "1034:5343195622473745",
+ "mid": "5343196424963244",
+ "media_id": "5343195622473745",
+ "title": "陆屿熙的微博视频",
+ "author": "陆屿熙",
+ "author_id": "2382097074",
+ "author_avatar": "https://tvax1.sinaimg.cn/small/8dfbeab2ly8gxp2i2bt68j20c70c73z0.jpg?KID=imgbed,tva&Expires=1791294411&ssig=Hxmof5Sh1J",
+ "cover": "https://wx4.sinaimg.cn/orj480/8dfbeab2gy1ih3mp8r6shj20ty1cgn1j.jpg",
+ "verified": true,
+ "verified_reason": "情感博主",
+ "publish_time_ts": 1789400571,
+ "publish_time": 1789400571,
+ "date_text": "21天前",
+ "like_count": 5013,
+ "comment_count": 731,
+ "share_count": 350,
+ "repost_count": 350,
+ "view_count_text": "509万",
+ "follower_count_text": "116万",
+ "follower_count": "116万",
+ "ip_location": "发布于 广东",
+ "duration_time": 319.414,
+ "duration_ms": 319414,
+ "video_url": "https://f.video.weibocdn.com/u0/4eRh2DG2gx08ANIgfTx6010412080oYM0E030.mp4?label=mp4_1080p&template=1078x1744.24.0&media_id=5343195622473745&tp=8x8A3El:YTkl0eM8&us=0&ori=1&bf=4&ot=v&ps=3lckmu&uid=5Bm3J8&ab=17399-g1,15568-g4,8012-g2,3601-g43,8013-g0,3601-g36,3601-g36,3601-g38,3601-g38&Expires=1791287210&ssig=YWWr7OB7LB&KID=unistore,video",
+ "quality": "高清 1080P",
+ "size": 118306712,
+ "options": [
+  {
+   "gear": "高清 1080P",
+   "height": 1080,
+   "size": 118306712,
+   "no_watermark": true,
+   "url": "https://f.video.weibocdn.com/u0/4eRh2DG2gx08ANIgfTx6010412080oYM0E030.mp4?label=mp4_1080p&template=1078x1744.24.0&media_id=5343195622473745&tp=8x8A3El:YTkl0eM8&us=0&ori=1&bf=4&ot=v&ps=3lckmu&uid=5Bm3J8&ab=17399-g1,15568-g4,8012-g2,3601-g43,8013-g0,3601-g36,3601-g36,3601-g38,3601-g38&Expires=1791287210&ssig=YWWr7OB7LB&KID=unistore,video",
+   "index": 0
+  },
+  {
+   "gear": "高清 720P",
+   "height": 720,
+   "size": 64346569,
+   "no_watermark": true,
+   "url": "https://f.video.weibocdn.com/u0/bwVsmVxggx08ANIdsPbq01041204lZtT0E020.mp4?label=mp4_720p&template=720x1164.24.0&media_id=5343195622473745&tp=8x8A3El:YTkl0eM8&us=0&ori=1&bf=4&ot=v&ps=3lckmu&uid=5Bm3J8&ab=17399-g1,15568-g4,8012-g2,3601-g43,8013-g0,3601-g36,3601-g36,3601-g38,3601-g38&Expires=1791287210&ssig=I%2Bdp2ciuxH&KID=unistore,video",
+   "index": 1
+  },
+  {
+   "gear": "标清 480P",
+   "height": 480,
+   "size": 42315379,
+   "no_watermark": true,
+   "url": "https://f.video.weibocdn.com/u0/hyGkZC3Mgx08ANIe31Co01041202Rya70E020.mp4?label=mp4_hd&template=540x872.24.0&media_id=5343195622473745&tp=8x8A3El:YTkl0eM8&us=0&ori=1&bf=4&ot=v&ps=3lckmu&uid=5Bm3J8&ab=17399-g1,15568-g4,8012-g2,3601-g43,8013-g0,3601-g36,3601-g36,3601-g38,3601-g38&Expires=1791287210&ssig=CbKOy%2BNOup&KID=unistore,video",
+   "index": 2
+  }
+ ],
+ "options_count": 3,
+ "dash": false,
+ "need_proxy": false,
+ "anonymous": true,
+ "no_watermark": true,
+ "watermark_free": true,
+ "url_expiry_note": "URL 带 Expires + ssig 签名，缓存 TTL ≤ 10 分钟",
+ "cache_ttl_hint": 600,
+ "description": "活了几百年的疑惑终于解开，原来大变活人的机关是这样的！",
+ "orientation": "vertical",
+ "play_count_text": "509万次播放",
+ "caption": "活了几百年的疑惑终于解开，原来大变活人的机关是这样的！ 陆屿熙的微博视频",
+ "short_url": "https://weibo.com/tv/show/1034:5343195622473745?mid=5343196424963244",
+ "meta": {
+  "title": "活了几百年的疑惑终于解开，原来大变活人的机关是这样的",
+  "title_source": "desc_head",
+  "description": "活了几百年的疑惑终于解开，原来大变活人的机关是这样的！",
+  "cover": "https://wx4.sinaimg.cn/orj480/8dfbeab2gy1ih3mp8r6shj20ty1cgn1j.jpg",
+  "author_name": "陆屿熙",
+  "author_id": "2382097074",
+  "author_avatar": "https://tvax1.sinaimg.cn/small/8dfbeab2ly8gxp2i2bt68j20c70c73z0.jpg?KID=imgbed,tva&Expires=1791294411&ssig=Hxmof5Sh1J",
+  "duration_s": 319.41,
+  "publish_ts": 1789400571,
+  "publish_time_text": "21天前",
+  "publish_time": "2026-09-14 23:42",
+  "stats": {
+   "like": 5013,
+   "comment": 731,
+   "share": 350
+  },
+  "stats_text": {
+   "view": "509万",
+   "follower": "116万"
+  },
+  "tags": [],
+  "extra": {
+   "verified": true,
+   "verified_reason": "情感博主",
+   "ip_location": "发布于 广东",
+   "orientation": "vertical"
+  }
+ },
+ "duration_s": 319.41,
+ "author_name": "陆屿熙",
+ "stats": {
+  "like": 5013,
+  "comment": 731,
+  "share": 350
+ },
+ "tags": [],
+ "stats_text": {
+  "view": "509万",
+  "follower": "116万"
+ },
+ "extra": {
+  "verified": true,
+  "verified_reason": "情感博主",
+  "ip_location": "发布于 广东",
+  "orientation": "vertical"
+ },
+ "meta_schema_version": 1,
+ "cached": false
+}

@@ -1,0 +1,60 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+
+  <view class="hero">
+    <view class="hero-title">积分中心</view>
+    <view class="hero-sub">每日签到攒积分 · 100 积分兑 1 天会员</view>
+  </view>
+
+  <!-- 余额卡 -->
+  <view class="card bal-card">
+    <view class="bal-l">
+      <view class="bal-num">{{balance}}</view>
+      <view class="bal-lab">当前积分</view>
+    </view>
+    <view class="bal-sep"></view>
+    <view class="bal-l">
+      <view class="bal-num bal-streak">{{streak}}</view>
+      <view class="bal-lab">连续签到（天）</view>
+    </view>
+  </view>
+
+  <!-- 近 7 天签到格 -->
+  <view class="card week-card">
+    <view class="wk-h">近 7 天</view>
+    <view class="wk-row">
+      <view wx:for="{{[6,5,4,3,2,1,0]}}" wx:key="*this" class="wk-cell">
+        <view class="wk-dot {{signedToday && item === 0 ? 'wk-today' : ''}}"></view>
+        <view class="wk-l">{{item === 0 ? '今天' : item + '天前'}}</view>
+      </view>
+    </view>
+    <view class="wk-note">连签每满 7 天额外 +20 积分</view>
+  </view>
+
+  <!-- 签到按钮 -->
+  <view class="card">
+    <view class="btn-primary {{signedToday ? 'btn-done' : ''}}" bindtap="onSign">
+      {{signedToday ? '今日已签到' : '立即签到 +10'}}
+    </view>
+    <view wx:if="{{message}}" class="msg">{{message}}</view>
+    <view wx:if="{{errMsg}}" class="err">{{errMsg}}</view>
+  </view>
+
+  <!-- 兑换 -->
+  <view class="card">
+    <view class="rd-title">积分兑换</view>
+    <view class="rd-desc">100 积分 = 1 天会员体验 · 批量/高清/保存不限次立即生效</view>
+    <view class="btn-primary {{redeemableDays < 1 ? 'btn-done' : ''}}" bindtap="onRedeem">
+      {{redeemableDays >= 1
+        ? '兑换 ' + redeemableDays + ' 天会员'
+        : '攒够 ' + redeemCost + ' 分可兑换'}}
+    </view>
+    <view wx:if="{{member && member.is_member}}" class="msg">
+      会员生效中，到期时间已顺延
+    </view>
+  </view>
+
+  <view class="disc">
+    积分不可转让 · 兑换立即生效且不可撤销 · 规则调整会提前在专栏公告
+  </view>
+</view>

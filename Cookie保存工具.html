@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie 一键保存工具 · CreatorBox</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #F7F2EA;
+    color: #2A1B0C;
+    padding: 32px 16px 60px;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 26px; margin-bottom: 6px; }
+  .sub { color: #8B7D6E; font-size: 14px; margin-bottom: 26px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+  .tab {
+    flex: 1; padding: 14px; text-align: center; cursor: pointer;
+    border: 2px solid #E2D9CB; border-radius: 12px; background: #fff;
+    font-size: 15px; font-weight: 600; transition: .15s;
+  }
+  .tab.on { border-color: #D97A26; background: #FBEEDA; }
+  .panel { display: none; }
+  .panel.on { display: block; }
+  .step {
+    background: #fff; border: 1px solid #E2D9CB; border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 14px;
+  }
+  .step b { color: #D97A26; margin-right: 8px; }
+  .step .k { display: inline-block; background: #F3EDE4; border-radius: 6px;
+    padding: 1px 8px; font-size: 13px; font-family: Consolas, monospace; }
+  .warn {
+    background: #FDF3E4; border-left: 4px solid #D97A26; border-radius: 8px;
+    padding: 12px 16px; font-size: 14px; margin: 16px 0;
+  }
+  textarea {
+    width: 100%; height: 110px; border: 2px dashed #D6CEC4; border-radius: 12px;
+    padding: 12px; font-size: 12px; font-family: Consolas, monospace;
+    resize: vertical; background: #fff; color: #2A1B0C;
+  }
+  textarea:focus { outline: none; border-color: #D97A26; }
+  .btn {
+    display: inline-block; margin-top: 12px; padding: 12px 26px;
+    background: linear-gradient(135deg, #F2C879, #D97A26); color: #2A1B0C;
+    font-size: 15px; font-weight: 700; border: none; border-radius: 999px;
+    cursor: pointer;
+  }
+  .btn:disabled { background: #E2D9CB; color: #B3A695; cursor: not-allowed; }
+  .hint { font-size: 13px; color: #8B7D6E; margin-top: 10px; }
+  .ok {
+    display: none; margin-top: 12px; padding: 10px 16px;
+    background: #E4F5EC; color: #1B8A5A; border-radius: 8px; font-size: 14px;
+  }
+  code.dir {
+    background: #33210F; color: #F2C879; padding: 2px 8px; border-radius: 6px;
+    font-size: 13px; user-select: all;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cookie 一键保存工具</h1>
+  <div class="sub">登录只是第一步 —— 还要把浏览器的 Cookie 交给解析服务。本页帮你两分钟完成。</div>
+
+  <div class="tabs">
+    <div class="tab on" id="tabXhs" onclick="sw('xhs')">📕 小红书 Cookie</div>
+    <div class="tab" id="tabWb" onclick="sw('wb')">🌐 微博 Cookie</div>
+  </div>
+
+  <!-- ── 小红书 ── -->
+  <div class="panel on" id="pnXhs">
+    <div class="step"><b>1</b>确认已登录：浏览器打开 <span class="k">xiaohongshu.com</span> 右上角能看到自己的头像</div>
+    <div class="step"><b>2</b>按 <span class="k">F12</span> → 顶部切到 <span class="k">Network</span>（网络）→ 按 <span class="k">F5</span> 刷新页面</div>
+    <div class="step"><b>3</b>在请求列表点<b>第一个</b>（名字是 explore 或 xiaohongshu.com）→ 右侧找到 <span class="k">Request Headers</span> 里的 <span class="k">Cookie:</span> 行</div>
+    <div class="step"><b>4</b>把「Cookie:」<b>后面</b>的整串内容全选复制（很长，几百到几千字符），粘贴到下面输入框</div>
+    <textarea id="txXhs" placeholder="把复制的 Cookie 整串粘贴到这里（不要带 'Cookie:' 三个字）" oninput="ck('xhs')"></textarea>
+    <button class="btn" id="btXhs" disabled onclick="dl('xhs')">下载 xhs-cookie.txt</button>
+    <div class="ok" id="okXhs">✅ 文件已下载 —— 接着看下面的「最后一步」</div>
+  </div>
+
+  <!-- ── 微博 ── -->
+  <div class="panel" id="pnWb">
+    <div class="step"><b>1</b>确认已登录：浏览器打开 <span class="k">weibo.com</span> 能看到首页</div>
+    <div class="step"><b>2</b>按 <span class="k">F12</span> → <span class="k">Network</span> → <span class="k">F5</span> 刷新</div>
+    <div class="step"><b>3</b>点第一个请求（weibo.com）→ <span class="k">Request Headers</span> → <span class="k">Cookie:</span> 行</div>
+    <div class="step"><b>4</b>复制「Cookie:」后面的整串，粘贴到下面</div>
+    <textarea id="txWb" placeholder="把复制的 Cookie 整串粘贴到这里" oninput="ck('wb')"></textarea>
+    <button class="btn" id="btWb" disabled onclick="dl('wb')">下载 weibo-cookie.txt</button>
+    <div class="ok" id="okWb">✅ 文件已下载 —— 接着看下面的「最后一步」</div>
+  </div>
+
+  <div class="warn">⚠️ Cookie 等同你的登录身份，<b>不要发给任何人</b>（包括我）。</div>
+
+  <div class="step">
+    <b>最后一步</b>（两个文件都下载后）：<br>
+    把下载好的 <span class="k">xhs-cookie.txt</span> / <span class="k">weibo-cookie.txt</span>
+    移动到这个文件夹：<br><br>
+    <code class="dir">D:\WorkBuddyFILE\CreatorBox\server</code><br><br>
+    然后重新运行 <span class="k">start-server.ps1</span>，启动时会显示
+    「小红书 Cookie: 已加载」「微博 Cookie: 已加载」。<br>
+    到小程序里再解析小红书分享链接 / 打开微博榜单，就都通了。
+  </div>
+</div>
+
+<script>
+var CUR = 'xhs';
+function sw(w) {
+  CUR = w;
+  document.getElementById('tabXhs').className = 'tab' + (w === 'xhs' ? ' on' : '');
+  document.getElementById('tabWb').className = 'tab' + (w === 'wb' ? ' on' : '');
+  document.getElementById('pnXhs').className = 'panel' + (w === 'xhs' ? ' on' : '');
+  document.getElementById('pnWb').className = 'panel' + (w === 'wb' ? ' on' : '');
+}
+function ck(w) {
+  var v = document.getElementById(w === 'xhs' ? 'txXhs' : 'txWb').value.trim();
+  document.getElementById(w === 'xhs' ? 'btXhs' : 'btWb').disabled = v.length < 30;
+}
+function dl(w) {
+  var v = document.getElementById(w === 'xhs' ? 'txXhs' : 'txWb').value.trim()
+          .replace(/^Cookie:\s*/i, '');
+  var name = w === 'xhs' ? 'xhs-cookie.txt' : 'weibo-cookie.txt';
+  var blob = new Blob([v], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  document.getElementById(w === 'xhs' ? 'okXhs' : 'okWb').style.display = 'block';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<view class="page theme-{{theme}}">
+  <theme-deco theme="{{theme}}" />
+  <view class="card">
+    <view class="card-t">免责声明</view>
+    <view class="p">
+      本工具仅获取各内容平台公开展示的内容地址，不对内容进行二次创作、上传或传播。
+    </view>
+    <view class="p">
+      内容的著作权归原作者及原平台所有。用户应自行确保使用该内容已获得合法授权，
+      并遵守原平台的使用条款。因用户使用本工具而产生的任何纠纷，由用户自行承担。
+    </view>
+    <view class="p">
+      本工具不保证任何平台内容的永久可用性，平台策略调整可能导致解析失败。
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-t">服务内容说明</view>
+    <view class="p">
+      本工具提供的是「内容地址解析」服务 —— 即获取平台在分发环节使用的原始地址，
+      从而获得平台源头就干净的原始文件。这与「去除已有图片/视频上的水印」是不同的事。
+    </view>
+    <view class="p">
+      我们不提供、不协助去除他人作品上的署名、版权水印或其他权利标识。
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-t">用户协议要点</view>
+    <view class="li">· 不得用于获取、传播违法违规内容</view>
+    <view class="li">· 不得用于侵犯他人著作权、肖像权等合法权益</view>
+    <view class="li">· 不得用于商业用途而不获授权</view>
+    <view class="li">· 不得对服务进行恶意攻击或批量爬取</view>
+  </view>
+
+  <view class="card">
+    <view class="card-t">投诉与举报</view>
+    <view class="p">
+      若您发现本小程序存在违规内容，或您的权益受到侵害，可通过以下渠道反馈：
+    </view>
+    <view class="li">· 微信内：右上角「···」→ 投诉</view>
+    <view class="li">· 邮箱：{{email}}</view>
+    <view wx:if="{{hasPhone}}" class="li" bindtap="onCallPhone">· 电话：可点击拨打</view>
+    <view class="p">我们将在 7 个工作日内核查并回复。</view>
+  </view>
+
+  <view class="acts">
+    <view class="act" bindtap="onReport">我要投诉</view>
+    <view class="act act-ghost" bindtap="onCopyEmail">复制投诉邮箱</view>
+  </view>
+
+  <view class="ver">CreatorBox v{{version}}</view>
+</view>

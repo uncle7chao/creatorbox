@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>新窗口开场提示词 - CreatorBox App/PC 开发</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f6f1e9; margin: 0; padding: 24px; }
+  .card { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  h1 { font-size: 20px; color: #b45309; margin: 0 0 4px; }
+  .note { font-size: 13px; color: #8a857c; margin-bottom: 16px; }
+  textarea { width: 100%; box-sizing: border-box; height: 260px; font-family: Consolas, monospace;
+    font-size: 13px; line-height: 1.6; border: 1px solid #e0d8cc; border-radius: 10px; padding: 12px;
+    color: #3a342e; background: #faf7f2; resize: vertical; }
+  button { background: #E8890C; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 24px; font-size: 14px; cursor: pointer; margin-top: 12px; }
+  button:hover { background: #d17a08; }
+  #tip { display: inline-block; margin-left: 12px; font-size: 13px; color: #22a05a; opacity: 0; transition: opacity .3s; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>新窗口开场提示词（CreatorBox App/PC 开发）</h1>
+  <div class="note">全选下方文本框内容 → 点复制 → 粘贴到新窗口发送</div>
+  <textarea id="prompt" readonly>
+你是 CreatorBox App/PC 端的开发工程师。项目背景与决策文档都在本地，先读再动工：
+
+1. 先读 D:\WorkBuddyFILE\CreatorBox\docs\CreatorBox-整体开发方案v4.md 的 §2（三端规划/国际平台功能分层/账号中台）
+2. 工程位置：D:\WorkBuddyFILE\CreatorBox\app_flutter\（P1 骨架已写好 lib/ + pubspec.yaml + README）
+3. 后端：CreatorBox\server（FastAPI，本机 8080；账号中台桥接登录 API 已就绪）
+4. 我本机环境：Windows + Flutter（已装），编译联调都在我本机跑，你只出代码和命令（PowerShell 语法）
+
+P1 待办（先跑通）：
+- 指导我完成 flutter create . --org cn.iyama && flutter pub get && flutter run -d windows 的首跑（报错我贴给你修）
+- 服务端先本机启动（start-server.ps1 或 uvicorn），验证桥接登录全流程：App 出码 → 小程序「会员→跨端绑定」输码 → App 自动登录同账号
+- 解析核心联调：粘贴抖音/B站链接 → 结果页档位/直链/BGM/字幕
+
+约束（必须遵守）：
+- 一条码线出 Windows+Android，禁止分叉成两套工程
+- 用户设备出资源的功能（直播录制/4K/批量）放本机引擎（P2），服务端只做解析下发
+- 沙箱/你的环境不能跑 dart build，编译验证一律我来
+- git 提交与我其他窗口的改动串行，不并发提交
+
+今天从 P1 首跑联调开始。
+  </textarea>
+  <div>
+    <button onclick="copyIt()">一键复制</button>
+    <span id="tip">✓ 已复制到剪贴板</span>
+  </div>
+</div>
+<script>
+function copyIt() {
+  const ta = document.getElementById('prompt');
+  ta.select();
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch (e) {}
+  if (!ok && navigator.clipboard) {
+    navigator.clipboard.writeText(ta.value).then(showTip);
+    return;
+  }
+  if (ok) showTip();
+}
+function showTip() {
+  const t = document.getElementById('tip');
+  t.style.opacity = 1;
+  setTimeout(() => t.style.opacity = 0, 2500);
+}
+</script>
+</body>
+</html>
