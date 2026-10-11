@@ -174,5 +174,11 @@ class CBApi {
 
   Future<Map<String, dynamic>> health() => _send('GET', '/api/health');
 
+  /// 平台入口可见性裁决（v4 §3.3 提审收敛开关）。
+  ///
+  /// ⚠️ 客户端**不自行判断隐藏逻辑** —— 三端各写一套是这类开关失控的根因。
+  /// 返回 {mode, review_mode, platforms:[{key,name_cn,types,max_quality,free_quality}]}
+  Future<Map<String, dynamic>> visibility() => _send('GET', '/api/visibility');
+
   void dispose() => _client.close();
 }

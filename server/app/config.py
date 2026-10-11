@@ -59,6 +59,12 @@ HOST = os.getenv('CB_HOST', '0.0.0.0')
 PORT = int(os.getenv('CB_PORT', '8000'))
 API_KEY = os.getenv('CB_API_KEY', '')
 
+# ---------- 提审收敛（v4 §3.3）----------
+# full   = 全量平台可见（默认，日常开发与线上正常版）
+# review = 提审收敛版，只保留 REVIEW_VISIBLE 白名单里的平台入口
+# 注意：收敛只隐藏「入口」，不关闭解析能力 —— 粘贴链接仍可解析。
+REVIEW_MODE = os.getenv('CB_REVIEW_MODE', 'full')
+
 # ---------- 配额（与 app/db.py、miniapp/utils/quota.js 三处同步） ----------
 SAVE_LIMIT_FREE = int(os.getenv('CB_SAVE_LIMIT_FREE', '2'))    # 视频保存/日
 BATCH_LIMIT_FREE = int(os.getenv('CB_BATCH_FREE', '3'))        # 批量/次（免费）

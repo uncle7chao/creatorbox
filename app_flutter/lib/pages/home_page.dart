@@ -25,6 +25,8 @@ class _HomePageState extends State<HomePage> {
   String? _error;
   int _platforms = 0;
   bool _serviceUp = true;  // 健康检查结果：false 时首屏给红字提示，别让用户干等报错
+  bool _reviewMode = false; // 提审收敛模式（服务端下发，客户端不自判）
+  List<String> _platformNames = const [];
 
   @override
   void initState() {
@@ -51,6 +53,20 @@ class _HomePageState extends State<HomePage> {
       // 服务未启动：首屏就红字说明，别让用户点完解析才报错
       if (mounted) setState(() => _serviceUp = false);
     }
+    // 可见性裁决独立取：失败不影响主流程，只是退化为不显示平台名
+    try {
+      final v = await widget.session.api.visibility();
+      final list = (v['platforms'] as List?) ?? const [];
+      if (!mounted || list.isEmpty) return;
+      setState(() {
+        _reviewMode = v['review_mode'] == true;
+        _platforms = list.length;
+        _platformNames = list
+            .map((e) => (e is Map ? e['name_cn']?.toString() ?? '' : ''))
+            .where((s) => s.isNotEmpty)
+            .toList();
+      });
+    } catch (_) {/* 拿不到就保持旧值，不打扰首屏 */}
   }
 
   /// 从系统剪贴板读取链接（桌面端主路径：用户已在浏览器/微信里复制了分享口令）
@@ -197,12 +213,14 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('粘贴任意链接，一键去水印解析',
+            Text(_reviewMode ? '多平台素材解析工具' : '粘贴任意链接，一键去水印解析',
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
             Text(_serviceUp
-                ? '支持 $_platforms 个平台：抖音/B站/快手/小红书/TikTok/X/YouTube 等'
+                ? (_platformNames.isEmpty
+                    ? '支持 $_platforms 个平台'
+                    : '当前支持 $_platforms 个平台：${_platformNames.join(' / ')}')
                 : '解析服务未连接 —— 请先启动 server（start-server.ps1）',
                 style: theme.textTheme.bodySmall
                     .copyWith(color: _serviceUp ? null : Colors.red)),

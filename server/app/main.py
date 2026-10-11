@@ -43,6 +43,7 @@ try:
     from app import pdftools
     from app import knowledge
     from app import trending
+    from app import visibility
 except ImportError:
     import config
     import db
@@ -64,6 +65,7 @@ except ImportError:
     from capabilities import CAPABILITY, WHITELIST_HINT
     from pdftools import __name__ as _pdftools_ok  # noqa
     import trending
+    import visibility
 
 # 浏览器解析器（playwright）按需惰性导入 —— 缺依赖不影响纯 HTTP 平台
 try:
@@ -1475,6 +1477,16 @@ async def api_domains_classify(req: ParseReq):
 async def api_capabilities():
     """各平台已验证的约束（供客户端与后台判断）"""
     return {'capabilities': CAPABILITY, 'whitelist_hint': WHITELIST_HINT}
+
+
+@app.get('/api/visibility')
+async def api_visibility():
+    """平台入口可见性裁决（v4 §3.3 提审收敛开关）。
+
+    客户端**只按本接口下发结果渲染入口**，不要自己再判断隐藏逻辑 ——
+    三端各写一套是这类开关失控的根因。收敛只隐藏入口，不关闭解析能力。
+    """
+    return visibility.payload()
 
 
 class MergeReq(BaseModel):
