@@ -14,7 +14,7 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import (Depends, FastAPI, File, Header, HTTPException, Request,
+from fastapi import (Body, Depends, FastAPI, File, Header, HTTPException, Request,
                      UploadFile)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
@@ -335,6 +335,38 @@ class BatchReq(BaseModel):
 
 
 async def check_auth(x_api_key: str = Header(default='')):
+    """**管理类**端点鉴权（/api/admin/* 等）。
+
+    ⚠️ 默认拒绝：API_KEY 为空时【不是不鉴权，而是全部拒绝】(503)。
+       原实现是 `if config.API_KEY and ...` —— 空 Key 等于放行。
+       一旦运维忘配 CB_API_KEY，卡密/违禁词/用户名单端点会直接裸奔。
+
+    ⭐ 解析类端点（/api/parse、/api/batch 等）**不用这个**，
+       它们用下面的 check_admin_or_open —— 把这里的默认值改成拒绝时，
+       曾差点让小程序与 App 的解析全线失败。务必区分两类：
+
+       · 解析类：面向普通用户，鉴权会挡住 C 端流量 → 有 Key 才校验，无 Key 放行
+       · 管理类：面向运营，改配置/导出数据 → 无 Key 直接锁死（503）
+    """
+    if not config.API_KEY:
+        raise HTTPException(
+            503,
+            '服务端未配置 CB_API_KEY，管理接口已全部锁定。'
+            '请在环境变量中设置后重启（本地自测可设 CB_API_KEY=dev）')
+    if x_api_key != config.API_KEY:
+        raise HTTPException(401, 'Invalid API key')
+
+
+async def check_admin_or_open(x_api_key: str = Header(default='')):
+    """**解析类**端点鉴权：配了 Key 就校验，没配则放行。
+
+    与 check_admin 的区别只在「未配 Key 时」：
+      · 解析类 → 放行（否则没配 Key 的部署会全线解析失败）
+      · 管理类 → 锁死（否则没配 Key 的部署管理端点裸奔）
+
+    ⚠️ 这是刻意的取舍：管理数据比解析能力更不能泄露。两者失败方向相反，
+       不要为了「统一」把它们合并 —— 那会让忘记配 Key 的部署直接不可用。
+    """
     if config.API_KEY and x_api_key != config.API_KEY:
         raise HTTPException(401, 'Invalid API key')
 
@@ -463,7 +495,7 @@ async def _parse_one(text: str, quality: str, short: str, key: str) -> dict:
     return result
 
 
-@app.post('/api/parse', dependencies=[Depends(check_auth)])
+@app.post('/api/parse', dependencies=[Depends(check_admin_or_open)])
 async def api_parse(req: ParseReq, request: Request):
     ident = request.client.host if request.client else 'global'
     ok, info = await limiter.allow(ident)
@@ -842,7 +874,7 @@ async def api_banned_check(req: BannedCheckReq):
             'segments': banned_mod.build_segments(req.text, r['marks'])}
 
 
-@app.get('/api/admin/codes')
+@app.get('/api/admin/codes', dependencies=[Depends(check_auth)])
 async def admin_codes_list(status: str = '', limit: int = 100):
     return {'ok': True, **db.codes_list(status=status, limit=limit)}
 
@@ -853,18 +885,47 @@ async def admin_codes_generate(req: CodeGenReq):
     return {'ok': True, 'days': req.days, 'count': len(codes), 'codes': codes}
 
 
+class WordOnlyReq(BaseModel):
+    """只带一个词的请求体。字段必须【有默认值】，否则无 body 的 query 调用会 422。"""
+    word: str = Field('', description='词（留空则从 query 读）')
+
+
+class CodeDisableReq(BaseModel):
+    code: str = Field('', description='要作废的卡密（留空则从 query 读）')
+
+
 @app.post('/api/admin/codes/disable', dependencies=[Depends(check_auth)])
-async def admin_codes_disable(code: str = ''):
-    """作废单个未用卡密（输错价格/送错人时用）。"""
-    n = db.codes_disable(code)
-    return {'ok': True, 'disabled': n}
+async def admin_codes_disable(req: CodeDisableReq = Body(default=None),
+                              request: Request = None):
+    """作废单个未用卡密（输错价格/送错人时用）。
+
+    ⚠️ 这里踩过一个坑，值得记下来：
+       Pydantic 模型即使所有字段都有默认值，FastAPI 仍会把 requestBody 标为
+       `required: true`（OpenAPI 实测），于是「不带 body 的 query 调用」直接 405。
+       所以兼容层必须写成 `= Body(default=None)` —— **是默认值本身让它可选**，
+       只给字段默认值是没用的。判别方法：看 /openapi.json 里 requestBody.required。
+
+       最终支持两种传法：body {"code": "..."} 与 query ?code=...
+    """
+    c = ''
+    if req is not None:
+        c = (req.code or '').strip()
+    if not c and request is not None:
+        c = (request.query_params.get('code') or '').strip()
+    if not c:
+        raise HTTPException(400, '缺少 code（body.code 或 ?code= 二选一）')
+    n = db.codes_disable(c)
+    return {'ok': True, 'disabled': n, 'code': c}
 
 
 # ---------- 违禁词库热管理（2026-10-11，看板自助扩词/停词）----------
 
 class BannedWordReq(BaseModel):
     word: str = Field(..., description='词（1~20 字）')
-    category: str = Field(..., description='类目 key（adlaw/induce/medical/finance/offsite/exaggerate）')
+    # ⚠️ 类目 key 取自 banned.CATEGORIES 的真实键名。
+    # 原注释写的 finance/offsite/exaggerate 是错的（实际是 money/import/fake），
+    # 照着旧注释填会被 API 拒 400。类目元数据请 GET /api/admin/banned/words 取。
+    category: str = Field(..., description='类目 key：adlaw / induce / medical / money / import / fake')
     suggest: str = Field('', description='替换建议（可选）')
 
 
@@ -882,7 +943,7 @@ def _banned_mod():
     return banned_mod
 
 
-@app.get('/api/admin/banned/words')
+@app.get('/api/admin/banned/words', dependencies=[Depends(check_auth)])
 async def admin_banned_words():
     """看板词库卡：内置+自定义合并视图 + 类目元数据。"""
     bm = _banned_mod()
@@ -933,14 +994,26 @@ async def admin_banned_words_toggle(req: BannedWordToggleReq):
 
 
 @app.post('/api/admin/banned/words/delete', dependencies=[Depends(check_auth)])
-async def admin_banned_words_delete(word: str = ''):
-    """删除覆盖行：自定义词彻底移除，内置词恢复默认。"""
-    n = db.banned_word_delete((word or '').strip())
+async def admin_banned_words_delete(word: str = '',
+                                    req: WordOnlyReq = Body(default=None),
+                                    request: Request = None):
+    """删除覆盖行：自定义词彻底移除，内置词恢复默认。
+
+    word 支持 query（历史用法）与 body 两种传法。
+    ⚠️ `= Body(default=None)` 不是装饰，是让 body 真正可选的关键 ——
+       见 admin_codes_disable 的注释（OpenAPI 实测 required=true 的坑）。
+    """
+    w = (word or '').strip() or ((req.word or '').strip() if req else '')
+    if not w and request is not None:
+        w = (request.query_params.get('word') or '').strip()
+    if not w:
+        raise HTTPException(400, '缺少 word（body.word 或 ?word= 二选一）')
+    n = db.banned_word_delete(w)
     _banned_mod().refresh_overrides(db.banned_custom_snapshot())
-    return {'ok': True, 'deleted': n, 'hot': True}
+    return {'ok': True, 'deleted': n, 'word': w, 'hot': True}
 
 
-@app.get('/api/admin/users')
+@app.get('/api/admin/users', dependencies=[Depends(check_auth)])
 async def admin_users_list(keyword: str = '', member_only: int = 0,
                            limit: int = 50):
     """看板用户名单：统计 + 最近活跃列表（keyword 搜 openid/昵称）。"""
@@ -989,7 +1062,7 @@ class BatchReqV2(BaseModel):
     items: list[BatchItem]
 
 
-@app.post('/api/batch', dependencies=[Depends(check_auth)])
+@app.post('/api/batch', dependencies=[Depends(check_admin_or_open)])
 async def api_batch(req: BatchReqV2, request: Request):
     """批量解析（P0 增强，2026-10-07）
 
@@ -1161,7 +1234,7 @@ os.makedirs(ADS_MEDIA_DIR, exist_ok=True)
 app.mount('/media', StaticFiles(directory=ADS_MEDIA_ROOT), name='media')
 
 
-@app.post('/api/ads/upload', dependencies=[Depends(check_auth)])
+@app.post('/api/ads/upload', dependencies=[Depends(check_admin_or_open)])
 async def api_ads_upload(file: UploadFile = File(...)):
     """上传广告图片（后台看板用，需 API Key）。
 
@@ -1298,7 +1371,7 @@ async def api_ads_config():
     return {'ok': True, 'ads': _ads_config_merged()}
 
 
-@app.post('/api/ads/config', dependencies=[Depends(check_auth)])
+@app.post('/api/ads/config', dependencies=[Depends(check_admin_or_open)])
 async def api_ads_config_update(request: Request):
     """更新广告配置（后台看板/运维用，需 API Key）。
 
@@ -1541,7 +1614,7 @@ async def api_health_platforms():
     return r
 
 
-@app.post('/api/health/platforms/probe', dependencies=[Depends(check_auth)])
+@app.post('/api/health/platforms/probe', dependencies=[Depends(check_admin_or_open)])
 async def api_health_probe_now():
     """立即跑一轮探针（排障用，不等定时）"""
     return await health.monitor.run_once()
@@ -1582,7 +1655,7 @@ async def api_domains():
     }
 
 
-@app.post('/api/domains/classify', dependencies=[Depends(check_auth)])
+@app.post('/api/domains/classify', dependencies=[Depends(check_admin_or_open)])
 async def api_domains_classify(req: ParseReq):
     """判定某个 URL 能否走小程序直连（还是要中转）"""
     url = URL_RE.search(req.text or '')
@@ -1619,7 +1692,7 @@ class MergeReq(BaseModel):
                               'false=返回路径不删除（调试用）')
 
 
-@app.post('/api/merge', dependencies=[Depends(check_auth)])
+@app.post('/api/merge', dependencies=[Depends(check_admin_or_open)])
 async def api_merge(req: MergeReq):
     """m3u8 → mp4 服务端合并
 
@@ -1678,7 +1751,7 @@ async def api_health():
     }
 
 
-@app.post('/api/cache/clear', dependencies=[Depends(check_auth)])
+@app.post('/api/cache/clear', dependencies=[Depends(check_admin_or_open)])
 async def api_clear_cache():
     await cache.clear()
     return {'success': True}
@@ -1702,7 +1775,7 @@ class CookieSaveReq(BaseModel):
     cookie: str = Field(..., description='浏览器 F12 复制的完整 Cookie 串')
 
 
-@app.get('/api/admin/cookies')
+@app.get('/api/admin/cookies', dependencies=[Depends(check_auth)])
 async def admin_cookie_status():
     """看板 Cookie 卡片数据：配置状态 + 落盘文件 + 最近探针结论
 

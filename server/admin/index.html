@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<!--
+  CreatorBox 运营后台（单文件·零依赖）
+
+  为什么是单文件 HTML 而不是 Vue/React 工程：
+  这是【自用运营后台】，只有你一个人用。搭前端工程意味着要维护
+  node_modules、构建产物、第二个 dev server —— 成本远大于收益。
+  单文件双击就能用，复制到任何机器都能跑，才是自用工具该有的形态。
+
+  覆盖的服务端端点（均需 X-Api-Key）：
+    GET  /api/admin/codes卡密列表 + 统计
+    POST /api/admin/codes            生成卡密（days/count/batch）
+    POST /api/admin/codes/disable    作废单张卡密
+    GET  /api/admin/banned/words     违禁词库（内置+自定义）
+    POST /api/admin/banned/words     新增自定义词
+    POST /api/admin/banned/words/toggle  停用/启用
+    POST /api/admin/banned/words/delete   删除（内置词=恢复默认）
+    GET  /api/admin/users            用户名单 + 统计
+    GET  /api/admin/cookies          Cookie 配置状态
+    POST /api/admin/cookies          保存 Cookie
+    GET  /api/health/health大盘      健康看板
+
+  ⚠️ 安全：Key 只存在内存（sessionStorage），不写 localStorage、不进 URL。
+     这仍挡不住本机抓包，正确的做法是【只用本机访问服务】，
+     或给服务套一层 HTTPS + 反向代理。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreatorBox 运营后台</title>
+<style>
+:root{
+  --bg:#f7f5f2; --card:#fff; --ink:#2b2620; --ink2:#6b625a; --ink3:#9c948b;
+  --line:#e8e2da; --brand:#e8890c; --brand-soft:#fdf3e3;
+  --ok:#1a7f45; --ok-bg:#e8f5ed; --warn:#b26a00; --warn-bg:#fdf4e3;
+  --err:#c62828; --err-bg:#fdecec;
+  --radius:10px; --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--ink); padding-bottom:60px;
+}
+header{
+  background:var(--card); border-bottom:1px solid var(--line);
+  padding:16px 24px; position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+header h1{font-size:17px;font-weight:700}
+header .sub{color:var(--ink3);font-size:12px}
+.spacer{flex:1}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);
+  border-bottom:1px solid var(--line);position:sticky;top:63px;z-index:9;overflow-x:auto}
+nav button{
+  border:none;background:none;padding:12px 16px;cursor:pointer;font-size:14px;
+  color:var(--ink2);border-bottom:2px solid transparent;white-space:nowrap;
+}
+nav button:hover{color:var(--ink)}
+nav button.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+main{padding:20px 24px;max-width:1400px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-bottom:16px}
+.card>h2{font-size:14px;font-weight:600;padding:14px 18px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px}
+.card>h2 .hint{font-weight:400;font-size:12px;color:var(--ink3)}
+.pad{padding:18px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.row>*{flex:1;min-width:280px}
+label{display:block;font-size:12px;color:var(--ink2);margin-bottom:5px;font-weight:500}
+input,select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+  font:inherit;font-size:14px;background:var(--card);color:var(--ink);
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px var(--brand-soft)}
+textarea{resize:vertical;min-height:90px;font-family:Consolas,monospace;font-size:12px}
+button.primary{background:var(--brand);color:#fff;border:none;padding:9px 18px;
+  border-radius:7px;cursor:pointer;font:inherit;font-weight:600}
+button.primary:hover{filter:brightness(.95)}
+button.primary:disabled{opacity:.5;cursor:not-allowed}
+button.ghost{background:var(--card);border:1px solid var(--line);color:var(--ink2);
+  padding:7px 13px;border-radius:7px;cursor:pointer;font:inherit;font-size:13px}
+button.ghost:hover{border-color:var(--ink3);color:var(--ink)}
+button.sm{padding:3px 9px;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,text{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:12px;color:var(--ink2);font-weight:600;background:#faf8f5;
+  position:sticky;top:0}
+tr:hover td{background:#faf8f5}
+td.mono{font-family:Consolas,monospace;font-size:12px}
+.stat{background:#faf8f5;border:1px solid var(--line);border-radius:8px;padding:14px}
+.stat .n{font-size:24px;font-weight:700;line-height:1.2}
+.stat .l{font-size:12px;color:var(--ink2);margin-top:2px}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.tag.off{background:#f0ede9;color:var(--ink3)}
+.tag.err{background:var(--err-bg);color:var(--err)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.msg{padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:13px}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+.msg.err{background:var(--err-bg);color:var(--err)}
+.msg.info{background:var(--brand-soft);color:var(--warn)}
+.empty{padding:36px;text-align:center;color:var(--ink3);font-size:13px}
+pre{background:#2b2620;color:#e8e2da;padding:13px;border-radius:7px;overflow:auto;
+  font-size:12px;max-height:320px;margin-top:10px}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.filters input,.filters select{width:auto;min-width:140px;padding:7px 10px;font-size:13px}
+.scroll{max-height:460px;overflow:auto}
+fieldset{border:none;padding:0}
+footer{text-align:center;color:var(--ink3);font-size:12px;padding:24px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CreatorBox 运营后台</h1>
+  <span class="sub">自用运营工具 · 非 SaaS</span>
+  <span class="spacer"></span>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input id="base" value="http://127.0.0.1:8080" style="width:220px"
+           placeholder="服务地址" title="解析服务地址">
+    <input id="key" type="password" style="width:190px"
+           placeholder="CB_API_KEY" title="管理密钥">
+    <button class="primary" onclick="saveCfg()">连接</button>
+  </div>
+</header>
+
+<nav>
+  <button class="on" data-t="dash"  onclick="go('dash')">大盘</button>
+  <button data-t="codes" onclick="go('codes')">卡密</button>
+  <button data-t="words" onclick="go('words')">违禁词</button>
+  <button data-t="users" onclick="go('users')">用户</button>
+  <button data-t="cookie" onclick="go('cookie')">Cookie</button>
+</nav>
+
+<main id="main"></main>
+
+<footer>CreatorBox 运营后台 · 数据仅存服务端 · 密钥仅保存在本标签页内存</footer>
+
+<script>
+'use strict';
+/* ───────────────────────── 基础设施 ───────────────────────── */
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ⚠️ 密钥只放 sessionStorage：关掉标签页就没了。
+// 不用 localStorage —— 那会让密钥长期留在磁盘上被其它脚本读到。
+const CFG = {
+  get base(){ return $('#base').value.trim().replace(/\/+$/,'') },
+  get key(){ return $('#key').value },
+};
+function saveCfg(){
+  sessionStorage.setItem('cb_base', CFG.base);
+  sessionStorage.setItem('cb_key', CFG.key);
+  location.reload();
+}
+(function init(){
+  const b = sessionStorage.getItem('cb_base');
+  const k = sessionStorage.getItem('cb_key');
+  if (b) $('#base').value = b;
+  if (k) $('#key').value = k;
+  if (!k) toast('warn','请先填入 CB_API_KEY 再连接。未配置密钥时，服务端会拒绝所有管理接口（这是有意的安全设计）。');
+})();
+
+async function api(path, opts={}){
+  if (!CFG.key) throw new Error('未填 CB_API_KEY');
+  const r = await fetch(CFG.base + path, {
+    method: opts.method || 'GET',
+    headers: Object.assign(
+      {'Content-Type':'application/json'},
+      {'X-Api-Key': CFG.key},
+      (opts.headers||{})),
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  let d = null;
+  try { d = await r.json(); } catch(e){ /* 非 JSON */ }
+  if (!r.ok) {
+    const det = (d && d.detail) || ('HTTP ' + r.status);
+    // 503 是「服务端没配 Key」，要给可操作指引而不是干巴巴报错
+    throw new Error(typeof det === 'string' && det.length > 90
+      ? det : (det + '（HTTP ' + r.status + '）'));
+  }
+  return d;
+}
+
+function toast(kind, text){
+  const box = $('#msgbox') || (() => {
+    const d = document.createElement('div'); d.id='msgbox';
+    $('#main').prepend(d); return d;
+  })();
+  box.innerHTML = `<div class="msg ${kind}">${esc(text)}</div>`;
+  if (kind !== 'warn') setTimeout(()=>box.innerHTML='', 5200);
+}
+const clearMsg = () => { const b=$('#msgbox'); if(b) b.innerHTML=''; };
+
+function ts(sec){
+  if(!sec) return '—';
+  const d = new Date(sec*1000);
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* ───────────────────────── 导航 ───────────────────────── */
+const VIEWS = {};
+function go(t){
+  document.querySelectorAll('nav button').forEach(b=>
+    b.classList.toggle('on', b.dataset.t === t));
+  clearMsg();
+  $('#main').innerHTML = '<div class="empty">加载中…</div>';
+  VIEWS[t]().catch(e => {
+    $('#main').innerHTML = `<div class="card pad"><div class="msg err">${esc(e.message)}</div></div>`;
+  });
+}
+
+/* ───────────────────────── 大盘 ───────────────────────── */
+VIEWS.dash = async () => {
+  const [h, a] = await Promise.allSettled([
+    api('/api/health'), api('/api/ads/config'),
+  ]);
+  const hd = h.status==='fulfilled' ? h.value : null;
+  let stats = null, alerts = [];
+  try {
+    const [hh, aa] = await Promise.all([
+      api('/api/health/history'), api('/api/health/alerts')]);
+    stats = hh; alerts = aa.alerts || aa.items || [];
+  } catch(e){ /* 健康历史可选 */ }
+
+  // ⚠️ /api/health 的 platforms 是【平台名数组】不是对象数组
+  // （实测：["douyin","bilibili",...]）。详情在 /api/health/history。
+  const names = (hd && Array.isArray(hd.platforms)) ? hd.platforms : [];
+  const degraded = stats && stats.summary && stats.summary.degraded;
+  const hst = (stats && stats.items) ? stats.items.slice(-20).reverse() : [];
+  const downNames = hst.filter(x => x.ok === false).map(x => x.platform || x.name);
+
+  $('#main').innerHTML = `
+    <div class="card"><h2>服务状态</h2><div class="pad">
+      <div class="row">
+        <div class="stat"><div class="n" style="color:${hd?'var(--ok)':'var(--err)'}">${hd?'在线':'—'}</div>
+          <div class="l">解析服务 ${hd && hd.version ? 'v'+esc(hd.version) : ''}</div></div>
+        <div class="stat"><div class="n">${names.length||'—'}</div><div class="l">已接入平台</div></div>
+        <div class="stat"><div class="n" style="color:${downNames.length?'var(--err)':'var(--ok)'}">${downNames.length}</div>
+          <div class="l">最近 down</div></div>
+        <div class="stat"><div class="n" style="color:${degraded?'var(--warn)':'var(--ok)'}">${degraded?'是':'否'}</div>
+          <div class="l">整体降级</div></div>
+      </div>
+      ${hd && hd.ready === false ? `<div class="msg err" style="margin-top:14px">服务尚未就绪（ready=false）。</div>` : ''}
+      ${degraded ? `<div class="msg err" style="margin-top:14px">服务处于降级状态，部分平台不可用。</div>` : ''}
+      ${downNames.length ? `<div class="msg warn" style="margin-top:14px">最近探针失败：${esc(downNames.join('、'))}</div>` : ''}
+    </div></div>
+
+    <div class="card"><h2>探针历史 <span class="hint">最近 ${hst.length} 次 · /api/health/history</span></h2>
+      <div class="pad">${hst.length ? `<div class="scroll"><table>
+        <thead><tr><th>时间</th><th>平台</th><th>结果</th><th>耗时</th><th>说明</th></tr></thead>
+        <tbody>${hst.map(x=>`<tr>
+          <td class="mono">${esc(ts(x.t||x.ts||x.created_at))}</td>
+          <td>${esc(x.platform||x.name||'?')}</td>
+          <td>${x.ok===false?'<span class="tag err">fail</span>':'<span class="tag ok">ok</span>'}</td>
+          <td class="mono">${x.ms?esc(x.ms)+'ms':'—'}</td>
+          <td style="color:var(--ink2)">${esc(x.note||x.error||'')}</td></tr>`).join('')}
+        </tbody></table></div>` : '<div class="empty">暂无探针历史</div>'}</div></div>
+
+    <div class="card"><h2>告警记录 <span class="hint">最近 ${alerts.length} 条</span></h2>
+      <div class="pad">${alerts.length ? `<div class="scroll"><table>
+        <thead><tr><th>时间</th><th>平台</th><th>级别</th><th>内容</th></tr></thead>
+        <tbody>${alerts.slice(0,50).map(x=>`<tr>
+          <td class="mono">${esc(ts(x.t||x.created_at))}</td>
+          <td>${esc(x.platform||'-')}</td>
+          <td>${x.level==='down'?'<span class="tag err">down</span>':'<span class="tag warn">warn</span>'}</td>
+          <td>${esc(x.message||x.note||'')}</td></tr>`).join('')}</tbody></table></div>`
+        : '<div class="empty">暂无告警 —— 这是好事</div>'}</div></div>`;
+};
+
+/* ───────────────────────── 卡密 ───────────────────────── */
+VIEWS.codes = async () => {
+  const d = await api('/api/admin/codes?limit=200');
+  const s = d.stats || {};
+  const items = d.items || [];
+  $('#main').innerHTML = `
+    <div class="card"><h2>卡密统计</h2><div class="pad"><div class="row">
+      <div class="stat"><div class="n">${s.unused??'—'}</div><div class="l">未使用</div></div>
+      <div class="stat"><div class="n" style="color:var(--warn)">${s.used??'—'}</div><div class="l">已使用</div></div>
+      <div class="stat"><div class="n" style="color:var(--ink3)">${s.disabled??'—'}</div><div class="l">已作废</div></div>
+      <div class="stat"><div class="n">${items.length}</div><div class="l">本页显示</div></div>
+    </div></div></div>
+
+    <div class="card"><h2>生成卡密</h2><div class="pad">
+      <div class="row">
+        <div><label>面值天数（30=月卡）</label><input id="cd_days" type="number" value="30" min="1" max="3650"></div>
+        <div><label>生成数量（1~200）</label><input id="cd_count" type="number" value="10" min="1" max="200"></div>
+        <div><label>批次备注</label><input id="cd_batch" placeholder="如：双十一活动"></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+        <button class="primary" onclick="genCodes()">生成</button>
+        <span class="hint" style="font-size:12px;color:var(--ink3)">
+          卡密形如 CBXXXX-XXXX-XXXX，请复制保存后再分发
+        </span>
+      </div>
+      <div id="gen_out"></div>
+    </div></div>
+
+    <div class="card"><h2>卡密列表 <span class="hint">${items.length} 条</span></h2>
+      <div class="pad"><div class="filters">
+        <input id="cdf" placeholder="搜索卡密 / 批次" oninput="fltCode(this.value)">
+      </div>
+      <div class="scroll"><table id="codeTbl">
+        <thead><tr><th>卡密</th><th>天数</th><th>状态</th><th>批次</th><th>使用者</th><th>生成时间</th><th></th></tr></thead>
+        <tbody>${items.length ? items.map(c=>`<tr>
+          <td class="mono">${esc(c.code)}</td>
+          <td>${esc(c.days)}天</td>
+          <td>${c.status==='used'?'<span class="tag warn">已使用</span>'
+                 :c.status==='disabled'?'<span class="tag err">已作废</span>'
+                 :'<span class="tag ok">未使用</span>'}</td>
+          <td>${esc(c.batch||'—')}</td>
+          <td class="mono">${esc(c.used_by||c.openid||'—')}</td>
+          <td class="mono">${esc(ts(c.created_at))}</td>
+          <td>${c.status==='unused'?`<button class="ghost sm" onclick="disCode('${esc(c.code)}')">作废</button>`:''}</td>
+        </tr>`).join('') : '<tr><td colspan="7" class="empty">还没有卡密</td></tr>'}</tbody>
+      </table></div></div></div>`;
+};
+
+function fltCode(q){
+  q = (q||'').toLowerCase();
+  document.querySelectorAll('#codeTbl tbody tr').forEach(tr=>{
+    tr.style.display = !q || tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function genCodes(){
+  const days = parseInt($('#cd_days').value,10);
+  const count = parseInt($('#cd_count').value,10);
+  const batch = $('#cd_batch').value.trim();
+  if (!(days>=1 && days<=3650)) return toast('err','天数需在 1~3650 之间');
+  if (!(count>=1 && count<=200)) return toast('err','数量需在 1~200 之间');
+  try{
+    const d = await api('/api/admin/codes',{method:'POST',body:{days,count,batch}});
+    const codes = d.codes || [];
+    $('#gen_out').innerHTML = `
+      <div class="msg ok" style="margin-top:14px">已生成 ${codes.length} 张（${esc(d.days)} 天）</div>
+      <pre>${esc(codes.join('\n'))}</pre>
+      <button class="ghost sm" style="margin-top:8px"
+        onclick="copyGen()">复制全部</button>`;
+    toast('ok','生成成功');
+    setTimeout(()=>go('codes'), 900);
+  }catch(e){ toast('err', e.message); }
+}
+
+function copyGen(){
+  const t = document.querySelector('#gen_out pre');
+  if (!t) return;
+  navigator.clipboard.writeText(t.innerText)
+    .then(()=>toast('ok','已复制全部卡密'))
+    .catch(()=>toast('err','复制失败，请手动全选复制'));
+}
+
+async function disCode(code){
+  if (!confirm('作废卡密 '+code+'？作废后无法再被兑换。')) return;
+  try{
+    const d = await api('/api/admin/codes/disable',{method:'POST',body:{code}});
+    toast('ok', d.deleted ? '已作废' : '该卡密不存在或已使用');
+    go('codes');
+  }catch(e){ toast('err', e.message); }
+}
+
+/* ───────────────────────── 违禁词 ───────────────────────── */
+VIEWS.words = async () => {
+  const d = await api('/api/admin/banned/words');
+  const cats = d.categories || {};
+  const words = d.words || [];
+  const opt = k => `<option value="${esc(k)}">${esc(cats[k] ? cats[k].name : k)}</option>`;
+  $('#main').innerHTML = `
+    <div class="card"><h2>新增自定义词 <span class="hint">改完立即热生效，无需重启</span></h2>
+      <div class="pad"><div class="row">
+        <div><label>违禁词（1~20 字）</label><input id="bw_word" placeholder="如：绝对"></div>
+        <div><label>类目</label><select id="bw_cat">${Object.keys(cats).map(opt).join('')}</select></div>
+        <div><label>替换建议（可选）</label><input id="bw_sug" placeholder="如：相对靠谱"></div>
+      </div>
+      <div style="margin-top:14px"><button class="primary" onclick="addWord()">添加</button></div>
+      </div></div>
+
+    <div class="card"><h2>词库 <span class="hint">${words.length} 条 ·
+      内置 ${words.filter(w=>w.source==='builtin').length} /
+      自定义 ${words.filter(w=>w.source!=='builtin').length}</span></h2>
+      <div class="pad"><div class="filters">
+        <input id="wf" placeholder="搜索词" oninput="fltWord(this.value)">
+        <select id="wc" onchange="fltWordCat(this.value)"><option value="">全部类目</option>
+          ${Object.keys(cats).map(k=>`<option value="${esc(k)}">${esc(cats[k].name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="scroll"><table id="wordTbl">
+        <thead><tr><th>词</th><th>类目</th><th>建议替换为</th><th>来源</th><th>状态</th><th></th></tr></thead>
+        <tbody>${words.length ? words.map(w=>`<tr data-cat="${esc(w.category)}">
+          <td><b>${esc(w.word)}</b></td>
+          <td>${esc(cats[w.category] ? cats[w.category].name : w.category)}</td>
+          <td style="color:var(--ink2)">${esc(w.suggest||'—')}</td>
+          <td>${w.source==='builtin'?'<span class="tag off">内置</span>':'<span class="tag ok">自定义</span>'}</td>
+          <td>${w.enabled?'<span class="tag ok">启用</span>':'<span class="tag off">停用</span>'}</td>
+          <td style="white-space:nowrap">
+            <button class="ghost sm" onclick="togWord('${esc(w.word)}',${!w.enabled})">${w.enabled?'停用':'启用'}</button>
+            <button class="ghost sm" onclick="delWord('${esc(w.word)}','${w.source}')">${w.source==='builtin'?'恢复默认':'删除'}</button>
+          </td></tr>`).join('') : '<tr><td colspan="6" class="empty">词库为空</td></tr>'}
+        </tbody></table></div></div></div>`;
+};
+
+function fltWord(q){
+  q=(q||'').toLowerCase();
+  const cat = $('#wc') ? $('#wc').value : '';
+  document.querySelectorAll('#wordTbl tbody tr').forEach(tr=>{
+    const okQ = !q || tr.innerText.toLowerCase().includes(q);
+    const okC = !cat || tr.dataset.cat === cat;
+    tr.style.display = (okQ && okC) ? '' : 'none';
+  });
+}
+function fltWordCat(){ fltWord($('#wf').value); }
+
+async function addWord(){
+  const word = $('#bw_word').value.trim();
+  const category = $('#bw_cat').value;
+  const suggest = $('#bw_sug').value.trim();
+  if (!word) return toast('err','请输入违禁词');
+  try{
+    await api('/api/admin/banned/words',{method:'POST',body:{word,category,suggest}});
+    toast('ok','已添加并立即生效');
+    go('words');
+  }catch(e){ toast('err', e.message); }
+}
+async function togWord(word, enabled){
+  try{
+    await api('/api/admin/banned/words/toggle',{method:'POST',body:{word,enabled}});
+    toast('ok', enabled ? '已启用' : '已停用');
+    go('words');
+  }catch(e){ toast('err', e.message); }
+}
+async function delWord(word, source){
+  const tip = source==='builtin'
+    ? '内置词「'+word+'」将被恢复默认（恢复启用）。确认？'
+    : '删除自定义词「'+word+'」？';
+  if (!confirm(tip)) return;
+  try{
+    await api('/api/admin/banned/words/delete',{method:'POST',body:{word}});
+    toast('ok','已删除');
+    go('words');
+  }catch(e){ toast('err', e.message); }
+}
+
+/* ───────────────────────── 用户 ───────────────────────── */
+VIEWS.users = async () => {
+  const kw = $('#ukw') ? $('#ukw').value.trim() : '';
+  const d = await api('/api/admin/users?limit=100'
+    + (kw ? '&keyword='+encodeURIComponent(kw) : ''));
+  const s = d.stats || {};
+  const items = d.items || [];
+  $('#main').innerHTML = `
+    <div class="card"><h2>用户统计</h2><div class="pad"><div class="row">
+      <div class="stat"><div class="n">${s.total??'—'}</div><div class="l">总用户</div></div>
+      <div class="stat"><div class="n" style="color:var(--warn)">${s.members??'—'}</div><div class="l">会员</div></div>
+      <div class="stat"><div class="n" style="color:var(--ok)">${s.active_today??'—'}</div><div class="l">今日活跃</div></div>
+      <div class="stat"><div class="n" style="color:var(--ink3)">${items.length}</div><div class="l">本页显示</div></div>
+    </div></div></div>
+
+    <div class="card"><h2>用户名单</h2><div class="pad">
+      <div class="filters">
+        <input id="ukw" placeholder="搜索 openid / 昵称" value="${esc(kw)}"
+               onkeydown="if(event.key==='Enter')go('users')">
+        <button class="ghost" onclick="go('users')">搜索</button>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>openid</th><th>昵称</th><th>会员</th><th>注册</th><th>最近活跃</th></tr></thead>
+        <tbody>${items.length ? items.map(u=>`<tr>
+          <td class="mono">${esc(u.openid)}</td>
+          <td>${esc(u.nickname||'—')}</td>
+          <td>${u.is_member?'<span class="tag ok">会员</span>':'<span class="tag off">普通</span>'}</td>
+          <td class="mono">${esc(ts(u.created_at))}</td>
+          <td class="mono">${esc(ts(u.last_seen_at))}</td></tr>`).join('')
+          : '<tr><td colspan="5" class="empty">无用户</td></tr>'}</tbody>
+      </table></div></div></div>`;
+};
+
+/* ───────────────────────── Cookie ───────────────────────── */
+VIEWS.cookie = async () => {
+  const d = await api('/api/admin/cookies');
+  const list = d.cookies || [];
+  const supported = list.filter(c => c.savable);
+  $('#main').innerHTML = `
+    <div class="card"><h2>Cookie 配置状态</h2><div class="pad">
+      ${list.length ? `<table>
+        <thead><tr><th>平台</th><th>状态</th><th>长度</th><th>最近探针</th><th>用途</th></tr></thead>
+        <tbody>${list.map(c=>`<tr>
+          <td><b>${esc(c.label||c.platform)}</b></td>
+          <td>${c.configured?'<span class="tag ok">已配置</span>':'<span class="tag off">未配置</span>'}</td>
+          <td class="mono">${esc(c.length||0)}</td>
+          <td>${c.last_probe===null||c.last_probe===undefined?'—'
+               :c.last_probe?'<span class="tag ok">通</span>':'<span class="tag err">不通</span>'}</td>
+          <td style="color:var(--ink2);font-size:12px">${esc(c.usage||'')}</td></tr>`).join('')}
+        </tbody></table>`
+        : '<div class="empty">无平台需要 Cookie</div>'}
+    </div></div>
+
+    <div class="card"><h2>保存 Cookie <span class="hint">保存后立即热加载，无需重启</span></h2>
+      <div class="pad">
+        <div class="row">
+          <div><label>平台</label><select id="ck_p">
+            ${supported.length ? supported.map(c=>`<option value="${esc(c.platform)}">${esc(c.label||c.platform)}</option>`).join('')
+              : '<option value="">（无支持保存的平台）</option>'}
+          </select></div>
+        </div>
+        <div style="margin-top:14px">
+          <label>Cookie 串（浏览器 F12 → Network → 任意请求 → 请求头 Cookie，整条复制）</label>
+          <textarea id="ck_v" placeholder="粘贴完整 Cookie 串…"></textarea>
+        </div>
+        <div style="margin-top:14px">
+          <button class="primary" onclick="saveCookie()">保存并热加载</button>
+        </div>
+      </div></div>`;
+};
+
+async function saveCookie(){
+  const platform = $('#ck_p').value;
+  const cookie = $('#ck_v').value.trim();
+  if (!platform) return toast('err','请选择平台');
+  if (!cookie) return toast('err','请粘贴 Cookie');
+  try{
+    const d = await api('/api/admin/cookies',{method:'POST',body:{platform,cookie}});
+    toast('ok', d.ok ? '已保存并热加载' : (d.message||'保存失败'));
+    go('cookie');
+  }catch(e){ toast('err', e.message); }
+}
+
+/* ───────────────────────── 启动 ───────────────────────── */
+go('dash');
+</script>
+</body>
+</html>

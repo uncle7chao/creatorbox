@@ -145,22 +145,33 @@ reapply()
 # API 层挡住了，但只有断言能保证它别被删掉。
 from fastapi.testclient import TestClient  # noqa: E402
 from app.main import app  # noqa: E402
+from app import config as _cfg  # noqa: E402
+
+# ⚠️ 必须设 API_KEY：管理端点已改为【默认拒绝】（未配 Key → 503 全部锁定）。
+# 这条测试原先没设，于是被安全修复顶掉了 —— 修法是给测试配 Key，而不是放宽安全。
+_cfg.API_KEY = 'test-key'
+_AH = {'X-Api-Key': 'test-key'}
 
 with TestClient(app) as cl:
     r = cl.post('/api/admin/banned/words', json={
-        'word': '端到端测试词', 'category': '不存在的类目', 'suggest': ''})
+        'word': '端到端测试词', 'category': '不存在的类目', 'suggest': ''}, headers=_AH)
     check('API 拒绝非法类目（400）', r.status_code == 400, f'{r.status_code} {r.text[:80]}')
 
     r2 = cl.post('/api/admin/banned/words', json={
-        'word': '端到端测试词', 'category': 'adlaw', 'suggest': '换个说法'})
+        'word': '端到端测试词', 'category': 'adlaw', 'suggest': '换个说法'}, headers=_AH)
     check('API 接受合法类目（200）', r2.status_code == 200, f'{r2.status_code} {r2.text[:80]}')
 
     r3 = cl.post('/api/admin/banned/words', json={
-        'word': 'x' * 30, 'category': 'adlaw', 'suggest': ''})
+        'word': 'x' * 30, 'category': 'adlaw', 'suggest': ''}, headers=_AH)
     check('API 拒绝超长词（400）', r3.status_code == 400, f'{r3.status_code}')
 
-    r4 = cl.post('/api/admin/banned/words', json={'word': '', 'category': 'adlaw'})
+    r4 = cl.post('/api/admin/banned/words',
+                 json={'word': '', 'category': 'adlaw'}, headers=_AH)
     check('API 拒绝空词（400）', r4.status_code == 400, f'{r4.status_code}')
+
+    # 「未配 Key → 503 默认拒绝」由 tests/test_admin_auth.py 专项覆盖。
+    # 这里不适合断言：本格测试为跑通 API 已把 _cfg.API_KEY 设为 'test-key'
+    # （模块级全局），无 Key 调用自然落到 401 而非 503。
 
 # 端到端：看板新增的词，真能参与检测
 reapply()
