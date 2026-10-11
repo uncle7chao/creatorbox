@@ -14,25 +14,40 @@
 （返回 503 并提示配置方法）。这是有意的安全设计：忘配 Key 的部署如果默认放行，
 等于把卡密、违禁词、用户名单全敞开。
 
-**启动服务前设置环境变量**：
+### 用 start-server.ps1 启动（推荐，无需手动配置）
+
+`start-server.ps1` 已内置自动处理，**你什么都不用做**：
+
+- **首次启动**：脚本自动生成一个 43 位随机密钥，存到 `server/.api_key`，
+  并在窗口里打印出来 → 把那串复制到后台顶部的「CB_API_KEY」框
+- **之后每次启动**：自动读取同一个密钥，你不用再管
+
+密钥存放在 `server/.api_key`，已加入 `.gitignore`（不会进版本库）。
+想换密钥：删掉该文件重启即可。
+
+### 手动启动服务（不用脚本时）
 
 ```powershell
-# PowerShell（本机开发）
 $env:CB_API_KEY = "换成你自己的密钥"
-uvicorn app.main:app --host 127.0.0.1 --port 8080
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8080
 ```
 
-```bash
-# Linux（部署）
-export CB_API_KEY="换成你自己的密钥"
-```
-
-生产环境请用 systemd unit 或 `.env` 注入，**不要**把密钥写在命令行里
-（`ps aux` 能看到）。密钥生成建议：
+生成密钥：
 
 ```powershell
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
+
+⚠️ `$env:CB_API_KEY = "..."` **只对当前这个 PowerShell 窗口有效**，
+换个窗口就没了。长期使用建议写进脚本或系统环境变量。
+
+### Linux 部署
+
+```bash
+export CB_API_KEY="换成你自己的密钥"     # 仅当前 shell
+```
+生产请写进 systemd unit（见 `deploy/creatorbox.service` 模板）。
+**不要**把密钥写在命令行参数里——`ps aux` 能看到。
 
 ---
 

@@ -59,6 +59,11 @@ temp/
 *.keystore
 secrets/
 
+# ⭐ 管理密钥（start-server.ps1 首次自动生成）——绝对不能入库
+# 一旦入库，任何拿到仓库的人都能操作卡密/违禁词/导出用户名单
+server/.api_key
+.api_key
+
 # ────────── 编辑器 / 系统 ──────────
 .idea/
 .vscode/
