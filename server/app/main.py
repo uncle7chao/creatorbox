@@ -570,11 +570,22 @@ class BridgePollReq(BaseModel):
 
 
 @app.post('/api/auth/bridge/create')
-async def api_bridge_create(req: BridgeCreateReq):
-    """App/PC 发起绑定：返回一次性 6 位码（5 分钟有效），用户去小程序输入。"""
+async def api_bridge_create(req: BridgeCreateReq,
+                             x_user_token: str = Header(default='')):
+    """App/PC 发起绑定：返回一次性 6 位码（5 分钟有效），用户去小程序输入。
+
+    若已登录（带 token），把出码发起方记进 bridge_codes.user_id ——
+    这样用户中途注销时能精确清掉自己名下所有未确认的码（防孤儿码被他人绑定）。
+    未登录时不记，行为与从前一致。
+    """
     if not req.provider or not req.provider_uid:
         raise HTTPException(400, '缺少 provider / provider_uid')
-    r = db.bridge_create(req.provider.strip(), req.provider_uid.strip())
+    by_user = ''
+    if x_user_token:
+        u = db.resolve_token(x_user_token)
+        by_user = (u or {}).get('user_id', '')
+    r = db.bridge_create(req.provider.strip(), req.provider_uid.strip(),
+                          by_user_id=by_user)
     if not r.get('ok'):
         raise HTTPException(400, r.get('reason') or 'bridge_create_failed')
     return r
@@ -631,6 +642,58 @@ async def api_auth_openid(x_user_token: str = Header(default='')):
         'openid': u['openid'],
         'user_id': u['user_id'],
         'quota': db.get_quota(u['openid']),
+    }
+
+
+class PurgeReq(BaseModel):
+    confirm: str = Field('', description='二次确认串，必须等于用户ID，防误触')
+
+
+@app.post('/api/auth/purge')
+async def api_auth_purge(req: PurgeReq, x_user_token: str = Header(default='')):
+    """账号注销：删除当前 token 对应用户的全部个人数据。
+
+    ⚠️ 不可逆操作，因此设两道闸：
+      1) 必须携带有效 token —— 不传 token 拿不到 user_id，陌生人无法注销他人账号
+      2) confirm 必须回传 user_id —— 前端要在确认弹窗里明确告知「不可恢复」后回传，
+         防止手滑或被诱导点击
+
+    对应《小程序隐私保护指引》§四「删除权」。上线前需先在灰度环境验证。
+    """
+    u = db.resolve_token(x_user_token)
+    if not u:
+        raise HTTPException(401, 'token 无效或已过期')
+    if (req.confirm or '').strip() != u['user_id']:
+        raise HTTPException(400, 'confirm 与当前用户不匹配，请确认后再试')
+    r = db.purge_user(u['user_id'])
+    if not r.get('ok'):
+        raise HTTPException(404, r.get('reason') or '注销失败')
+    return {'ok': True, 'deleted': r['deleted'],
+            'note': '全部个人数据已删除，不可恢复'}
+
+
+@app.get('/api/auth/purge/preview')
+async def api_auth_purge_preview(x_user_token: str = Header(default='')):
+    """注销前预览：将影响哪些数据、当前有多少条。
+
+    给用户看清楚「删什么」再决定，也是审核看「删除权是否真实可用」的落点。
+    """
+    u = db.resolve_token(x_user_token)
+    if not u:
+        raise HTTPException(401, 'token 无效或已过期')
+    oid, uid = u['openid'], u['user_id']
+    return {
+        'user_id': uid,
+        'counts': {
+            'library_items': db.count_by_openid('library_items', oid),
+            'quota_daily': db.count_by_openid('quota_daily', oid),
+            'banned_daily': db.count_by_openid('banned_daily', oid),
+            'points_sign': db.count_by_openid('points_sign', oid),
+            'identities': db.count_by_user_id('identities', uid),
+            'auth_tokens': db.count_by_user_id('auth_tokens', uid),
+        },
+        'not_deleted': ['卡密库', '违禁词库', '运营设置'],
+        'irreversible': True,
     }
 
 

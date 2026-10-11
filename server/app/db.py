@@ -1058,10 +1058,19 @@ def bind_identity(user_id: str, provider: str, provider_uid: str) -> Dict[str, A
     return {'ok': True}
 
 
-def bridge_create(provider: str, provider_uid: str) -> Dict[str, Any]:
+def bridge_create(provider: str, provider_uid: str,
+                  by_user_id: str = '') -> Dict[str, Any]:
     """跨端绑定第一步：App/PC 用本地身份换一次性桥接码（用户去小程序确认）。
 
-    码只挂身份不挂用户——绑定目标在确认时由小程序用户决定。
+    绑定目标（user_id）留空——真正要绑到谁，由小程序端 confirm 时决定。
+
+    但要记下【是谁在出码】(by_user_id)：
+      - App 端通常已登录（有 token），把它写进 user_id 列作为「出码发起方」标记，
+        这样用户中途注销时能精确清掉自己名下所有未确认的码；
+      - 未登录时（首次安装）留空，行为与从前一致。
+      ⚠️ 注意：bridge_confirm 以 code 查行时会覆写 user_id 为真正绑定目标，
+        因此该列在「已确认」阶段语义是绑定账号，在「未确认」阶段是出码发起方 ——
+        注销清理只依赖 provider_uid 与该列非空，不依赖具体值语义。
     """
     assert _conn, 'db.init() 未调用'
     if provider == 'wechat_mini':
@@ -1077,7 +1086,7 @@ def bridge_create(provider: str, provider_uid: str) -> Dict[str, Any]:
             """INSERT INTO bridge_codes(code, user_id, provider, provider_uid,
                                         created_at, expires_at)
                VALUES(?,?,?,?,?,?)""",
-            (code, '', provider, provider_uid, now, now + _BRIDGE_TTL))
+            (code, by_user_id, provider, provider_uid, now, now + _BRIDGE_TTL))
         _conn.commit()
     return {'ok': True, 'code': code, 'expires_in': _BRIDGE_TTL}
 
@@ -1168,3 +1177,118 @@ def resolve_token(token: str) -> Dict[str, Any]:
         u = _conn.execute('SELECT * FROM users WHERE user_id=?',
                           (row['user_id'],)).fetchone()
     return dict(u) if u else {}
+
+
+# ── 账号注销：用户删除权的数据面（隐私保护指引 §四）────────────────────────
+
+def count_by_openid(table: str, openid: str) -> int:
+    """注销预览用：统计某用户在该表里的数据条数。
+
+    table 名来自代码常量而非用户输入，外部调用务必只传白名单内的表名。
+    """
+    assert _conn, 'db.init() 未调用'
+    if table not in {t for t, _ in _USER_SCOPED_TABLES}:
+        return 0
+    with _lock:
+        try:
+            return _conn.execute(
+                f'SELECT COUNT(*) FROM {table} WHERE openid=?',
+                (openid,)).fetchone()[0]
+        except sqlite3.OperationalError:
+            return 0
+
+
+def count_by_user_id(table: str, user_id: str) -> int:
+    """注销预览用：按 user_id 统计（identities / auth_tokens）。"""
+    assert _conn, 'db.init() 未调用'
+    if table not in {'identities', 'auth_tokens'}:
+        return 0
+    with _lock:
+        try:
+            return _conn.execute(
+                f'SELECT COUNT(*) FROM {table} WHERE user_id=?',
+                (user_id,)).fetchone()[0]
+        except sqlite3.OperationalError:
+            return 0
+
+
+# 只清「用户自己的数据」。以下表是运营资产，【绝不能】跟着用户一起删：
+#   banned_words / redeem_codes / settings / health_* / orders（平台订单需留档）
+_USER_SCOPED_TABLES = (
+    ('library_items', 'openid'),
+    ('quota_daily', 'openid'),
+    ('banned_daily', 'openid'),
+    ('points_sign', 'openid'),
+    ('points_redeem', 'openid'),
+    ('identities', 'user_id'),
+    ('auth_tokens', 'user_id'),
+)
+# bridge_codes 不在此表：它要按 user_id 列单独删（该列存的是「出码发起方」，
+# 不是 provider_uid 关联），见 purge_user 内注释。
+
+
+def purge_user(user_id: str) -> Dict[str, Any]:
+    """删除用户的全部个人数据（注销账号）。
+
+    分两批删是刻意的：
+      1) 先按 user_id 拿到 openid 与所有身份 uid —— 身份表里还有别的身份，
+         拿不到就无法清 quota/library 这些按 openid 索引的表。
+      2) 再逐表删。
+
+    ⚠️ 不可逆。调用方（main.py）必须先二次确认用户意图。
+    """
+    assert _conn, 'db.init() 未调用'
+    deleted: Dict[str, int] = {}
+    with _lock:
+        u = _conn.execute('SELECT * FROM users WHERE user_id=?',
+                          (user_id,)).fetchone()
+        if not u:
+            return {'ok': False, 'reason': 'user_not_found', 'deleted': {}}
+        openid = u['openid']
+        # ⚠️ 收集范围必须【先收集齐再删】，因为删除 identities/auth_tokens 后
+        #    就再也查不出这些 uid 了 —— 顺序反了会漏删桥接码。
+        #
+        # 孤儿码场景：用户在 App 端出了码、还没在小程序确认（此时还没写 identities）
+        # 就注销了账号。码还留在 bridge_codes，若不清掉，别人拿这码 confirm 就能绑走，
+        # 而它本属于一个已注销的人 —— 这是安全漏洞。
+        # 关联路径：bridge_codes.provider_uid ⇄ auth_tokens.provider_uid ⇄ user_id
+        uids: List[str] = []
+        for tbl, col in (('identities', 'user_id'), ('auth_tokens', 'user_id')):
+            try:
+                uids += [r['provider_uid'] for r in _conn.execute(
+                    f'SELECT provider_uid FROM {tbl} WHERE {col}=?',
+                    (user_id,)).fetchall()]
+            except sqlite3.OperationalError:
+                continue
+        # 未确认码：bridge_codes.user_id 记的是「出码发起方」，
+        # 匹配即视为该用户名下 —— 不再依赖 provider_uid 关联。
+        try:
+            n_codes = _conn.execute(
+                'DELETE FROM bridge_codes WHERE user_id=?', (user_id,)).rowcount
+            deleted['bridge_codes'] = n_codes
+        except sqlite3.OperationalError:
+            pass
+        # 去重且保持顺序（identities 与 auth_tokens 之间有重叠）
+        uids = list(dict.fromkeys([x for x in uids if x]))
+        for tbl, key in _USER_SCOPED_TABLES:
+            try:
+                if key == 'openid':
+                    cur = _conn.execute(f'DELETE FROM {tbl} WHERE openid=?',
+                                        (openid,))
+                elif key == 'user_id':
+                    cur = _conn.execute(f'DELETE FROM {tbl} WHERE user_id=?',
+                                        (user_id,))
+                else:   # provider_uid：对该用户的每个身份各清一次
+                    cur = _conn.execute(
+                        f'DELETE FROM {tbl} WHERE provider_uid IN ({",".join(["?"] * len(uids))})',
+                        tuple(uids)) if uids else None
+                    if cur is None:
+                        continue
+                deleted[tbl] = cur.rowcount
+            except sqlite3.OperationalError:
+                # 表不存在（旧库）不该让注销整体失败
+                continue
+        deleted['users'] = _conn.execute(
+            'DELETE FROM users WHERE user_id=?', (user_id,)).rowcount
+        _conn.commit()
+    return {'ok': True, 'deleted': deleted}
