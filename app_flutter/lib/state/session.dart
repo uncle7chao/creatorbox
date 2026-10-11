@@ -48,6 +48,19 @@ class Session {
     return loggedIn;
   }
 
+  /// 重新拉取账号信息。
+  ///
+  /// 卡密兑换 / 积分兑换会改变会员态，调用方必须显式刷新 ——
+  /// 否则 UI 会继续显示兑换前的会员状态，用户以为兑换没生效。
+  /// 失败不抛：刷新失败通常意味着登录态已失效，保留旧值比崩溃好，
+  /// 由调用方在下一轮自然发现 loggedIn 状态不对。
+  Future<void> refresh() async {
+    if (_token.isEmpty) return;
+    final m = await api.authMe();
+    if (m == null) return;      // token 失效：不在这里清登录态，避免误踢
+    me = m;
+  }
+
   /// 桥接轮询成功后调用：保存 token 并拉取账号信息
   Future<void> completeLogin(String token) async {
     _token = token;

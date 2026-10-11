@@ -7,8 +7,11 @@ import '../api/client.dart';
 import '../config.dart';
 import '../main.dart' show onSessionChanged;
 import '../state/session.dart';
+import 'batch_page.dart';
 import 'library_page.dart';
+import 'member_page.dart';
 import 'parse_result_page.dart';
+import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.session});
@@ -123,6 +126,21 @@ class _HomePageState extends State<HomePage> {
           builder: (_) => LibraryPage(session: widget.session)));
       return;
     }
+    if (v == 'batch') {
+      await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => BatchPage(session: widget.session)));
+      return;
+    }
+    if (v == 'member') {
+      await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => MemberPage(session: widget.session)));
+      return;
+    }
+    if (v == 'settings') {
+      await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => SettingsPage(session: widget.session)));
+      return;
+    }
     if (v == 'refresh') {
       await _loadHealth();
       return;
@@ -178,12 +196,39 @@ class _HomePageState extends State<HomePage> {
             // 里面放 ListTile 会超高直接崩 —— 用紧凑 Row。
             itemBuilder: (_) => const [
               PopupMenuItem(
+                value: 'batch',
+                height: 44,
+                child: Row(children: [
+                  Icon(Icons.playlist_add, size: 18),
+                  SizedBox(width: 10),
+                  Text('批量解析'),
+                ]),
+              ),
+              PopupMenuItem(
                 value: 'library',
                 height: 44,
                 child: Row(children: [
                   Icon(Icons.inbox_outlined, size: 18),
                   SizedBox(width: 10),
                   Text('素材库 / 历史'),
+                ]),
+              ),
+              PopupMenuItem(
+                value: 'member',
+                height: 44,
+                child: Row(children: [
+                  Icon(Icons.card_membership, size: 18),
+                  SizedBox(width: 10),
+                  Text('会员与积分'),
+                ]),
+              ),
+              PopupMenuItem(
+                value: 'settings',
+                height: 44,
+                child: Row(children: [
+                  Icon(Icons.settings_outlined, size: 18),
+                  SizedBox(width: 10),
+                  Text('设置 / 注销账号'),
                 ]),
               ),
               PopupMenuItem(
@@ -245,6 +290,16 @@ class _HomePageState extends State<HomePage> {
               onPressed: _parsing ? null : _pasteFromClipboard,
               icon: const Icon(Icons.content_paste),
               label: const Text('从剪贴板读取并解析'),
+            ),
+            const SizedBox(height: 8),
+            // 批量是高频入口，不该藏在 ⋮ 菜单里
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => BatchPage(session: widget.session)));
+              },
+              icon: const Icon(Icons.playlist_add),
+              label: const Text('批量解析（多条一次）'),
             ),
             const SizedBox(height: 12),
             FilledButton(

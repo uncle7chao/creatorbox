@@ -180,5 +180,76 @@ class CBApi {
   /// 返回 {mode, review_mode, platforms:[{key,name_cn,types,max_quality,free_quality}]}
   Future<Map<String, dynamic>> visibility() => _send('GET', '/api/visibility');
 
+  // ── 批量解析 ──
+
+  /// 批量解析（服务端串行执行，单条失败不阻塞其余）。
+  ///
+  /// ⚠️ 配额以服务端为准：免费单次 3 条、会员 10 条（BATCH_MAX_HARD 硬上限）。
+  /// 客户端传入的条数只是意图，超限由服务端 400 拒绝 —— 前端要如实展示该错误，
+  /// 不能自己先截断再假装成功。
+  ///
+  /// 响应：{results: [{index, success, error?, ...解析结果}]}
+  Future<List<Map<String, dynamic>>> batch(
+      List<String> items, String openid) async {
+    if (items.isEmpty) return const [];
+    final r = await _send('POST', '/api/batch', body: {
+      'openid': openid,
+      'items': items
+          .map((t) => {'text': t, 'quality': '720p'})
+          .toList(growable: false),
+    });
+    final list = r['results'];
+    if (list is! List) return const [];
+    return list.whereType<Map>().toList();
+  }
+
+  // ── 会员 / 积分 ──
+
+  /// 卡密兑换会员。返回 {ok, message?, quota?, is_member?, expire_at?}
+  Future<Map<String, dynamic>> redeemCode(String openid, String code) async {
+    return _send('POST', '/api/member/redeem',
+        body: {'openid': openid, 'code': code.trim()});
+  }
+
+  /// 积分概览：余额 + 近 7 天签到 + 连签天数 + 兑换单价。
+  Future<Map<String, dynamic>> points(String openid) async {
+    return _send('GET',
+        '/api/points?openid=${Uri.encodeQueryComponent(openid)}');
+  }
+
+  /// 每日签到（+10，连签 7 天额外 +20）。幂等：当天重复签返回已签状态。
+  Future<Map<String, dynamic>> pointsSign(String openid) async {
+    return _send('POST', '/api/points/sign', body: {'openid': openid});
+  }
+
+  /// 积分兑换会员天数（100 积分 = 1 天）。余额不足时服务端 400。
+  Future<Map<String, dynamic>> pointsRedeem(String openid) async {
+    return _send('POST', '/api/points/redeem', body: {'openid': openid});
+  }
+
+  // ── 合规 ──
+
+  /// 违禁词自检（发布前合规自检）。免费限次，超额返回 quota_exhausted。
+  Future<Map<String, dynamic>> bannedCheck(String openid, String text) async {
+    return _send('POST', '/api/banned/check',
+        body: {'openid': openid, 'text': text});
+  }
+
+  // ── 账号注销（隐私保护指引 §四 删除权）──
+
+  /// 注销预览：token 版。返回各表将删除的条数 + irreversible 标记。
+  ///
+  /// 「先看清删什么再决定」是审核认可删除权的关键，不能省掉这步直接删。
+  Future<Map<String, dynamic>> purgePreview() =>
+      _send('GET', '/api/auth/purge/preview');
+
+  /// 注销账号（不可逆）。
+  ///
+  /// ⚠️ confirm 必须回传 user_id —— 服务端会校验，这是防误触的第二道闸。
+  ///   confirm 从 preview 返回的 user_id 取，不要在前端硬编码。
+  Future<Map<String, dynamic>> purgeAccount(String userId) async {
+    return _send('POST', '/api/auth/purge', body: {'confirm': userId});
+  }
+
   void dispose() => _client.close();
 }
