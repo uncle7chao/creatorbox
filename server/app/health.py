@@ -88,6 +88,13 @@ PROBES: Dict[str, Dict[str, Any]] = {
     #   万一平台哪天补上反爬，只有探针能第一时间发现。
     'kuaishou': {
         'url': 'https://www.kuaishou.com/f/X-3M7HpE9Kh3sh1V',
+        # 样本池（2026-10-11 实测：备用样本 X3n2Z5bXSt9g1wp 解析成功 3 档）。
+        # ⚠️ 只填【实测通过】的样本 —— 填错会让探针长期 false alarm，
+        #    比单样本更糟。轮换见 _sample_urls + Monitor 的轮转逻辑。
+        #    这里【不重复列 url 本身】：_sample_urls 会把 url 插到池首。
+        'urls': [
+            'https://www.kuaishou.com/f/X3n2Z5bXSt9g1wp',
+        ],
         # 必须断言拿到播放地址 + 时长量级对，
         # 否则「页面 200 但结构空」会漏报
         'assert': lambda r: (r.get('type') == 'video'
@@ -148,11 +155,16 @@ def _sample_urls(cfg: dict) -> list:
     """探针候选样本列表：cfg['url']（首选）+ cfg['urls']（池）。
 
     旧配置只有 url 也兼容（单元素池，行为与升级前一致）。
+
+    ⚠️ 去重是必需的，不是保险：按直觉写法会在 urls 里也列上 url 本身
+      （因为 urls 读着像是「备选」，自然会包含首选），导致合并后同一条出现
+      两次 —— 轮转时等于白白多试一次同一条，掩盖了真实故障。
     """
-    urls = list(cfg.get('urls') or [])
+    urls = [u for u in (cfg.get('urls') or []) if u]
     if cfg.get('url'):
         urls.insert(0, cfg['url'])
-    return urls or ['']
+    # 保序去重
+    return list(dict.fromkeys(urls)) or ['']
 
 
 def verify_cookie(platform: str, cookie: str) -> Dict[str, Any]:
