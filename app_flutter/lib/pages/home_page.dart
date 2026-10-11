@@ -7,6 +7,7 @@ import '../api/client.dart';
 import '../config.dart';
 import '../main.dart' show onSessionChanged;
 import '../state/session.dart';
+import 'banned_page.dart';
 import 'batch_page.dart';
 import 'library_page.dart';
 import 'member_page.dart';
@@ -141,6 +142,11 @@ class _HomePageState extends State<HomePage> {
           builder: (_) => SettingsPage(session: widget.session)));
       return;
     }
+    if (v == 'banned') {
+      await Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => BannedPage(session: widget.session)));
+      return;
+    }
     if (v == 'refresh') {
       await _loadHealth();
       return;
@@ -220,6 +226,15 @@ class _HomePageState extends State<HomePage> {
                   Icon(Icons.card_membership, size: 18),
                   SizedBox(width: 10),
                   Text('会员与积分'),
+                ]),
+              ),
+              PopupMenuItem(
+                value: 'banned',
+                height: 44,
+                child: Row(children: [
+                  Icon(Icons.fact_check_outlined, size: 18),
+                  SizedBox(width: 10),
+                  Text('违禁词自检'),
                 ]),
               ),
               PopupMenuItem(
