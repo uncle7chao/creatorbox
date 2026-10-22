@@ -576,6 +576,25 @@ def normalize_meta(result: Dict[str, Any],
         result.setdefault('extra', meta['extra'])
     result['meta_schema_version'] = 1
 
+    # 资源直链统一升级为 https —— 小程序只允许 https，
+    # 平台的 CDN 却常返回 http://，不改的话封面/视频在端上必然加载失败。
+    # 放在 normalize_meta 是因为它是**所有平台解析器的统一出口**，
+    # 改一次三端（小程序/Flutter/App）同时受益，
+    # 且未来新平台返回 http 也不用再改代码。
+    # 详见 app/url_scheme.py 的说明（含为什么不做探测式 http 回退）。
+    try:
+        from app.url_scheme import upgrade_result, https_url
+        upgrade_result(result)
+        # ⚠️ meta 是 result 的**字段子集拷贝**，上面升级 result 不会
+        #    自动同步到已经写进 meta 的值。若不同步，meta 里会留着一个
+        #    http:// 的 cover，而 result 里是 https:// —— 同一个响应里
+        #    出现两种协议，比不升级更难排查。所以这里要同步一次。
+        for _f in ('cover', 'music_url', 'subtitle_url'):
+            if isinstance(meta.get(_f), str):
+                meta[_f] = https_url(meta[_f])
+    except Exception:                       # pragma: no cover - 绝不因协议升级而让解析失败
+        pass
+
     return meta
 
 

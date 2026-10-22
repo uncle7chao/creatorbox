@@ -1530,6 +1530,11 @@ _COVER_REFERER = {
     'xiaohongshu': 'https://www.xiaohongshu.com/',
     'weibo': 'https://weibo.com/',
     'haokan': 'https://haokan.baidu.com/',
+    # 百度信息流视频（mbd.baidu.com分享页）的图片走 *.baidu.com，
+    # 实测 2026-10-22：不给Referer 直接 403。
+    #⚠️ 缺这一条时它会 fallback 到默认值（douyin）→ 403 → 结果页封面全黑，
+    #   而接口本身返回 200 正常，排查方向容易被带偏（会以为是渲染问题）。
+    'baidu': 'https://mbd.baidu.com/',
     'acfun': 'https://www.acfun.cn/',
     'sohu': 'https://tv.sohu.com/',
 }
@@ -1545,6 +1550,11 @@ _COVER_HOST_SUFFIXES = (
     'xhscdn.com',                                          # 小红书
     'sinaimg.cn', 'weibocdn.com',                          # 微博
     'bdstatic.com', 'bcebos.com',                          # 好看/百度系
+    # 百度信息流视频（mbd.baidu.com 分享页）的图片在 *.baidu.com 下，
+    # 实测 2026-10-22：封面域名形如 f7.baidu.com / f8.baidu.com（编号随机，
+    # 与 bdstatic 不是同一套）。缺了它→ 代理返回 404 → 结果页封面全黑。
+    # 后缀写 .baidu.com 能覆盖随机编号子域。
+    'baidu.com',
     'acfun.cn',                                            # AcFun
     'itc.cn', 'sohu.com',                                  # 搜狐
     'fbcdn.net', 'cdninstagram.com',                       # Facebook/IG

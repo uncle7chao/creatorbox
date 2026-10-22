@@ -516,3 +516,132 @@
   color: rgba(255, 255, 255, 0.92);
   line-height: 1.4;
 }
+
+/* ══════════════════════════════════════════════════════════
+   素材清单（2026-10-22 竞品对齐）
+   竞品的做法：按素材类型横切，每行 = 类型 + 明确动作。
+   纵向堆叠时代，用户要自己拼「哪一步能拿到什么」；
+   这张清单一次说清：这条链接能产出哪几类素材，各自怎么拿。
+   ⭐ 图标全部 CSS 绘制（项目规范：不用 emoji、不用图片资源）
+   ══════════════════════════════════════════════════════════ */
+.assets {
+  margin: 0 28rpx 8rpx;
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  border: 1rpx solid var(--card-line);
+  overflow: hidden;
+}
+.as-head {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: var(--ink-700);
+  padding: 18rpx 24rpx 10rpx;
+}
+.as-row {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  padding: 10rpx 24rpx;
+  border-top: 1rpx solid var(--card-line);
+}
+/* 类型图标：40rpx 方块，纯 CSS 图形 */
+.as-ic {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 10rpx;
+  background: var(--brand-soft);
+  margin-right: 18rpx;
+  position: relative;
+  flex-shrink: 0;
+}
+/* 视频：播放三角（border 法画实心三角，无 emoji 无图片） */
+.as-tri {
+  position: absolute;
+  left: 14rpx; top: 12rpx;
+  width: 0; height: 0;
+  border-left: 15rpx solid var(--brand);
+  border-top: 8rpx solid transparent;
+  border-bottom: 8rpx solid transparent;
+}
+/* 封面：相框（外框 + 内山形，用两条线做 mountains） */
+.as-img {
+  position: absolute;
+  left: 9rpx; top: 9rpx;
+  width: 22rpx; height: 22rpx;
+  border: 2rpx solid var(--brand);
+  border-radius: 3rpx;
+  box-sizing: border-box;
+}
+.as-img::after {
+  content: '';
+  position: absolute;
+  left: 2rpx; bottom: 2rpx;
+  width: 12rpx; height: 8rpx;
+  /* 两座山峰：CSS 三角形拼出山形轮廓 */
+  border-left: 6rpx solid transparent;
+  border-right: 6rpx solid transparent;
+  border-bottom: 8rpx solid var(--brand);
+}
+/* 文案：三条横线 */
+.as-txt {
+  position: absolute;
+  left: 9rpx; top: 12rpx;
+  width: 22rpx; height: 16rpx;
+  background-image: linear-gradient(var(--brand), var(--brand)),
+                    linear-gradient(var(--brand), var(--brand)),
+                    linear-gradient(var(--brand), var(--brand));
+  background-size: 100% 2rpx;
+  background-position: 0 0, 0 7rpx, 0 13rpx;
+  background-repeat: no-repeat;
+}
+/* BGM：音符（圆头 + 竖杆） */
+.as-wave {
+  position: absolute;
+  left: 12rpx; top: 8rpx;
+  width: 16rpx; height: 16rpx;
+  border-left: 2rpx solid var(--brand);
+  border-bottom: 2rpx solid var(--brand);
+  box-sizing: border-box;
+}
+.as-wave::before {
+  content: '';
+  position: absolute;
+  left: -3rpx; top: 8rpx;
+  width: 8rpx; height: 8rpx;
+  border-radius: 50%;
+  background: var(--brand);
+}
+.as-wave::after {           /* 音符右上那一横 */
+  content: '';
+  position: absolute;
+  left: 12rpx; top: 0;
+  width: 6rpx; height: 2rpx;
+  background: var(--brand);
+}
+
+.as-name {
+  font-size: 26rpx;
+  color: var(--ink-900);
+  width: 130rpx;
+  flex-shrink: 0;
+}
+.as-acts {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12rpx;
+}
+/* 次级动作 = 文字链（对齐竞品：不是每个动作都抢按钮） */
+.as-act {
+  font-size: 23rpx;
+  color: var(--brand-deep);
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+}
+/* 每个类型只给一个主动作，其余为文字链 —— 避免整屏都是按钮 */
+.as-act-main {
+  background: var(--brand-soft);
+  border: 1rpx solid #FFC46B;
+  font-weight: 600;
+}

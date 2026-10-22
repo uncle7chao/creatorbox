@@ -98,10 +98,157 @@ Page({
         + ((r.subtitleText || '').length > 300 ? '…' : ''),
       options: this.decorateOptions(r.options, r.anonymousMaxHeight),
       selectedIdx: idx,
-      freeMaxHeight: r.anonymousMaxHeight
+      freeMaxHeight: r.anonymousMaxHeight,
+      assets: this.buildAssets(r)
     });
 
     this.refreshQuota();
+  },
+
+  /**
+   * 构建「本次可提取」素材清单（2026-10-22，竞品对齐的核心）
+   *
+   * ⭐ 竞品是按素材类型横切列出（视频/封面/文案/配音），
+   *   我们此前是纵向堆叠——用户得自己拼「哪一步能拿到什么」。
+   *
+   * ⭐⭐ 只列【真实可用】的素材：
+   *   竞品有「配音→搜索视频中相似声音」，那是另一个服务的能力，
+   *   我们没有 —— 列出来点了没反应比不列更糟。
+   *   同理BGM：没有 musicUrl 就不列，不占位。
+   *   「列了就能用」是这张清单唯一的设计前提。
+   */
+  buildAssets(r) {
+    const list = [];
+
+    if (r.isVideo) {
+      list.push({
+        key: 'video',
+        kind: 'video',
+        label: '视频',
+        acts: [{ key: 'saveVideo', label: '保存到相册', main: true }]
+      });
+    }
+
+    // 封面：视频有cover 才列。⚠️ 用 coverRaw（原始直链）保存，
+    //   不走 coverProxy —— 代理是给display 用的（解决小程序图片域白名单），
+    //   保存时也用代理没必要，且代理 URL 里的 query 会被微信再编码一次。
+    if (r.cover) {
+      list.push({
+        key: 'cover',
+        kind: 'cover',
+        label: '封面',
+        acts: [{ key: 'saveCover', label: '保存封面', main: true }]
+      });
+    } else if (r.images && r.images.length) {
+      list.push({
+        key: 'images',
+        kind: 'cover',
+        label: `图片 ${r.images.length} 张`,
+        acts: [{ key: 'saveImages', label: '全部保存', main: true }]
+      });
+    }
+
+    // 文案：标题与正文是两个不同产出，给两个动作而不是合一个
+    //   ——用户要「复制标题」时不该被迫拿走整段正文。
+    const textActs = [];
+    if (r.title) {
+      textActs.push({ key: 'copyTitle', label: '复制标题' });
+    }
+    if (r.copyText || r.description) {
+      textActs.push({ key: 'copyCopy', label: '复制文案', main: !r.title });
+    }
+    if (r.subtitleText) {
+      textActs.push({ key: 'copySubtitle', label: '复制字幕' });
+    }
+    if (textActs.length) {
+      list.push({ key: 'text', kind: 'text', label: '文案', acts: textActs });
+    }
+
+    if (r.musicUrl) {
+      list.push({
+        key: 'audio',
+        kind: 'audio',
+        label: '背景音乐',
+        acts: [
+          { key: 'toggleBgm', label: '试听', main: true },
+          { key: 'copyBgm', label: '复制链接' }
+        ]
+      });
+    }
+
+    return list;
+  },
+
+  /**
+   * 素材清单动作分发（data-act → 实际方法）
+   *
+   * 用一张显式映射表而不是直接 this[act]()：
+   * 直接调用等于把 WXML 里的字符串当方法名执行，
+   * 任何拼写错误都会在运行时才炸，且能调到任意方法。
+   */
+  onAssetAction(e) {
+    const key = (e.currentTarget.dataset.act || '').toString();
+    const map = {
+      saveVideo: this.onSave,
+      saveCover: this.onSaveCover,
+      saveImages: this.onSave,
+      copyTitle: this.onCopyTitle,
+      copyCopy: this.onCopyCopy,
+      copySubtitle: this.onCopySubtitle,
+      toggleBgm: this.onBgmToggle,
+      copyBgm: this.onCopyBgm
+    };
+    const fn = map[key];
+    if (typeof fn === 'function') {
+      fn.call(this, e);
+    }
+  },
+
+  /** 复制标题（竞品「文案」行的动作之一） */
+  onCopyTitle() {
+    const t = this.data.title;
+    if (!t || t === '（无标题）') {
+      wx.showToast({ title: '这条没有标题', icon: 'none' });
+      return;
+    }
+    saver.copyText(t).then(ok => {
+      wx.showToast({ title: ok ? '标题已复制' : '复制失败', icon: ok ? 'success' : 'none' });
+    });
+  },
+
+  /**
+   * 保存封面到相册
+   *
+   * ⚠️ 配额决策：封面**不扣**保存次数。
+   *   配额保护的是「视频下载」（消耗带宽/CDN 流量），封面是几十 KB 的图片，
+   *   扣它会让用户为一个小操作付代价，体验上说不通。
+   *   若将来流量成为瓶颈，应改成独立的「图片配额」而不是挤占视频配额。
+   */
+  onSaveCover() {
+    const url = this.data.coverRaw || this.data.cover;
+    if (!url) {
+      wx.showToast({ title: '这条没有封面', icon: 'none' });
+      return;
+    }
+    if (this.data.saving) return;
+    this.setData({ saving: true });
+
+    saver.saveImage(url, 'jpg').then(res => {
+      this.setData({ saving: false });
+      if (res.ok) {
+        wx.showToast({ title: '封面已保存', icon: 'success' });
+      } else if (res.reason === 'auth') {
+        // 权限被拒是【可引导】的：直接告诉用户去设置里开
+        wx.showModal({
+          title: '需要相册权限',
+          content: '保存封面需要写入相册的权限，去设置里开启后即可保存。',
+          confirmText: '去设置',
+          success: m => { if (m.confirm) wx.openSetting(); }
+        });
+      } else {
+        wx.showToast({ title: '封面保存失败，请重试', icon: 'none' });
+      }
+    });
   },
 
   /** 封面代理加载失败（未知域 403/CDN 拒绝）→ 回退原始直链 */

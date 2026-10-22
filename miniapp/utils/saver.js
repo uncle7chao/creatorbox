@@ -79,6 +79,35 @@ function saveVideo(url) {
   });
 }
 
+/**
+ * 保存单张图片到相册（封面 / 单张素材）
+ * @returns Promise<{ok, reason}> reason: auth(权限被拒)/download(下载失败)
+ *
+ * ⭐ 为什么不直接用 saveMany([url])：
+ *   saveMany 是批量语义，权限被拒时只记 failed++ 不给原因，
+ *   用户只会看到「保存失败」，不知道是相册权限没开——而去开权限的动作
+ *   完全无法引导。封面是本页面显式的第二产出，用户会反复点，
+ *   必须给出「去设置里开权限」这种可操作的提示。
+ */
+function saveImage(url, ext) {
+  return download(url, ext || 'jpg').then(res => {
+    if (!res.ok) return { ok: false, reason: 'download' };
+    return new Promise(resolve => {
+      wx.saveImageToPhotosAlbum({
+        filePath: res.path,
+        success: () => resolve({ ok: true }),
+        fail: err => {
+          if (/auth|deny|permission/i.test(err.errMsg || '')) {
+            resolve({ ok: false, reason: 'auth' });
+          } else {
+            resolve({ ok: false, reason: 'save' });
+          }
+        }
+      });
+    });
+  });
+}
+
 /** 文案复制（提取文案双产出） */
 function copyText(text) {
   return new Promise(resolve => {
@@ -98,4 +127,4 @@ function afterSaved(n = 1) {
   return QUOTA.consume(n);
 }
 
-module.exports = { download, saveMany, saveVideo, copyText, afterSaved };
+module.exports = { download, saveMany, saveVideo, saveImage, copyText, afterSaved };

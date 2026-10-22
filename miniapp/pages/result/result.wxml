@@ -64,6 +64,34 @@
       </view>
     </view>
 
+    <!-- ══ 素材清单（2026-10-22，竞品对齐的核心改动）══
+         竞品的做法：把「这个链接能拿到什么」按【素材类型】横切列出，
+         每行 = 类型 + 明确动作。用户一眼看完，不用自己找按钮在哪。
+         我们此前是纵向堆叠（视频卡/BGM/文案卡各占一块），
+         动作散落各处，用户要自己拼「哪一步能拿到什么」。
+
+         ⭐ 但不完全照抄：竞品把文案塞进一行文字链，
+           我们的文案有字幕提取/违禁词检测等独有能力，仍保留完整卡片。
+           这里只做「索引 + 快捷入口」，卡片本身不删 ——
+           清单解决「找得到」，卡片承载「看得全」。 -->
+    <view wx:if="{{assets.length}}" class="assets">
+      <view class="as-head">本次可提取</view>
+      <view wx:for="{{assets}}" wx:key="key" class="as-row">
+        <view class="as-ic as-ic-{{item.kind}}">
+          <view wx:if="{{item.kind === 'video'}}" class="as-tri"></view>
+          <view wx:elif="{{item.kind === 'cover'}}" class="as-img"></view>
+          <view wx:elif="{{item.kind === 'text'}}" class="as-txt"></view>
+          <view wx:elif="{{item.kind === 'audio'}}" class="as-wave"></view>
+        </view>
+        <view class="as-name">{{item.label}}</view>
+        <view class="as-acts">
+          <view wx:for="{{item.acts}}" wx:for-item="a" wx:key="key"
+                class="as-act{{a.main ? ' as-act-main' : ''}}"
+                data-act="{{a.key}}" bindtap="onAssetAction">{{a.label}}</view>
+        </view>
+      </view>
+    </view>
+
     <!-- ══ BGM 卡（2026-10-11：抖音先行，试听 + 复制链接）══ -->
     <view wx:if="{{bgmShow}}" class="bgm">
       <view class="bgm-play {{bgmPlaying ? 'bgm-on' : ''}}" bindtap="onBgmToggle">
