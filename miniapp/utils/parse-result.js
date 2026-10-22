@@ -64,6 +64,13 @@ class ParseResult {
 
     // ---- 时长 / 时间 ----
     this.durationS = typeof m.duration_s === 'number' ? m.duration_s : null;
+    // ⭐ 文件大小（2026-10-22，竞品对齐：视频卡显示「时长+大小」）
+    // 大小文本由服务端格式化（size_text）—— 口径统一放一处，
+    // 免得各端各算一套出现「31.9MB」vs「33,449,661 字节」这种不一致。
+    // ⚠️ duration_text 服务端也下发，但本文件已有 durationText getter
+    //    （本地算，格式「3 分 33 秒」），保持用本地那个，别重复定义。
+    this.fileSize = r.size || 0;
+    this.fileSizeText = r.size_text || '';
     this.publishTime = m.publish_time || '';
     this.publishTimeText = m.publish_time_text || '';
 

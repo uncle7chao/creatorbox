@@ -452,3 +452,67 @@
   font-size: 20rpx;
   color: var(--ink-300, #b8b8b8);
 }
+
+/* ══════════════════════════════════════════════════════════
+   2026-10-22 竞品对齐三件套
+   ① .done-line  解析完成 + 「数据不做存储」提示（合规护身符）
+   ② .video-meta 视频卡右下角信息浮层（时长 + 文件大小）
+   ③ 档位区已降级为紧凑行（见 WXML 注释），主 CTA 唯一
+   ══════════════════════════════════════════════════════════ */
+
+/* ── ① 解析完成提示行 ── */
+.done-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin: 4rpx 28rpx 0;
+}
+/* 对勾：纯 CSS 画的（项目规范：不用 emoji/字符图标）*/
+.done-tick {
+  width: 26rpx;
+  height: 26rpx;
+  border-radius: 50%;
+  background: var(--ink-700);
+  position: relative;
+  flex-shrink: 0;
+}
+.done-tick::after {
+  content: '';
+  position: absolute;
+  left: 9rpx;
+  top: 5rpx;
+  width: 6rpx;
+  height: 11rpx;
+  border-right: 3rpx solid #fff;
+  border-bottom: 3rpx solid #fff;
+  transform: rotate(42deg);
+}
+.done-ok {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+.done-note {
+  font-size: 22rpx;
+  color: var(--ink-500);
+}
+
+/* ── ② 视频卡信息浮层（右下角）── */
+.video-meta {
+  position: absolute;
+  right: 12rpx;
+  bottom: 12rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  /* 半透明黑底：压在封面上仍可读，不抢播放按钮的视觉重心 */
+  background: rgba(0, 0, 0, 0.55);
+}
+.video-meta-i {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.4;
+}

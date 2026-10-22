@@ -78,6 +78,9 @@ Page({
         .filter(Boolean).join(' · '),
       isVideo: r.isVideo,
       isImage: r.isImage,
+      // ⭐ 文件大小（2026-10-22，竞品对齐：视频卡右下角显示「时长+大小」）
+      fileSizeText: r.fileSizeText || '',
+      durationText: r.durationText || '',
       notices: r.notices,
       titleHint: r.titleHint,
       statsLine: r.statsLine,

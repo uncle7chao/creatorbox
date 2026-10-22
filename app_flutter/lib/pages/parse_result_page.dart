@@ -68,6 +68,11 @@ class _ParseResultPageState extends State<ParseResultPage> {
   String get _subtitle => (result['subtitle_text']?.toString() ?? '');
   String get _musicUrl => (result['music_url']?.toString() ?? '');
 
+  // ⭐ 文件大小与时长文本（2026-10-22，竞品对齐）
+  // 服务端统一格式化后下发（size_text / duration_text），各端口径一致。
+  String get _fileSizeText => (result['size_text']?.toString() ?? '');
+  String get _durationText => (result['duration_text']?.toString() ?? '');
+
   /// 主档直链：取排序后第一条（= 最清晰那档），无 options 时退回顶层 video_url。
   String get _mainUrl {
     final sorted = _sortedOptions;
@@ -186,6 +191,38 @@ class _ParseResultPageState extends State<ParseResultPage> {
               .where((s) => s.isNotEmpty)
               .join(' · '),
               style: theme.textTheme.bodySmall),
+
+          // ── 解析完成 + 「数据不做存储」（竞品对齐：合规护身符）──
+          // 明确告知不存储用户解析的内容，配合我们「不提供去除版权水印」的定位：
+          // 能力是「获取平台源头就干净的原始文件」，不是「擦除他人作品的版权标识」。
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.check_circle_outline, size: 16,
+                  color: theme.colorScheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text.rich(
+                  TextSpan(children: [
+                    const TextSpan(
+                        text: '解析已完成',
+                        style: TextStyle(fontWeight: FontWeight.w500)),
+                    TextSpan(
+                        text: _fileSizeText.isEmpty && _durationText.isEmpty
+                            ? ' · 数据不做存储，请保存后离开本页面'
+                            : ' · ${[
+                                if (_durationText.isNotEmpty) _durationText,
+                                if (_fileSizeText.isNotEmpty) _fileSizeText,
+                              ].join(' ')} · 数据不做存储',
+                        style: const TextStyle(
+                            color: Color(0xFF888780))),
+                  ]),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
 
           // ── 主档直链（第一诉求：拿最好的那条）──

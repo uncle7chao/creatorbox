@@ -29,6 +29,7 @@ try:
     from app import health
     from app import m3u8_merge
     from app import meta
+    from app import size_probe
     from app.cache import cache, limiter
     from app.parsers.acfun_pure import AcfunPureParser
     from app.parsers.base import URL_RE, ParserRegistry
@@ -538,7 +539,41 @@ async def api_parse(req: ParseReq, request: Request):
         result.setdefault('coalesced', True)   # 标记：蹭了在途请求的结果
     result['cached'] = False
 
+    # ⭐ 文件大小探测（竞品对齐：视频卡显示「时长 + 大小」）
+    # 只探【选中并将要返回的那一档】video_url，不探全部档位（8 档全探太慢）。
+    # 拿不到就是 0（界面显示"大小未知"），不编造。
+    await _attach_size(result)
+
     return result
+
+
+async def _attach_size(result: dict) -> None:
+    """给解析结果补 size 字段（字节）与人类可读文本。
+
+    ⭐ 为什么放这里而不是解析器里：
+       各平台字段不统一（抖音 bit_rate 可能带 data_size，但并非都有），
+       逐平台适配是长期维护成本。HTTP HEAD/Range 拿 content-length 是通用的。
+    ⚠️ 只探 video_url 一个地址，且失败静默 —— 探测失败不该让整个解析失败。
+    """
+    if not result or not result.get('success'):
+        return
+    if result.get('type') != 'video':
+        return
+    url = result.get('video_url') or ''
+    if not url:
+        return
+    try:
+        n = await size_probe.probe_size(url)
+    except Exception:
+        n = 0
+    if n:
+        result['size'] = n
+        result['size_text'] = size_probe.human_size(n)
+    else:
+        result['size'] = 0
+        result['size_text'] = ''
+    # 时长文本（客户端也要，格式化口径统一放服务端）
+    result['duration_text'] = size_probe.human_duration(result.get('duration_ms'))
 
 
 # ---------- 用户 / 配额 / 云端素材库（P0，2026-10-07） ----------

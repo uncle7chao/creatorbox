@@ -26,6 +26,17 @@
     <!-- 标题来源提示：诚实性设计，不能让用户误以为那就是原文标题 -->
     <view wx:if="{{titleHint}}" class="hint">{{titleHint}}</view>
 
+    <!-- ══ 解析完成提示 + 数据不存储声明（2026-10-22，竞品对齐）══
+         括号里那句是【合规护身符】：明确告知不存储用户解析的内容。
+         配合我们「不提供去除版权水印」的定位一起看：
+         能力是「获取平台源头就干净的原始文件」，不是「擦除他人作品上的版权标识」。
+         这句话同时降低审核方对「资源搬运」的疑虑，成本为零。 -->
+    <view class="done-line">
+      <view class="done-tick"></view>
+      <text class="done-ok">解析已完成</text>
+      <text class="done-note">数据不做存储，请保存后离开本页面</text>
+    </view>
+
     <!-- 平台特有提示（截断 / 需合并 / 需中转） -->
     <view wx:for="{{notices}}" wx:key="*this" class="notice">{{item}}</view>
 
@@ -44,6 +55,13 @@
              bindtap="onVideoPlay" binderror="onCoverErr" />
       <view wx:else class="video-nocover" bindtap="onVideoPlay"></view>
       <view class="video-play" bindtap="onVideoPlay"></view>
+      <!-- ⭐ 右下角信息浮层（竞品对齐）：时长 + 文件大小。
+           作用是让用户在保存前知道文件多大 —— 大文件下载失败率高、耗流量。
+           ⚠️ 只在有值时显示（size 探测失败时 sizeText 为空，不显示占位）。 -->
+      <view wx:if="{{durationText || fileSizeText}}" class="video-meta">
+        <text wx:if="{{durationText}}" class="video-meta-i">{{durationText}}</text>
+        <text wx:if="{{fileSizeText}}" class="video-meta-i">{{fileSizeText}}</text>
+      </view>
     </view>
 
     <!-- ══ BGM 卡（2026-10-11：抖音先行，试听 + 复制链接）══ -->
@@ -98,7 +116,9 @@
       <text wx:for="{{tags}}" wx:key="*this" class="tag">#{{item}}#</text>
     </view>
 
-    <!-- ══ 清晰度选择 ══ -->
+    <!-- ══ 清晰度选择（次级信息：降级为紧凑行，不与主按钮争视觉权重）══
+         竞品的做法：所有次级动作都是文字链，只有一个大按钮。
+         我们原先把档位做成与主按钮同级的卡片块，视觉权重过高。 -->
     <block wx:if="{{isVideo && options.length > 1}}">
       <view class="sec-title">
         清晰度
@@ -123,7 +143,8 @@
       </view>
     </view>
 
-    <!-- ══ 保存主按钮（放在广告位上方：先满足需求）══ -->
+    <!-- ══ 主 CTA：唯一的大按钮（竞品对齐：主路径唯一）══
+         放在广告位上方 —— 先满足需求，再谈变现。 -->
     <button class="btn-primary save-btn" bindtap="onSave" disabled="{{saving || loading}}">
       {{saving ? '保存中…' : (isImage ? '保存' + images.length + '张到相册' : '保存到相册')}}
     </button>
