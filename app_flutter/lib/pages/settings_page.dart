@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../api/client.dart' show ApiError;
+import '../brand.dart';
 import '../config.dart';
 import '../main.dart' show onSessionChanged;
 import '../state/session.dart';
@@ -226,8 +227,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 24),
           Center(
-            child: Text('CreatorBox · 内容地址解析',
-                style: theme.textTheme.bodySmall),
+            child: Text(
+              brand.TITLE_PC,
+              style: theme.textTheme.bodySmall,
+            ),
           ),
           const SizedBox(height: 32),
         ],

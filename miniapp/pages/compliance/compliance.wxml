@@ -49,5 +49,5 @@
     <view class="act act-ghost" bindtap="onCopyEmail">复制投诉邮箱</view>
   </view>
 
-  <view class="ver">CreatorBox v{{version}}</view>
+  <view class="ver">星创映画 v{{version}}</view>
 </view>

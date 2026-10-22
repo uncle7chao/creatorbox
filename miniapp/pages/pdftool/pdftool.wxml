@@ -46,7 +46,7 @@
       <view wx:if="{{tab === 'watermark'}}" class="opt-row">
         <view class="opt-l">水印</view>
         <input class="wm-input" value="{{watermarkText}}" maxlength="24"
-               placeholder="最多 24 字，如：CreatorBox" bindinput="onWmText" />
+               placeholder="最多 24 字，如：星创映画" bindinput="onWmText" />
       </view>
     </block>
 

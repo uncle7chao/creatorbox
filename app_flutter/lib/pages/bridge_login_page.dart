@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import '../brand.dart';
 import '../config.dart';
 import '../state/session.dart';
 
@@ -99,7 +100,7 @@ class _BridgeLoginPageState extends State<BridgeLoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('CreatorBox', style: theme.textTheme.headlineMedium
+                Text(brand.TITLE_APP, style: theme.textTheme.headlineMedium
                     ?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
                 Text('与小程序同账号 · 会员/素材库全端同步',

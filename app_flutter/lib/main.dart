@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'brand.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
@@ -29,7 +31,7 @@ class CreatorBoxApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const seed = Color(0xFFE8890C);      // 品牌琥珀橙，与小程序同源
     return MaterialApp(
-      title: 'CreatorBox',
+      title: brand.TITLE_APP,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: seed),
         useMaterial3: true,

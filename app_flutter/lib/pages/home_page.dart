@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../api/client.dart';
+import '../brand.dart';
 import '../config.dart';
 import '../main.dart' show onSessionChanged;
 import '../state/session.dart';
@@ -181,7 +182,7 @@ class _HomePageState extends State<HomePage> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CreatorBox'),
+        title: const Text(brand.TITLE_APP),
         actions: [
           Center(
             child: Padding(
