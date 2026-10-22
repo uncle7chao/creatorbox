@@ -22,12 +22,8 @@
  * ⚠️ 超时：批量是串行解析（2C2G），5 条可能 10s+ → 60s
  */
 
-// ── 服务地址 ──
-// 开发者工具：本机回环可用；真机走 adb reverse 或局域网 IP
-const BASE_URL = 'http://127.0.0.1:8080';
-
-const TIMEOUT = 30000;
-const TIMEOUT_BATCH = 60000;
+// ── 服务地址与超时：集中在 config/env.js（上线只改那一个文件）──
+const { BASE_URL, TIMEOUT, TIMEOUT_BATCH } = require('../config/env.js');
 
 function request(path, options = {}) {
   return new Promise((resolve, reject) => {

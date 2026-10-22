@@ -451,7 +451,13 @@ console.log('\n▸ 契约一致性（与 server/app/main.py）');
   check('带 quality 参数', api.includes('quality'));
   check('带 no_cache 参数', api.includes('no_cache'));
   check('调 /api/health', api.includes("'/api/health'"));
-  check('超时 30s（AcFun 合并实测 5.4s，留足余量）', api.includes('30000'));
+  // ⭐ 超时常量已移到 config/env.js（上线只改那一个文件）
+  //    断言必须跟着被测对象走 —— 留在 api.js 里会误报
+  const env = read('config/env.js');
+  check('超时 30s（AcFun 合并实测 5.4s，留足余量）',
+        env.includes('30000') && api.includes("require('../config/env.js')"));
+  check('服务地址集中在 config/env.js（不再硬编码在 api.js）',
+        !/127\.0\.0\.1:8080/.test(api) && env.includes('BASE_URL'));
 
   const model = read('utils/parse-result.js');
   ['video_url', 'no_watermark', 'merge_required', 'anonymous_max_height',
@@ -465,7 +471,7 @@ console.log('\n▸ 契约一致性（与 server/app/main.py）');
   check('登录 /api/user/login', api.includes('/api/user/login'));
   check('配额 /api/user/quota', api.includes('/api/user/quota'));
   check('素材库 /api/library', api.includes('/api/library'));
-  check('批量超时 60s（串行解析 5 条可能 10s+）', api.includes('60000'));
+  check('批量超时 60s（串行解析 5 条可能 10s+）', env.includes('60000'));
   // 占位卡规则（2026-10-07 拍板：展示不开发）
   check('工具箱占位卡 8 项', (api.match(/TOOLBOX_PLACEHOLDERS[\s\S]*?\]/) || [''])[0].includes('音频提文案'));
   const toolboxJs = fs.readFileSync(path.join(ROOT, 'pages/toolbox/toolbox.js'), 'utf-8');

@@ -1,0 +1,57 @@
+[Unit]
+Description=CreatorBox (星创映画) 解析服务
+# 服务名用 creatorbox（内部代号，不随品牌名变）
+# 理由：改 service 名会导致已部署的机器 systemd 找不到单元、
+#       新旧单元并存冲突。品牌名是给用户看的，服务名是给运维看的。
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/www/creatorbox/server
+
+# ── 必配：管理接口密钥 ────────────────────────────────────────────
+# ⭐ 不配则所有 /api/admin/* 返回 503 锁死（这是有意的安全设计，
+#   不是故障）。生成：python3 -c "import secrets;print(secrets.token_urlsafe(32))"
+# ⚠️ 建议用 EnvironmentFile，不要把密钥直接写在这里（会出现在 systemctl show 输出里）
+EnvironmentFile=-/etc/creatorbox/env
+
+# ── 数据目录 ──────────────────────────────────────────────────────
+Environment=CB_DB_PATH=/www/creatorbox/server/data/cb.db
+Environment=CB_HOST=127.0.0.1
+Environment=CB_PORT=8080
+
+# ── 微信小程序（AppID/Secret）─────────────────────────────────────
+# 留空则小程序登录走游客模式（能用，但会员/绑定功能不可用）
+Environment=CB_WX_APPID=
+Environment=CB_WX_SECRET=
+
+# ── 平台开关 ──────────────────────────────────────────────────────
+# 提审期设 review：只保留抖音+B站，隐藏其他平台入口
+Environment=CB_REVIEW_MODE=full
+# 国际平台（TikTok/X/YT/FB）：大陆部署建议关闭
+Environment=CB_INTL_ENABLED=0
+# 健康探针
+Environment=CB_ENABLE_HEALTH=1
+Environment=CB_HEALTH_INTERVAL=600
+
+ExecStart=/www/creatorbox/server/venv/bin/python -m uvicorn app.main:app \
+          --host 127.0.0.1 --port 8080 --workers 2
+
+Restart=always
+RestartSec=5
+# 固定只读根目录是加固项，但 sqlite 写 data/ 需要可写，故放开 data
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/www/creatorbox/server/data
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=creatorbox
+
+[Install]
+WantedBy=multi-user.target
