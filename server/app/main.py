@@ -32,6 +32,7 @@ try:
     from app import size_probe
     from app.cache import cache, limiter
     from app.parsers.acfun_pure import AcfunPureParser
+    from app.parsers.baidu_pure import BaiduVideoPureParser
     from app.parsers.base import URL_RE, ParserRegistry
     from app.parsers.bilibili_pure import BilibiliPureParser
     from app.parsers.douyin_pure import DouyinPureParser
@@ -55,6 +56,7 @@ except ImportError:
     import meta
     from cache import cache, limiter
     from parsers.acfun_pure import AcfunPureParser
+    from parsers.baidu_pure import BaiduVideoPureParser
     from parsers.base import URL_RE, ParserRegistry
     from parsers.bilibili_pure import BilibiliPureParser
     from parsers.douyin_pure import DouyinPureParser
@@ -100,7 +102,10 @@ class Pool:
         self.pure = [
             DouyinPureParser(),
             BilibiliPureParser(),
+            # 百度系两个产品：haokan（好看视频）与 baidu（信息流视频），
+            # URL 与接口形态不同，match 规则互不重叠
             HaokanPureParser(),
+            BaiduVideoPureParser(),
             SohuPureParser(),
             WeiboPureParser(),
             AcfunPureParser(),

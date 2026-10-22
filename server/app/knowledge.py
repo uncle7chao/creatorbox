@@ -63,6 +63,29 @@ PLATFORMS: Dict[str, Dict[str, Any]] = {
         'measured': {'video_ms': 320, 'size_mb': 49.6, 'success': '3/3',
                      'resolution': '1280x720（匿名上限）'},
     },
+    'baidu': {
+        'name_cn': '百度视频',
+        'status': 'ready',
+        # mr.baidu.com 是分享短链（302 跳到 mbd.baidu.com 落地页）
+        'domains': ['mr.baidu.com', 'mbd.baidu.com', 'mbd.baidu.cn'],
+        # ⭐ 2026-10-22 新增：落地页是 SSR 直出，HTML 内嵌 videoInfo JSON
+        #   → 零签名、零浏览器、零 Cookie，与抖音/快手同构
+        'engine': 'pure_http',
+        'types': ['video'],
+        'max_quality': '1080P',
+        'free_quality': '1080P',
+        'cdn_hosts': ['vd*.bdstatic.com', 'f*.baidu.com'],
+        'whitelist_ok': True,
+        'whitelist_note': ('实测直链落在 vd3.bdstatic.com，域名带序号但形态稳定；'
+                           '封面在 f7.baidu.com（走 /api/proxy-cover 代理）'),
+        'measured': {
+            'success': '1/1',
+            'ms': 800,
+            'observed_cdn': 'vd3.bdstatic.com',
+            'gears': ['蓝光 1080P', '超清 720P', '高清 480P'],
+        },
+        'known_gaps': ['author: SSR 页面不下发作者名'],
+    },
     'haokan': {
         'name_cn': '好看视频',
         'status': 'ready',

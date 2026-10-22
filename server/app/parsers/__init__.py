@@ -12,7 +12,7 @@ __all__ = [
     'BaseParser', 'ParserRegistry',
     'DouyinPureParser', 'BilibiliPureParser', 'HaokanPureParser',
     'SohuPureParser', 'WeiboPureParser', 'AcfunPureParser',
-    'XiaohongshuPureParser', 'KuaishouPureParser',
+    'XiaohongshuPureParser', 'KuaishouPureParser', 'BaiduVideoPureParser',
     'DouyinParser', 'BilibiliParser',
 ]
 
@@ -25,6 +25,7 @@ from .weibo_pure import WeiboPureParser
 from .acfun_pure import AcfunPureParser
 from .xiaohongshu_pure import XiaohongshuPureParser
 from .kuaishou_pure import KuaishouPureParser
+from .baidu_pure import BaiduVideoPureParser
 
 # 浏览器解析器：惰性导入，缺 playwright 时不影响上面三个
 _LAZY = {

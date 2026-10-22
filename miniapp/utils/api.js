@@ -207,7 +207,7 @@ const PLATFORM_LABELS = {
 };
 
 /** 首页平台标签 */
-const HOME_PLATFORMS = ['抖音', 'B站', '好看视频', '微博', 'AcFun', '小红书', '快手', '搜狐'];
+const HOME_PLATFORMS = ['抖音', 'B站', '好看视频', '百度视频', '微博', 'AcFun', '小红书', '快手', '搜狐'];
 
 /** 工具箱占位卡（2026-10-07 用户拍板：展示不开发） */
 const TOOLBOX_PLACEHOLDERS = [

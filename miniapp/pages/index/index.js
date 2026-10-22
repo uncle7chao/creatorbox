@@ -58,6 +58,7 @@ Page({
     // 平台标签（带 key → 图标文件名）；名字与 HOME_PLATFORMS 顺序一致
     platformTags: api.HOME_PLATFORMS.map(n => ({
       key: { '抖音': 'douyin', 'B站': 'bilibili', '好看视频': 'haokan',
+             '百度视频': 'baidu',
              '微博': 'weibo', 'AcFun': 'acfun', '小红书': 'xhs',
              '快手': 'kuaishou', '搜狐': 'sohu' }[n] || 'douyin',
       name: n
