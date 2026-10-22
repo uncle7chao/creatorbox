@@ -274,7 +274,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(_reviewMode ? '多平台素材解析工具' : '粘贴任意链接，一键去水印解析',
+            Text(_reviewMode ? '多平台素材解析工具' : '粘贴任意链接，一键解析视频',
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
