@@ -68,6 +68,106 @@ class _ParseResultPageState extends State<ParseResultPage> {
   String get _subtitle => (result['subtitle_text']?.toString() ?? '');
   String get _musicUrl => (result['music_url']?.toString() ?? '');
 
+  // ⭐ 素材清单（2026-10-22，与小程序端同契约）
+  // 固定 4 行（视频/封面/标题文案/话题），缺项灰显占位。
+  // 语义是「这个链接能提取什么」的**能力说明**，不是「这次提取到了什么」。
+  // 缺项隐藏 → 用户不知道这个能力存在，会怀疑解析不完整。
+  String get _copyText {
+    final t = result['copy_text']?.toString() ?? '';
+    if (t.trim().isNotEmpty) return t;
+    final d = result['description']?.toString() ?? '';
+    if (d.trim().isNotEmpty && d.trim() != '-') return d;
+    return _title;
+  }
+
+  List<String> get _tags {
+    final raw = result['tags'];
+    if (raw is! List) return const [];
+    return raw.map((e) => e.toString()).where((s) => s.isNotEmpty).toList();
+  }
+
+  String get _coverUrl => result['cover']?.toString() ?? '';
+  String get _videoUrl => result['video_url']?.toString() ?? '';
+
+  /// 一行素材。
+  /// ⚠️ 用 record 而不是 List<Object?>：List 要靠下标 + 强制转换，
+  ///   写错类型要到运行期才炸；record 有具名字段，编译期就能查出来。
+  ///   字段：[图标, 名称, 是否有值, 动作标签, 动作回调]
+  List<({IconData icon, String name, bool has, String action, VoidCallback onTap})>
+      _assetRows(BuildContext context) {
+    final rows = <({IconData icon, String name, bool has, String action, VoidCallback onTap})>[];
+
+    // ① 视频
+    rows.add((
+      icon: Icons.movie_outlined,
+      name: '视频',
+      has: _videoUrl.isNotEmpty,
+      action: '复制直链',
+      onTap: () {
+        if (_videoUrl.isEmpty) {
+          _toast('本视频没有视频', context);
+        } else {
+          _copy(_videoUrl, '视频直链已复制', context);
+        }
+      },
+    ));
+
+    // ② 封面（PC 端没有「保存到相册」，改为复制封面直链）
+    rows.add((
+      icon: Icons.image_outlined,
+      name: '封面',
+      has: _coverUrl.isNotEmpty,
+      action: '复制直链',
+      onTap: () {
+        if (_coverUrl.isEmpty) {
+          _toast('本视频没有封面', context);
+        } else {
+          _copy(_coverUrl, '封面直链已复制', context);
+        }
+      },
+    ));
+
+    // ③ 标题文案
+    rows.add((
+      icon: Icons.notes_outlined,
+      name: '标题文案',
+      has: _copyText.trim().isNotEmpty,
+      action: '复制文案',
+      onTap: () {
+        if (_copyText.trim().isEmpty) {
+          _toast('本视频没有文案', context);
+        } else {
+          _copy(_copyText, '文案已复制', context);
+        }
+      },
+    ));
+
+    // ④ 话题
+    final tags = _tags;
+    rows.add((
+      icon: Icons.tag,
+      name: '话题',
+      has: tags.isNotEmpty,
+      action: '复制话题',
+      onTap: () {
+        if (tags.isEmpty) {
+          _toast('本视频没有话题', context);
+        } else {
+          _copy(tags.map((t) => '#$t').join(' '),
+              '${tags.length} 个话题已复制', context);
+        }
+      },
+    ));
+
+    return rows;
+  }
+
+  /// 统一提示（缺项时用，语气与小程序端一致）
+  void _toast(String msg, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+  }
+
   // ⭐ 文件大小与时长文本（2026-10-22，竞品对齐）
   // 服务端统一格式化后下发（size_text / duration_text），各端口径一致。
   String get _fileSizeText => (result['size_text']?.toString() ?? '');
@@ -246,6 +346,57 @@ class _ParseResultPageState extends State<ParseResultPage> {
               onPressed: (_saving || _saved) ? null : _saveToLibrary,
               icon: Icon(_saved ? Icons.check : Icons.bookmark_add_outlined),
               label: Text(_saved ? '已存入素材库' : '存入素材库（小程序同步）'),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // ── 素材清单（2026-10-22，与小程序端同契约）──
+          // 固定 4 行，缺项灰显 —— 语义是「能提取什么」的能力说明。
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('本次可提取',
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 4),
+                  for (final row in _assetRows(context))
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Row(
+                        children: [
+                          Icon(row.icon,
+                              size: 20,
+                              color: row.has
+                                  ? theme.colorScheme.primary
+                                  : theme.disabledColor),
+                          const SizedBox(width: 10),
+                          SizedBox(
+                            width: 66,
+                            child: Text(
+                              row.name,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: row.has ? null : theme.disabledColor,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: row.onTap,
+                            child: Text(row.action,
+                                style: TextStyle(
+                                  color: row.has
+                                      ? theme.colorScheme.primary
+                                      : theme.disabledColor,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
