@@ -146,7 +146,15 @@ class Pool:
         self._lock = asyncio.Lock()
 
     async def pick_platform(self, url: str):
-        """按 URL 选平台解析器（返回元组：纯HTTP优先）"""
+        """按 URL 选平台解析器（返回元组：纯HTTP优先）
+
+        ⚠️ 2026-10-22 修正：原实现最后 `return self.pure[0], None` ——
+           任何**不认识**的域名都会被当成抖音去解析，报「短链未解析出 aweme_id」。
+           这个错误信息把用户引向错误方向（以为是抖音抽风，其实是平台不支持），
+           比如百度视频/西瓜视频这类未接入的域名就会这样。
+
+           现在改成返回 None，调用方据此报「暂不支持该平台」并给出已支持清单。
+        """
         for p in self.pure:
             if p.match(url):
                 return p, None
@@ -158,7 +166,7 @@ class Pool:
                 inst = self.instances[self._idx % len(self.instances)]
                 self._idx += 1
             return inst, inst
-        return self.pure[0], None
+        return None, None
 
     async def start_all(self):
         names = '/'.join(p.name for p in self.pure)
@@ -446,6 +454,15 @@ async def _parse_one(text: str, quality: str, short: str, key: str) -> dict:
           → 元信息规范化 → 流量统计 → CDN 域名记录 → 写缓存
     """
     primary, fallback = await pool.pick_platform(short)
+    if primary is None:
+        # ⚠️ 平台未接入 —— 明确说出来，并列出已支持的平台。
+        # 别再用抖音去试（那会报「短链未解析出 aweme_id」，把人引向错误方向）。
+        supported = '、'.join(sorted(
+            {p.name.replace('_pure', '') for p in pool.pure
+             if getattr(p, 'name', '')})) or '（无）'
+        return {'success': False, 'platform': '',
+                'error': f'暂不支持该平台链接（当前支持：{supported}）',
+                'unsupported_platform': True}
     result = await primary.parse(text, quality)
 
     # 跨库回退：西瓜与抖音共用字节系 ID 体系
