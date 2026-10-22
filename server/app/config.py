@@ -59,6 +59,11 @@ HOST = os.getenv('CB_HOST', '0.0.0.0')
 PORT = int(os.getenv('CB_PORT', '8000'))
 API_KEY = os.getenv('CB_API_KEY', '')
 
+# 解析类端点是否强制要求 X-Api-Key（仅自建代理/内网互调用）
+# ⚠️ 默认 0：解析类走的是 C 端体系（openid + 配额 + 限流），
+#    与管理密钥无关。设成 1 会让小程序/App 全部 401 —— 它们拿不到管理密钥。
+API_KEY_REQUIRED = os.getenv('CB_API_KEY_REQUIRED', '0') in ('1', 'true', 'True')
+
 # ---------- 提审收敛（v4 §3.3）----------
 # full   = 全量平台可见（默认，日常开发与线上正常版）
 # review = 提审收敛版，只保留 REVIEW_VISIBLE 白名单里的平台入口

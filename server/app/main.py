@@ -342,11 +342,10 @@ async def check_auth(x_api_key: str = Header(default='')):
        一旦运维忘配 CB_API_KEY，卡密/违禁词/用户名单端点会直接裸奔。
 
     ⭐ 解析类端点（/api/parse、/api/batch 等）**不用这个**，
-       它们用下面的 check_admin_or_open —— 把这里的默认值改成拒绝时，
-       曾差点让小程序与 App 的解析全线失败。务必区分两类：
-
-       · 解析类：面向普通用户，鉴权会挡住 C 端流量 → 有 Key 才校验，无 Key 放行
-       · 管理类：面向运营，改配置/导出数据 → 无 Key 直接锁死（503）
+       它们用下面的 check_admin_or_open —— 那里的 C 端鉴权是
+       openid + 配额 + 限流，与管理密钥无关。
+       ⚠️ 千万别把「配了 Key 就校验」套到解析类：
+       小程序/App 是 C 端用户，持有不了管理密钥 → 全线 401。
     """
     if not config.API_KEY:
         raise HTTPException(
@@ -358,17 +357,32 @@ async def check_auth(x_api_key: str = Header(default='')):
 
 
 async def check_admin_or_open(x_api_key: str = Header(default='')):
-    """**解析类**端点鉴权：配了 Key 就校验，没配则放行。
+    """**解析类**端点鉴权。
 
-    与 check_admin 的区别只在「未配 Key 时」：
-      · 解析类 → 放行（否则没配 Key 的部署会全线解析失败）
-      · 管理类 → 锁死（否则没配 Key 的部署管理端点裸奔）
+    ⭐ 2026-10-22 修正：这里**不再校验管理密钥 CB_API_KEY**。
+       之前写成「配了 Key 就校验」，实测后果：小程序与 App 全部 401 ——
+       因为小程序是 C 端用户，**不可能持有管理密钥**（那是运营后台用的）。
+       生产环境必然配了 CB_API_KEY → C 端流量全被挡死。
 
-    ⚠️ 这是刻意的取舍：管理数据比解析能力更不能泄露。两者失败方向相反，
-       不要为了「统一」把它们合并 —— 那会让忘记配 Key 的部署直接不可用。
+    C 端的鉴权体系是另一套：
+      · openid 主键（/api/parse 走游客 openid，由 /api/user/login 发放）
+      · 配额闸（db.get_quota：免费 N 次/天）
+      · 双层限流（limiter：IP + openid）
+    这些都在端点内部做，与管理密钥无关。
+
+    这里只保留一个**可选**的全局开关 CB_API_KEY_REQUIRED：
+    仅当运营显式设为 1 时，解析类端点才要求携带 X-Api-Key
+    （自建代理/内网互调场景用，正常 C 端不要开）。
+
+    ⚠️ 不要把这里改回「校验 config.API_KEY」——
+       那会让「配了管理密钥」直接等价于「C 端全挂」。
     """
-    if config.API_KEY and x_api_key != config.API_KEY:
-        raise HTTPException(401, 'Invalid API key')
+    if getattr(config, 'API_KEY_REQUIRED', False):
+        if not config.API_KEY:
+            raise HTTPException(
+                503, '服务端配置了 CB_API_KEY_REQUIRED 但未设置 CB_API_KEY')
+        if x_api_key != config.API_KEY:
+            raise HTTPException(401, 'Invalid API key')
 
 
 # ---------- 平台改版预警 ----------

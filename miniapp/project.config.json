@@ -1,5 +1,5 @@
 {
-  "desc": "项目配置。appid 用 touristappid（游客模式）做到打开即预览；正式提审前替换为自己的 AppID。",
+  "desc": "项目配置。appid 已填真实 AppID（wx0bd9b302d9cc916d）。\n  ⭐ urlCheck=false = 开发期「不校验合法域名」，本地联调靠它。\n  ⚠️ 提审前【必须】改成 true（或在工具里勾掉「不校验合法域名」）再测一遍：\n     勾着能通不代表合法域名配对了 —— 正式版微信强制校验，\n     BASE_URL 仍是 127.0.0.1 或域名没配，会直接全挂。",
   "appid": "wx0bd9b302d9cc916d",
   "setting": {
     "urlCheck": false,

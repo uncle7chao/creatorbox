@@ -105,13 +105,15 @@ r = client.post('/api/admin/codes', json={},
                 headers={'X-Api-Key': 'wrong'})
 check('配了 Key：错 Key → 401', r.status_code == 401, f'实得 {r.status_code}')
 
-# 解析类：错 Key 也要 401（配了就该校验）
+# ⭐ 解析类【不受管理密钥约束】—— 2026-10-22 修正
+#   旧预期是「配了 Key 解析类也要校验」，那是错的：
+#   小程序/App 是 C 端用户，持有不了管理密钥 → 生产必然全线 401。
+#   C 端鉴权是另一套（openid + 配额 + 限流），在端点内部做。
 r = client.post('/api/parse', json={'text': 'x'}, headers={'X-Api-Key': 'wrong'})
-check('配了 Key：解析类错 Key 也校验 → 401', r.status_code == 401,
-      f'实得 {r.status_code}')
+check('配了 Key：解析类带错 Key 仍可用（C 端不受管理密钥约束）',
+      r.status_code == 200, f'实得 {r.status_code}')
 r = client.post('/api/parse', json={'text': 'x'})
-check('配了 Key：解析类无 Key → 401（配了就必须校验）', r.status_code == 401,
-      f'实得 {r.status_code}')
+check('配了 Key：解析类无 Key 仍可用', r.status_code == 200, f'实得 {r.status_code}')
 
 
 # ============ 场景 3：依赖声明是否挂对 ============
@@ -166,6 +168,42 @@ with client:
         rb = spec['paths'][path]['post'].get('requestBody') or {}
         check(f'{path} 的 body 非必需（OpenAPI 契约）',
               rb.get('required') is not True, str(rb.get('required')))
+
+
+# ============ 场景 5：⭐ C 端与管理端必须是两套鉴权 ============
+# 2026-10-22 线上事故级 bug：解析类端点曾写成「配了 CB_API_KEY 就校验」，
+#   而小程序/App 是 C 端用户 —— 它们**拿不到管理密钥**（那是运营后台用的）。
+#   → 生产必然配了 Key → C 端流量全部 401。
+#   现象：开发者工具里点解析报「连不上解析服务」，但服务明明起着、健康检查 200。
+#   ⭐ 这类 bug 只在「配了 Key」的真实部署下才暴露，本地不配 Key 的测试永远测不到。
+client, cfg, m = fresh_client('management-secret-key')
+with client:
+    # ① C 端请求不带任何 Key → 必须 200
+    r = client.post('/api/parse', json={'text': 'not-a-url'})
+    check('C 端 /api/parse 不带 Key → 200（不能被管理密钥挡住）',
+          r.status_code == 200, f'{r.status_code} {r.text[:100]}')
+    r = client.post('/api/batch', json={'openid': 'guest_t', 'items': [
+        {'text': 'not-a-url', 'quality': '720p'}]})
+    check('C 端 /api/batch 不带 Key → 200', r.status_code == 200,
+          f'{r.status_code} {r.text[:100]}')
+
+    # ② 管理端不带 Key → 必须 401（不能因为放宽了解析就放松管理）
+    for p in ('/api/admin/codes', '/api/admin/users', '/api/admin/cookies'):
+        r = client.get(p)
+        check(f'管理端 {p} 不带 Key → 401',
+              r.status_code == 401, f'{r.status_code} {r.text[:80]}')
+
+    # ③ 管理端带对 Key → 200
+    r = client.get('/api/admin/codes', headers={'X-Api-Key': 'management-secret-key'})
+    check('管理端带对 Key → 200', r.status_code == 200, f'{r.status_code}')
+
+# ④ 只有显式开启 CB_API_KEY_REQUIRED 时才强制校验
+client, cfg, m = fresh_client('k')
+cfg.API_KEY_REQUIRED = True
+with client:
+    r = client.post('/api/parse', json={'text': 'x'})
+    check('API_KEY_REQUIRED=1 时解析类才要求 Key（401）',
+          r.status_code == 401, f'{r.status_code}')
 
 print(f'\n════ 管理接口鉴权：{len(PASS)} 通过 / {len(FAIL)} 失败')
 if FAIL:
