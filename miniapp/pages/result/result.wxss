@@ -619,11 +619,81 @@
   background: var(--brand);
 }
 
+/* 中间列：标题 + 预览（原来只有标题，占位很空） */
+.as-mid {
+  flex: 1;
+  min-width: 0;
+  margin-right: 12rpx;
+}
 .as-name {
   font-size: 26rpx;
   color: var(--ink-900);
-  width: 130rpx;
-  flex-shrink: 0;
+}
+/* 预览：话题显示实际内容 / 文案显示开头 —— 用户一眼看到是什么 */
+.as-prev {
+  font-size: 21rpx;
+  color: var(--ink-500);
+  margin-top: 2rpx;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260rpx;
+}
+/* 空项的预览占位文案 */
+.as-prev-empty {
+  color: var(--ink-300);
+}
+
+/* 话题图标：# 号（用 CSS 画两条斜线 + 两条横线，不依赖字体） */
+.as-hash {
+  position: absolute;
+  left: 13rpx; top: 9rpx;
+  width: 14rpx; height: 22rpx;
+}
+/* 两条竖线 */
+.as-hash::before,
+.as-hash::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 2rpx;
+  height: 22rpx;
+  background: var(--brand);
+  transform: skewX(-16deg);
+}
+.as-hash::before { left: 3rpx; }
+.as-hash::after  { left: 9rpx; }
+/* 两条横线（用 border 画） */
+.as-hash-lines {
+  position: absolute;
+  left: 0; top: 7rpx;
+  width: 14rpx; height: 8rpx;
+  border-top: 2rpx solid var(--brand);
+  border-bottom: 2rpx solid var(--brand);
+}
+
+/* ⭐ 空项：灰显占位，不隐藏 */
+.as-row-empty .as-ic {
+  background: var(--bg-soft);
+}
+.as-row-empty .as-name {
+  color: var(--ink-300);
+}
+.as-row-empty .as-tri,
+.as-row-empty .as-img,
+.as-row-empty .as-txt,
+.as-row-empty .as-hash::before,
+.as-row-empty .as-hash::after,
+.as-row-empty .as-hash-lines {
+  opacity: 0.35;
+}
+/* 空项的动作按钮：灰掉但仍可点（点了给明确提示，不是死按钮） */
+.as-act-off {
+  color: var(--ink-300);
+  background: transparent;
+  border-color: transparent;
+  font-weight: 400;
 }
 .as-acts {
   display: flex;

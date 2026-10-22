@@ -86,8 +86,11 @@ Page({
       statsLine: r.statsLine,
       tags: r.tags,
       images: r.images,
-      // ⭐ 文案卡（双产出第二路径）：description 优先，缺失时降级 title 并标明
-      copyText: r.description || '',
+      // ⭐ 文案卡（双产出第二路径）
+      // ⚠️ copyText 用服务端的 copy_text（description 有效则用，否则回落 title），
+      //    不能直接用 r.description —— B站的 description 是 '-'（1 个字符），
+      //    直接复制会让用户复制到一个破折号。
+      copyText: r.copyText || r.description || r.title || '',
       copyTags: r.description ? r.tags : [],
       // 字幕文案卡（YouTube/FB；ytdlp 引擎下发，无则不显示）
       subtitleText: r.subtitleText || '',
@@ -111,68 +114,120 @@ Page({
    * ⭐ 竞品是按素材类型横切列出（视频/封面/文案/配音），
    *   我们此前是纵向堆叠——用户得自己拼「哪一步能拿到什么」。
    *
-   * ⭐⭐ 只列【真实可用】的素材：
-   *   竞品有「配音→搜索视频中相似声音」，那是另一个服务的能力，
-   *   我们没有 —— 列出来点了没反应比不列更糟。
-   *   同理BGM：没有 musicUrl 就不列，不占位。
-   *   「列了就能用」是这张清单唯一的设计前提。
+   * ⭐⭐ 2026-10-22 二次调整（用户要求）：**固定 4 行，缺项灰显占位**。
+   *
+   *   为什么从「有才列」改成「固定列出」：
+   *     ① 清单的语义是「这个链接能提取什么」的**能力说明**，
+   *        不是「这次提取到了什么」的**结果报告**。
+   *        固定 4 行 → 用户预期稳定，知道这个产品有这四类产出。
+   *     ② 缺项直接隐藏 → 用户根本不知道「话题」这个能力存在，
+   *        看到只有 2 行会怀疑「是不是漏了/解析不完整」。
+   *     ③ 缺项灰显 + 点击提示「本视频没有话题」→ 用户得到明确答案，
+   *        比「看不见」好得多。
+   *
+   *   ⚠️ 但【字幕 / BGM】仍维持「有才列」：
+   *     它们不是所有平台都有的基础四件套 ——
+   *       抖音有 BGM 没字幕；B站有字幕没 BGM；小红书可能都没。
+   *     固定列出 6 行、其中一半永远灰，反而是噪音（那又回到「像坏了」）。
+   *     四件套是【所有平台都有】的基础产出，所以固定列出是对的。
    */
   buildAssets(r) {
     const list = [];
 
-    if (r.isVideo) {
-      list.push({
-        key: 'video',
-        kind: 'video',
-        label: '视频',
-        acts: [{ key: 'saveVideo', label: '保存到相册', main: true }]
-      });
-    }
+    // ① 视频
+    const hasVideo = !!(r.isVideo && r.videoUrl);
+    list.push({
+      key: 'video',
+      kind: 'video',
+      label: '视频',
+      empty: !hasVideo,
+      emptyText: '本视频没有视频',
+      preview: '',
+      acts: [{ key: 'saveVideo', label: '保存到相册', main: true }]
+    });
 
-    // 封面：视频有cover 才列。⚠️ 用 coverRaw（原始直链）保存，
-    //   不走 coverProxy —— 代理是给display 用的（解决小程序图片域白名单），
+    // ② 封面
+    // ⚠️ 用 coverRaw（原始直链）保存，不走 coverProxy ——
+    //   代理是给 display 用的（解决小程序图片域白名单），
     //   保存时也用代理没必要，且代理 URL 里的 query 会被微信再编码一次。
-    if (r.cover) {
-      list.push({
-        key: 'cover',
-        kind: 'cover',
-        label: '封面',
-        acts: [{ key: 'saveCover', label: '保存封面', main: true }]
-      });
-    } else if (r.images && r.images.length) {
-      list.push({
-        key: 'images',
-        kind: 'cover',
-        label: `图片 ${r.images.length} 张`,
-        acts: [{ key: 'saveImages', label: '全部保存', main: true }]
-      });
-    }
+    //
+    // ⭐ 图集要单独处理：图集【没有封面】但【有 N 张图】，
+    //   如果一律按 cover 判空，图集用户会看到「本视频没有封面」——
+    //   而实际上图集完全能保存。这不是文案问题，是漏了一个场景。
+    const hasCover = !!r.cover;
+    const hasImages = !!(r.images && r.images.length);
+    list.push({
+      key: 'cover',
+      kind: 'cover',
+      // 图集时这一行变成「图片 N 张」，动作是「全部保存」
+      label: hasImages && !hasCover ? `图片 ${r.images.length} 张` : '封面',
+      empty: !hasCover && !hasImages,
+      emptyText: '本视频没有封面',
+      preview: '',
+      acts: [{
+        key: hasImages && !hasCover ? 'saveImages' : 'saveCover',
+        label: hasImages && !hasCover ? '全部保存' : '保存封面',
+        main: true
+      }]
+    });
 
-    // 文案：标题与正文是两个不同产出，给两个动作而不是合一个
-    //   ——用户要「复制标题」时不该被迫拿走整段正文。
-    const textActs = [];
-    if (r.title) {
-      textActs.push({ key: 'copyTitle', label: '复制标题' });
-    }
-    if (r.copyText || r.description) {
-      textActs.push({ key: 'copyCopy', label: '复制文案', main: !r.title });
-    }
-    if (r.subtitleText) {
-      textActs.push({ key: 'copySubtitle', label: '复制字幕' });
-    }
-    if (textActs.length) {
-      list.push({ key: 'text', kind: 'text', label: '文案', acts: textActs });
-    }
+    // ③ 标题文案
+    //   ⭐ 一项而不是两项（标题/文案）—— 各平台的 title 与 description
+    //     关系不同（抖音两者相同；B站 description 是 '-'），
+    //     拆开会出现重复项或「复制到一个破折号」。
+    //     服务端已合成好 copyText（desc 有效则用，否则回落 title）。
+    const copyText = r.copyText || r.description || r.title || '';
+    list.push({
+      key: 'text',
+      kind: 'text',
+      label: '标题文案',
+      empty: !copyText,
+      emptyText: '本视频没有文案',
+      preview: copyText ? (copyText.length > 24
+        ? copyText.slice(0, 24) + '…' : copyText) : '',
+      acts: [{ key: 'copyCopy', label: '复制文案', main: true }]
+    });
 
+    // ④ 话题
+    //   话题 = 文案里带 # 的词（服务端已按各平台格式提取好）
+    const tags = r.tags || [];
+    list.push({
+      key: 'tags',
+      kind: 'tags',
+      label: '话题',
+      empty: tags.length === 0,
+      emptyText: '本视频没有话题',
+      // 预览话题本身（不带 # 也行，显示时统一加）
+      preview: tags.slice(0, 3).map(t => '#' + t).join(' '),
+      acts: [{ key: 'copyTags', label: '复制话题', main: true }]
+    });
+
+    // ⑤ BGM（平台相关，有才列）
     if (r.musicUrl) {
       list.push({
         key: 'audio',
         kind: 'audio',
         label: '背景音乐',
+        empty: false,
+        emptyText: '',
+        preview: r.musicTitle || '',
         acts: [
           { key: 'toggleBgm', label: '试听', main: true },
           { key: 'copyBgm', label: '复制链接' }
         ]
+      });
+    }
+
+    // ⑥ 字幕（平台相关，有才列；只有 YouTube/FB 的 ytdlp 通道有）
+    if (r.subtitleText) {
+      list.push({
+        key: 'subtitle',
+        kind: 'text',
+        label: '字幕',
+        empty: false,
+        emptyText: '',
+        preview: (r.subtitleText || '').slice(0, 24),
+        acts: [{ key: 'copySubtitle', label: '复制字幕', main: true }]
       });
     }
 
@@ -188,12 +243,24 @@ Page({
    */
   onAssetAction(e) {
     const key = (e.currentTarget.dataset.act || '').toString();
+    const ds = e.currentTarget.dataset || {};
+
+    // ⭐ 空项拦截：先给「本视频没有xx」的明确提示，不执行动作。
+    //   为什么不在各动作方法里判空：那样每个方法都要写一遍，
+    //   而且新加的动作容易漏 —— 在分发层统一拦，一处覆盖全部。
+    if (String(ds.empty || '') === '1') {
+      const t = String(ds.emptyText || '本视频没有该内容');
+      wx.showToast({ title: t, icon: 'none' });
+      return;
+    }
+
     const map = {
       saveVideo: this.onSave,
       saveCover: this.onSaveCover,
       saveImages: this.onSave,
       copyTitle: this.onCopyTitle,
       copyCopy: this.onCopyCopy,
+      copyTags: this.onCopyTags,
       copySubtitle: this.onCopySubtitle,
       toggleBgm: this.onBgmToggle,
       copyBgm: this.onCopyBgm
@@ -227,7 +294,8 @@ Page({
   onSaveCover() {
     const url = this.data.coverRaw || this.data.cover;
     if (!url) {
-      wx.showToast({ title: '这条没有封面', icon: 'none' });
+      // 措辞与素材清单的「本视频没有xx」口径保持一致
+      wx.showToast({ title: '本视频没有封面', icon: 'none' });
       return;
     }
     if (this.data.saving) return;
@@ -384,6 +452,13 @@ Page({
       this.saveImages(r);
       return;
     }
+    // 视频笔记必须有 video_url 才有得保存
+    // ⚠️ 原来这里直接进 saveVideo → 内部拿不到 url 时静默失败，
+    //    用户点了没反应。现在明确提示（与素材清单的「本视频没有xx」口径一致）。
+    if (!r.videoUrl) {
+      wx.showToast({ title: '本视频没有视频', icon: 'none' });
+      return;
+    }
     this.saveVideo(r);
   },
 
@@ -524,9 +599,35 @@ Page({
   /** 复制文案全文（双产出第二路径） */
   onCopyCopy() {
     const text = this.data.copyText;
-    if (!text) return;
+    // ⚠️ 原来是 `if (!text) return;` —— 静默返回，用户点了没反应，
+    //    会以为是 bug。改为明确提示「本视频没有文案」。
+    if (!text) {
+      wx.showToast({ title: '本视频没有文案', icon: 'none' });
+      return;
+    }
     saver.copyText(text).then(ok => {
       wx.showToast({ title: ok ? '文案已复制' : '复制失败', icon: ok ? 'success' : 'none' });
+    });
+  },
+
+  /**
+   * 复制话题（2026-10-22 新增）
+   *
+   * 复制时**带上 # 号** —— 用户粘贴到别处时才是可点击的话题形式，
+   * 少了 # 就只是一串普通词。
+   */
+  onCopyTags() {
+    const tags = this.data.tags || [];
+    if (!tags.length) {
+      wx.showToast({ title: '本视频没有话题', icon: 'none' });
+      return;
+    }
+    const text = tags.map(t => '#' + t).join(' ');
+    saver.copyText(text).then(ok => {
+      wx.showToast({
+        title: ok ? `${tags.length} 个话题已复制` : '复制失败',
+        icon: ok ? 'success' : 'none'
+      });
     });
   },
 

@@ -131,11 +131,52 @@ def _clean_tag(tag: str) -> str:
     ⚠️ 小红书的标签在文案里是 `#杨幂[话题]#` ——
     提取出来会带 `[话题]` 后缀，直接显示给用户很怪。
     其他平台是干净的 `#杨幂#`。
+
+    ⚠️ 2026-10-22 修：原来第一行是 `str(tag).strip()`，
+       传 None 会得到字符串 'None'（不是空串）——
+       那个值会被当成一个叫「None」的话题塞进 tags。
+       现在先判空值。调用方虽然大多判过，但这类隐患应该在这里堵死。
     """
-    s = str(tag).strip().lstrip('#').rstrip('#')
+    if tag is None:
+        return ''
+    if not isinstance(tag, str):
+        tag = str(tag)
+    s = tag.strip().lstrip('#').rstrip('#')
     s = s.replace('[话题]', '').replace('［话题］', '')
     s = s.strip().strip('#').strip()
     return s or ''
+
+
+# 从文本里提取 #话题# 的两条规则（2026-10-22 实测各平台格式）
+#   A. 两侧都有 #   → 微博 `#今日穿搭#`、小红书 `#美食[话题]#`
+#   B. 只有前侧 #   → 抖音 `#分享你的快餐推荐 #猪脚饭`
+# ⭐ 两条都要跑：只用 A 会漏掉抖音（恒为空），只用 B 会漏掉微博。
+_HASH_TAG_RULES = (
+    r'#([^#\s@]{1,24})#',          # A 双侧
+    r'#([^\s#@]{1,24})(?=\s|$)',    # B 前侧（后面必须空白或结尾）
+)
+
+
+def extract_hash_tags(text: Any) -> List[str]:
+    """从文本里提取话题标签。
+
+    ⚠️ 必须先剔除 URL 段：`https://x.com/a#b` 里的 `#b` 不是话题，
+       实测不剔除会被误提成一个叫「b」的话题。
+    """
+    if not text:
+        return []
+    s = str(text)
+    # URL 段整体替换成空格（保留其他内容的边界）
+    s = re.sub(r'https?://\S+', ' ', s)
+    s = re.sub(r'www\.\S+', ' ', s)
+
+    out: List[str] = []
+    for pat in _HASH_TAG_RULES:
+        for m in re.finditer(pat, s):
+            cleaned = _clean_tag(m.group(1))
+            if cleaned and cleaned not in out:
+                out.append(cleaned)
+    return out
 
 
 def strip_html(text: Any) -> str:
@@ -464,6 +505,19 @@ def normalize_meta(result: Dict[str, Any],
             meta['title_source'] = 'desc_head'
     meta['description'] = desc
 
+    # ---- 标题文案（2026-10-22：给「复制文案」用）----
+    # ⭐ 为什么要有这个合成字段，而不是让前端自己挑 title/description：
+    #   各平台的 title 与 description 关系不一样 ——
+    #     抖音：两者**完全相同**（话题也塞在 desc 里）
+    #     B站：description 是 '-'（1 个字符，等于没有）
+    #   前端若直接复制 description，B站用户复制到的就是一个「-」。
+    #   这里统一成一条规则：description 有效就用它，否则回落 title。
+    #   抖音 → 复制完整文案（含话题）；B站 → 复制视频标题。
+    _copy_text = desc.strip()
+    if len(_copy_text) <= 1 or _copy_text in ('-', '－', '—'):
+        _copy_text = (meta.get('title') or '').strip()
+    meta['copy_text'] = _copy_text
+
     # ---- 封面 ----
     meta['cover'] = result.get('cover') or ''
 
@@ -543,11 +597,17 @@ def normalize_meta(result: Dict[str, Any],
             if nm:
                 tags.append(_clean_tag(str(nm)))
     if not tags:
-        # 从文案里提 #话题#（小红书格式是「#杨幂[话题]#」）
-        for t in re.findall(r'#([^#\s]{1,24})#', meta['description']):
-            cleaned = _clean_tag(t)
-            if cleaned:
-                tags.append(cleaned)
+        # 从文案里提 #话题#
+        # ⭐ 2026-10-22 修复：原来只用 `#([^#\s]{1,24})#`（要求**两侧**都有 #），
+        #   那是小红书/微博的格式。**抖音只有前侧 #**
+        #   （`#分享你的快餐推荐 #猪脚饭 #美食分享`），
+        #   一个都匹配不上 → 抖音的 tags 恒为空数组。
+        #   实测：抖音 title 明明带 5 个话题，tags 却是 []。
+        #   两条规则都要跑：先双侧（微博/小红书），再前侧（抖音）。
+        tags.extend(extract_hash_tags(meta['description']))
+        if not tags:
+            # description 空的平台（B站）话题常在 title 里
+            tags.extend(extract_hash_tags(meta.get('title') or ''))
     meta['tags'] = list(dict.fromkeys(t for t in tags if t))
 
     # ---- 平台特有 ----
@@ -570,6 +630,9 @@ def normalize_meta(result: Dict[str, Any],
     # 统一别名（前端只用这些）
     result.setdefault('stats', meta['stats'])
     result.setdefault('tags', meta['tags'])
+    # ⭐ copy_text 必须回填到 result —— 前端读的是顶层字段，
+    #   只放在 meta 子字典里客户端拿不到。
+    result.setdefault('copy_text', meta.get('copy_text') or '')
     if meta['stats_text']:
         result.setdefault('stats_text', meta['stats_text'])
     if meta['extra']:

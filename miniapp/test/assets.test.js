@@ -39,17 +39,56 @@ check('四种类型图标都有 CSS 类', ['as-tri', 'as-img', 'as-txt', 'as-wav
   .every(c => new RegExp('\\.' + c + '\\b').test(wxss)));
 check('图标不依赖图片资源', !/as-ic.*\.(png|jpg|svg)/.test(wxss));
 
-// ── 3. 关键设计前提：只列真实可用的素材 ─────────────────────────
+// ── 3. 固定四行 + 缺项灰显（2026-10-22 用户要求的设计变更）─────────
 const src = js.slice(js.indexOf('buildAssets(r)'),
                      js.indexOf('onAssetAction(e)'));
 check('buildAssets 存在', src.length > 200, `切片长度 ${src.length}`);
-check('视频仅在 isVideo 时列',
-  /r\.isVideo[\s\S]{0,200}?key: 'video'/.test(src) || /key: 'video'/.test(src));
-check('封面有 cover 才列', /if\s*\(r\.cover\)/.test(src));
+
+// ⭐ 固定 4 行：视频 / 封面 / 标题文案 / 话题，**都要 push**（不管有没有值）
+check('四行都无条件 push（缺项也要占位）',
+  /key: 'video'/.test(src) &&
+  /key: 'cover'/.test(src) &&
+  /key: 'text'/.test(src) &&
+  /key: 'tags'/.test(src));
+// ⭐⭐ 这一条才是「固定四行」的关键断言：
+//   每一行的 push 都**不能**被 if 包着（包了 = 缺项隐藏 = 回到旧设计）。
+//   ⭐ 自证时发现：只查 key 存在是不够的 —— 把话题行改成
+//      `if (tags.length) list.push({...})` 后，测试竟然全绿。
+//      所以必须断言「push 前面没有 if 守卫」。
+{
+  const rows = ['video', 'cover', 'text', 'tags'];
+  rows.forEach(k => {
+    const idx = src.indexOf(`key: '${k}'`);
+    if (idx < 0) { check(`${k} 行存在`, false); return; }
+    // 从 push( 往前看 260 字符，若出现 if ( 则说明被条件包住
+    const before = src.slice(Math.max(0, idx - 260), idx);
+    const guarded = /if\s*\([^)]*\)\s*(?:\{\s*)?$/.test(before) ||
+                    /if\s*\([^)]*\)\s*list\.push/.test(before);
+    check(`${k} 行无条件 push（不被 if 守卫 → 缺项也占位）`, !guarded,
+      `该行被 if 包住了：...${before.slice(-90).trim()}`);
+  });
+}
+check('每行都有 empty 标记',
+  (src.match(/empty:/g) || []).length >= 4,
+  `empty 出现 ${(src.match(/empty:/g) || []).length} 次`);
+check('每行都有 emptyText（用于点击提示）',
+  (src.match(/emptyText:/g) || []).length >= 4,
+  `emptyText 出现 ${(src.match(/emptyText:/g) || []).length} 次`);
+check('空项文案统一为「本视频没有xx」',
+  /emptyText: '本视频没有视频'/.test(src) &&
+  /emptyText: '本视频没有封面'/.test(src) &&
+  /emptyText: '本视频没有文案'/.test(src) &&
+  /emptyText: '本视频没有话题'/.test(src));
+check('封面行判空考虑了图集（有图不算没有封面）',
+  /hasImages/.test(src) && /empty: !hasCover && !hasImages/.test(src),
+  '图集场景不能显示「本视频没有封面」');
+check('图集时封面行变成「图片 N 张 / 全部保存」',
+  // ⚠️ action key 是**条件表达式**（hasImages ? 'saveImages' : 'saveCover'），
+  //   不是固定字面量 —— 所以要断言条件本身，不是断言 'images' 这个 key。
+  /hasImages && !hasCover \? 'saveImages' : 'saveCover'/.test(src) &&
+  /hasImages && !hasCover \? `图片 \$\{r\.images\.length\} 张` : '封面'/.test(src));
 check('BGM 无 musicUrl 时不列', /if\s*\(r\.musicUrl\)/.test(src));
-check('文案动作按实际有无动态生成',
-  /r\.title[\s\S]{0,120}?textActs\.push/.test(src) &&
-  /r\.subtitleText[\s\S]{0,160}?textActs\.push/.test(src));
+check('字幕无 subtitleText 时不列', /if\s*\(r\.subtitleText\)/.test(src));
 // ⭐ 核心：不能有「配音」这类我们做不到的动作。
 //   ⚠️ 注意要先剥掉注释 —— buildAssets 的注释里就写了
 //   「竞品有配音→搜索相似声音，那是另一个服务的能力」，
@@ -59,7 +98,7 @@ const srcNoComment = src.replace(/\/\*[\s\S]*?\*\//g, '')
 check('不列我们不具备的能力（如配音/声音搜索）',
   !/配音|相似声音|voice/i.test(srcNoComment));
 check('（对照）注释里确实说明了为何不做配音',
-  /配音/.test(src) && /另一个服务/.test(src),
+  /配音/.test(src) && /竞品/.test(src),
   '应保留决策依据，否则以后会有人「补上」这个动作');
 check('动作 key 与实现一一对应（无占位动作）',
   // 每个 push 里的 key 都必须在分发映射表里出现
@@ -71,7 +110,9 @@ check('动作 key 与实现一一对应（无占位动作）',
   }),
   '存在未实现的 action key');
 
-check('图集走全部保存而非单张', /key: 'images'[\s\S]{0,200}?全部保存/.test(src));
+// （原「图集走全部保存而非单张」断言已并入上面的
+//   「图集时封面行变成『图片 N 张 / 全部保存』」——
+//   action key 现在是条件表达式，旧写法断言固定字面量会误报）
 
 // ── 4. 动作分发：显式映射表，不动态执行 ────────────────────────
 const disp = js.slice(js.indexOf('onAssetAction(e)'),
@@ -96,7 +137,7 @@ check('配额决策有注释说明（在函数上方的 JSDoc 里）',
   /配额不扣|不扣|配额保护/.test(coverDoc));
 
 // ── 6. 错误路径必须给可操作提示 ───────────────────────────────
-check('无封面时提示而非静默', /这条没有封面/.test(coverFn));
+check('无封面时提示而非静默', /本视频没有封面/.test(coverFn));
 check('权限被拒引导去设置', /wx\.openSetting/.test(coverFn));
 check('区分权限与下载失败', /reason === 'auth'/.test(coverFn));
 check('保存中防重复点击', /if\s*\(this\.data\.saving\)\s*return/.test(coverFn));
@@ -118,7 +159,40 @@ check('saveImage 区分 auth 原因',
 check('⭐ 不重复实现下载逻辑（复用既有 download）',
   /function saveImage[\s\S]{0,300}?return download\(/.test(saver));
 
-// ── 8. 视觉层级：不是每个动作都抢按钮 ─────────────────────────
+// ── 8. 空项拦截：点空项给「本视频没有xx」而不是静默 ─────────────
+const dispSec = js.slice(js.indexOf('onAssetAction(e)'),
+                         js.indexOf('onAssetAction(e)') + 900);
+check('分发层统一拦截空项（不在每个动作里各写一遍）',
+  /ds\.empty|empty === '1'/.test(dispSec) &&
+  /emptyText/.test(dispSec));
+check('空项提示用的是该行自己的文案',
+  /String\(ds\.emptyText/.test(dispSec));
+check('空项提示默认文案兜底',
+  /本视频没有该内容/.test(dispSec));
+check('空项不执行实际动作（提前 return）',
+  /empty[\s\S]{0,220}?return;[\s\S]{0,120}?const map/.test(dispSec));
+check('WXML 把 empty 标记传给动作',
+  /data-empty="\{\{item\.empty \? 1 : 0\}\}"/.test(wxml) &&
+  /data-empty-text="\{\{item\.emptyText\}\}"/.test(wxml));
+
+// ── 9. 新增动作：复制话题 ────────────────────────────────────────
+check('存在 onCopyTags', /onCopyTags\(\)/.test(js));
+check('复制话题带上 # 号（少了 # 就只是普通词）',
+  /tags\.map\(t => '#' \+ t\)\.join\(' '\)/.test(js));
+check('无话题时给明确提示', /本视频没有话题/.test(js));
+check('copyTags 在分发映射表里', /copyTags:\s*this\.onCopyTags/.test(js));
+check('话题预览显示实际内容（用户一眼看到是什么）',
+  /preview: tags\.slice/.test(src));
+
+// ── 10. 标题文案：合成字段，避免 B站复制出 "-" ───────────────────
+check('优先用服务端的 copy_text',
+  /r\.copyText \|\| r\.description \|\| r\.title/.test(js));
+check('模型层暴露 copyText',
+  /this\.copyText\s*=/.test(read('utils/parse-result.js')));
+check('文案行合并为一项（不拆标题/文案两行）',
+  !/key: 'title'/.test(srcNoComment));
+
+// ── 11. 视觉层级：不是每个动作都抢按钮 ─────────────────────────
 check('每行只有一个主动作', /\.as-act-main\s*\{/.test(wxss));
 check('次级动作是文字链样式', /\.as-act\s*\{[^}]*font-size/.test(wxss));
 

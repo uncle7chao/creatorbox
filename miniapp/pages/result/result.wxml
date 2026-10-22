@@ -70,24 +70,37 @@
          我们此前是纵向堆叠（视频卡/BGM/文案卡各占一块），
          动作散落各处，用户要自己拼「哪一步能拿到什么」。
 
-         ⭐ 但不完全照抄：竞品把文案塞进一行文字链，
-           我们的文案有字幕提取/违禁词检测等独有能力，仍保留完整卡片。
-           这里只做「索引 + 快捷入口」，卡片本身不删 ——
-           清单解决「找得到」，卡片承载「看得全」。 -->
+         ⭐⭐ 固定 4 行（视频/封面/标题文案/话题），缺项【灰显占位】而非隐藏：
+           清单的语义是「这个链接能提取什么」的**能力说明**，
+           不是「这次提取到了什么」的**结果报告**。
+           缺项隐藏 → 用户不知道这个能力存在，会怀疑「是不是漏了」；
+           缺项灰显 + 点击提示「本视频没有xx」→ 用户得到明确答案。
+
+         ⭐ 卡片本身不删 —— 清单解决「找得到」，卡片承载「看得全」。 -->
     <view wx:if="{{assets.length}}" class="assets">
       <view class="as-head">本次可提取</view>
-      <view wx:for="{{assets}}" wx:key="key" class="as-row">
+      <view wx:for="{{assets}}" wx:key="key" class="as-row {{item.empty ? 'as-row-empty' : ''}}">
         <view class="as-ic as-ic-{{item.kind}}">
           <view wx:if="{{item.kind === 'video'}}" class="as-tri"></view>
           <view wx:elif="{{item.kind === 'cover'}}" class="as-img"></view>
           <view wx:elif="{{item.kind === 'text'}}" class="as-txt"></view>
+          <view wx:elif="{{item.kind === 'tags'}}" class="as-hash">
+            <view class="as-hash-lines"></view>
+          </view>
           <view wx:elif="{{item.kind === 'audio'}}" class="as-wave"></view>
         </view>
-        <view class="as-name">{{item.label}}</view>
+        <view class="as-mid">
+          <view class="as-name">{{item.label}}</view>
+          <!-- 预览：话题显示实际内容，文案显示开头 —— 让用户一眼看到是什么 -->
+          <view wx:if="{{item.preview}}" class="as-prev">{{item.preview}}</view>
+          <view wx:elif="{{item.empty}}" class="as-prev as-prev-empty">未提取到</view>
+        </view>
         <view class="as-acts">
           <view wx:for="{{item.acts}}" wx:for-item="a" wx:key="key"
-                class="as-act{{a.main ? ' as-act-main' : ''}}"
-                data-act="{{a.key}}" bindtap="onAssetAction">{{a.label}}</view>
+                class="as-act{{a.main ? ' as-act-main' : ''}}{{item.empty ? ' as-act-off' : ''}}"
+                data-act="{{a.key}}" data-empty="{{item.empty ? 1 : 0}}"
+                data-empty-text="{{item.emptyText}}"
+                bindtap="onAssetAction">{{a.label}}</view>
         </view>
       </view>
     </view>

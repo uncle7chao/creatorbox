@@ -33,6 +33,11 @@ class ParseResult {
     // ssr / share_text / desc_head / template_skipped
     this.titleSource = m.title_source || '';
     this.description = m.description || '';
+    // ⭐ 标题文案（2026-10-22）：服务端已合成好的一条文本 ——
+    //    description 有效则用它，否则回落 title。
+    //    为什么不直接用 description：B站的 description 是 '-'（1 个字符），
+    //    复制出去用户拿到一个破折号。
+    this.copyText = r.copy_text || m.copy_text || this.description || this.title || '';
 
     // ---- 覆盖情况（已知缺口如实展示，不编造）----
     const cov = {
