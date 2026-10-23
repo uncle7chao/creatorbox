@@ -290,25 +290,52 @@ code{background:#F3F4F6;padding:1.5px 6px;border-radius:4px;
     <td>⚠️ 接近 500GB 包上限，该升级套餐了</td></tr>
 </table>
 
-<h3>⭐ 流量包红线：为什么「绝对不能全量中转」</h3>
+<h3>⭐ 两条红线：轻量看流量包，ECS 看带宽</h3>
 <table>
-<tr><th>做法</th><th style="width:150px">流量包能撑</th><th style="width:140px">对应日活上限</th><th>说明</th></tr>
-<tr><td><b>只做解析（直连保存）</b></td><td class="num">495,546 次/月</td>
+<tr><th>方案</th><th style="width:130px">卡在哪</th><th style="width:150px">直连保存</th><th style="width:150px">全量中转</th></tr>
+<tr><td><b>轻量（500GB 流量包）</b></td><td>月流量包</td>
     <td class="num" style="color:#0F7A50">≈ 8,259 人</td>
-    <td>✅ 现在的架构。单次仅 1.03MB</td></tr>
-<tr><td>如果视频走服务器中转</td><td class="num">20,480 次/月</td>
-    <td class="num" style="color:#C0392B">≈ 683 人</td>
-    <td>❌ 单次 25MB，<b>日活 700 就爆包限速</b></td></tr>
+    <td class="num" style="color:#C0392B">≈ 683 人（爆包限速）</td></tr>
+<tr><td><b>ECS 5M 固定带宽（不限流量）</b></td><td>带宽并发</td>
+    <td class="num" style="color:#0F7A50">2,250 次/小时，够</td>
+    <td class="num" style="color:#A85D18">90 个/小时，要排队</td></tr>
 </table>
 
 <div class="quote">
-  <b>差 12 倍。</b>这就是 P0 那个决策的量化依据：<br>
-  · <b>直连保存</b>：500GB 包撑得住日活 8,259 人<br>
-  · <b>全量中转</b>：同样套餐只撑得住日活 683 人<br>
+  <b>⭐⭐ 关键：换成「按固定带宽」的 ECS，流量确实不限了 —— 但问题没解决，只是换了个位置。</b><br>
+  <b>5Mbps = 0.625 MB/s 是总量</b>，不管几个人分：<br>
+  · 传 1MB 的解析 JSON → 每次 1.6 秒 → <b>2,250 次/小时</b>（日活上万都够）<br>
+  · 传 25MB 的视频 → 每次 40 秒 → <b>只剩 90 个/小时</b><br>
   <br>
-  ✅ 所以 <code>need_proxy</code> 的正确用途是<b>「直连失败时的兜底」</b>，
-  不是「所有视频都中转」。按 90% 直连成功、10% 兜底中转算，
-  流量包仍然够用（中转只占 10% 的调用量）。
+  日活 3000 时若有 10% 的人当天要下载（300 个），光传完就要 <b>3.3 小时</b>；
+  如果下载集中在晚上 2 小时高峰，<b>用户会明显排队等待</b>。<br>
+  <br>
+  ✅ 所以 <code>need_proxy</code> 的正确定位仍是<b>「直连失败时的兜底」</b>，
+  不是「所有视频都中转」。流量包也好、带宽也好，中转都是把自己堵死。
+  <b>要真能中转，带宽得 50M+，那是另一个价位。</b>
+</div>
+
+<h3>顺手做一个采购对比（2026-10 阿里云）</h3>
+<table>
+<tr><th>方案</th><th style="width:100px">年付</th><th style="width:90px">折月</th><th style="width:80px">流量</th><th>评价</th></tr>
+<tr><td><b>ECS u1 2核4G + 5M（活动价）</b></td><td class="num">¥199</td><td class="num">¥16.6</td>
+    <td style="color:#0F7A50">不限</td>
+    <td>✅ <b>同价但流量不限</b>，比轻量更划算</td></tr>
+<tr><td>轻量 2核4G + 5M</td><td class="num">¥199</td><td class="num">¥16.6</td>
+    <td>500GB包</td><td>流量包够用（日活 3000 只用 36%）</td></tr>
+<tr><td>ECS 经济型e 2核4G + 5M（标准价）</td><td class="num">¥1,640</td><td class="num">¥136.7</td>
+    <td style="color:#0F7A50">不限</td><td>❌ 贵 8 倍，没必要</td></tr>
+</table>
+
+<div class="card info">
+  <b>采购建议：ECS u1 2核4G / 5M 活动价 ¥199/年 是目前最优解</b> ——
+  跟轻量同价（都是 199），但<b>固定带宽不限流量</b>，不用盯着流量包算。<br>
+  <br>
+  ⚠️ 三个必须确认的点：<br>
+  ① <b>活动价是不是限新用户 / 首年</b>？续费可能恢复标准价（¥1640），
+     下单前让销售书面确认续费价<br>
+  ② <b>包年 ≥3 个月才能备案</b>（ECS 官方规则），199 元/年满足<br>
+  ③ 5M 带宽对纯解析服务够用（2,250 次/小时），<b>但别指望它做视频中转</b>
 </div>
 
 <h3>三类用户月净收益（日活 1000 档）</h3>
