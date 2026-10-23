@@ -19,35 +19,42 @@ PRICE = 9.9        # 月费
 FEE = 0.006        # 微信支付费率
 ONE_AD = ECPM / 1000
 
-# ⚠️ 2026-10-23 修正：原模型把「保存视频」当成服务器中转 25MB 来算带宽，
-#    那是错的 —— 实测小程序用 wx.downloadFile **直连平台 CDN**，
-#    视频流量完全不经过我们服务器（详见 05 节的架构说明）。
-#    服务器真正承担的只有：抓平台页面的出网 + 封面代理 + JSON 响应。
-PARSE_KB = 400     # 一次解析平均抓取平台页面的体积（B站约 800KB，抖音约 150KB）
-COVER_KB = 100     # 封面代理平均体积（仅 need_proxy 的封面才走）
+# ⚠️ 2026-10-23 二次修正：
+#   ① 原来按「服务器中转 25MB 视频」算 → 错，wx.downloadFile 是直连 CDN
+#   ② 改成「每次操作多少流量费」→ **方法本身也不对**：
+#      流量费小到千分之一元，算它没有意义；
+#      真正的成本是【服务器月租】这个固定开销。
+#   → 正确视角：成本 = 月租 ÷ 用户数（每用户分摊），不是「每次操作单价」。
+RENT = 80          # 2C2G 轻量月租（元/月）—— 真正的成本大头
+PARSE_KB = 1058    # 一次解析的总出网：抓页面(抖音150/B站800) + JSON 8 + 封面 100
+COVER_KB = 100
 
 
 def gb(kb):
     return kb / 1024 / 1024
 
 
-# 单次「解析 + 保存」的真实服务器流量成本。
-# ⭐ 保存那一步是 0 —— 视频从平台 CDN 直接进用户手机。
-SRV_COST_CN = gb(PARSE_KB) * BW + gb(COVER_KB) * BW      # 国内服务器
-SRV_COST_HK = gb(PARSE_KB) * 2.0 + gb(COVER_KB) * 2.0    # 香港出网 ¥2/GB
+# ⭐ 保存那一项不存在 —— 视频从平台 CDN 直接进用户手机
+SRV_COST_CN = gb(PARSE_KB) * BW      # 单次解析的流量费（国内）
+SRV_COST_HK = gb(PARSE_KB) * 2.0     # 单次解析的流量费（香港出网）
 
 
-def monthly(ad_per_day, parses_per_day):
-    """月度净收益。成本只来自解析（保存不耗服务器带宽）"""
+def cost_per_user(dau):
+    """每用户每月的真实成本分摊 = (月租 + 流量) ÷ 日活"""
+    parses = dau * 2 * 30
+    return (RENT + parses * SRV_COST_CN) / dau
+
+
+def monthly(ad_per_day, dau=1000):
+    """月度净收益。成本用「分摊到每用户」的口径"""
     income = ONE_AD * ad_per_day * 30
-    out = SRV_COST_CN * parses_per_day * 30
-    return income - out
+    return income - cost_per_user(dau)
 
 
-FREE_NONE = monthly(0, 2)        # 免费、不看广告、每天解析 2 次
-FREE_AD2 = monthly(2, 2)         # 每天看 2 条
-FREE_AD5 = monthly(5, 4)         # 每天看满 5 条（多用多解析）
-MEMBER = PRICE * (1 - FEE) - SRV_COST_CN * 5 * 30
+FREE_NONE = monthly(0)           # 免费、不看广告
+FREE_AD2 = monthly(2)            # 每天看 2 条
+FREE_AD5 = monthly(5)            # 每天看满 5 条
+MEMBER = PRICE * (1 - FEE) - cost_per_user(1000)
 
 CSS = '''
 *{box-sizing:border-box;margin:0;padding:0}
@@ -302,47 +309,70 @@ HTML = f'''<!DOCTYPE html>
   比放着点了没反应好。
 </div>
 
-<h2><span class="n">05</span>经济模型（先纠正一个前提错误）</h2>
-<div class="sub">参数：激励视频 eCPM ¥{ECPM:.0f} · 国内 CDN ¥{BW}/GB · 月费 ¥{PRICE} · 微信费率 {FEE*100:.1f}%</div>
+<h2><span class="n">05</span>成本与收入（先纠正两个前提错误）</h2>
+<div class="sub">参数：激励视频 eCPM ¥{ECPM:.0f} · 国内 CDN ¥{BW}/GB · 服务器月租 ¥{RENT} · 月费 ¥{PRICE}</div>
+
+<div class="card ok">
+  <b>先回答一个关键问题：保存视频要花我们钱吗？—— 不花，一分钱都不花。</b><br>
+  <code>wx.downloadFile</code> 从平台 CDN <b>直连到用户手机</b>，25MB 也好 100MB 也好，
+  我们服务器<b>出网 0 字节</b>，不进流量账单。
+</div>
 
 <div class="card warn">
-  <b>⚠️ 本方案第一版把带宽算错了，这里更正。</b><br>
-  原写法按「服务器中转 25MB 视频」计成本 → <b>120 元/GB·次</b>级别的假设。
-  实际读码确认：小程序保存走 <code>wx.downloadFile</code>，<b>直连平台 CDN</b>，
-  25MB 也好 100MB 也好，<b>我们服务器出网 0 字节</b>。<br>
-  服务器只承担：抓平台页面的出网（B站约 800KB / 抖音约 150KB）+ 封面代理（约 100KB）+ JSON 响应（8KB）。
+  <b>⚠️ 但这个方案的前两版都算错了：</b><br>
+  · 第一版：按「服务器中转 25MB 视频」算 → 错，根本没中转<br>
+  · 第二版：改成「每次操作多少流量费」→ <b>方法还是错的</b>：
+    流量费小到千分之一元，算它没有意义。
+  <br><br>
+  ✅ <b>正确口径：成本 = 服务器月租 ÷ 用户数。</b>
+  月租是固定的（付不付流量都要付），用户越多，每人摊得越薄。
 </div>
 
-<div class="kpi">
-  <div class="pos"><b>+{ONE_AD:.2f}</b><span>1 条激励视频收益</span></div>
-  <div class="pos"><b>-{SRV_COST_CN:.6f}</b><span>1 次解析的真实服务器成本</span></div>
-  <div class="pos"><b>{(1-SRV_COST_CN/ONE_AD)*100:.2f}%</b><span>广告毛利率</span></div>
-  <div class="neg"><b>{FREE_NONE:.4f}</b><span>免费不看广告 / 月</span></div>
-</div>
+<h3>真实的成本构成</h3>
+<table>
+<tr><th>项</th><th style="width:150px">金额</th><th>说明</th></tr>
+<tr><td><b>保存视频</b></td><td class="num" style="color:#0F7A50">0 元</td>
+    <td>客户端直连平台 CDN，服务器不参与</td></tr>
+<tr><td>解析（抓页面 + 返回 JSON）</td><td class="num">{SRV_COST_CN:.7f} 元/次</td>
+    <td>≈ {SRV_COST_CN*10000:.2f} 元 / 1 万次。B站页面 800KB 是最大的那个</td></tr>
+<tr><td><b>服务器月租</b></td><td class="num" style="color:#C0392B">{RENT} 元/月</td>
+    <td><b>真正的成本大头</b>，固定支出，与流量无关</td></tr>
+</table>
 
+<h3>每用户分摊成本（按日活算）</h3>
+<table>
+<tr><th>日活</th><th style="width:150px">每用户成本/月</th><th>说明</th></tr>
+<tr><td>100 人</td><td class="num">{cost_per_user(100):.3f} 元</td><td>月租摊得薄不下来 —— 早期主要成本</td></tr>
+<tr><td>500 人</td><td class="num">{cost_per_user(500):.3f} 元</td><td></td></tr>
+<tr><td><b>1000 人</b></td><td class="num">{cost_per_user(1000):.3f} 元</td><td>定价测算按这一档</td></tr>
+<tr><td>3000 人</td><td class="num">{cost_per_user(3000):.3f} 元</td><td>几乎可以忽略</td></tr>
+</table>
+
+<h3>三类用户月净收益（日活 1000 档）</h3>
 <table>
 <tr><th>用户类型</th><th style="width:140px">月净收益</th><th>说明</th></tr>
-<tr><td>免费 · 完全不看广告</td><td class="num" style="color:#6B7280">{FREE_NONE:+.4f} 元</td>
-    <td>每天解析 2 次，成本几乎为 0（不是亏钱，是<b>不产生收入</b>）</td></tr>
+<tr><td>免费 · 完全不看广告</td><td class="num" style="color:#6B7280">{FREE_NONE:+.3f} 元</td>
+    <td>只摊 {cost_per_user(1000):.3f} 元成本，<b>不产生收入</b></td></tr>
 <tr><td>免费 · 每天看 2 条（<b>建议上限</b>）</td><td class="num" style="color:#0F7A50">{FREE_AD2:+.2f} 元</td>
-    <td>✅ 与付费差 {MEMBER-FREE_AD2:.1f} 元，梯度清晰</td></tr>
+    <td>✅ 与付费差 {MEMBER-FREE_AD2:.1f} 元</td></tr>
 <tr><td>免费 · 每天看 5 条（⚠️ 不建议）</td><td class="num" style="color:#A85D18">{FREE_AD5:+.2f} 元</td>
-    <td>❌ 与付费只差 {MEMBER-FREE_AD5:.2f} 元，付费失去理由</td></tr>
-<tr><td><b>付费会员 ¥9.9</b></td><td class="num" style="color:#0F7A50">{MEMBER:+.2f} 元</td>
-    <td>每天 5 次解析 + 1080P</td></tr>
+    <td>❌ 与付费只差 {MEMBER-FREE_AD5:.2f} 元</td></tr>
+<tr><td><b>付费会员 ¥{PRICE}</b></td><td class="num" style="color:#0F7A50">{MEMBER:+.2f} 元</td>
+    <td>扣掉支付费率与分摊成本</td></tr>
 </table>
 
 <div class="quote">
-  <b>三条结论（②③ 未变，但 ① 的理由变了）：</b><br>
-  ① <b>看广告几乎是纯利</b>（成本 {SRV_COST_CN:.6f} 元 vs 收益 {ONE_AD:.2f} 元，毛利率 {(1-SRV_COST_CN/ONE_AD)*100:.2f}%）——
-     <b>但这不是「可以随便给」的理由</b>。省下来的带宽不会变成收入，
-     真正决定上限的是<b>它会不会替代付费</b>。<br>
-  ② <b>所以每日上限必须 ≤2 条</b>。看满 5 条时月贡献 {FREE_AD5:.2f} 元 vs 付费 {MEMBER:.2f} 元，
-     差距只剩 {MEMBER-FREE_AD5:.2f} 元 —— 用户没理由付费。<br>
-  ③ <b>广告不能换「会员天数」</b>：¥{PRICE} ÷ {ONE_AD:.2f} = {PRICE/ONE_AD:.0f} 条才能等值一个月，
-     按 2 条/天上限要 {PRICE/ONE_AD/2:.0f} 天 —— 体验上完全不可接受。<b>只能换单次权益。</b><br>
+  <b>三条结论：</b><br>
+  ① <b>成本几乎可以忽略</b>（日活 1000 时每用户 {cost_per_user(1000):.3f} 元/月，
+     流量费 1 万次才 {SRV_COST_CN*10000:.2f} 元）——
+     <b>所以「广告上限」的约束跟成本完全无关</b>。<br>
+  ② <b>真正的约束是付费转化</b>：看满 5 条时月贡献 {FREE_AD5:.2f} 元
+     vs 付费 {MEMBER:.2f} 元，差距只剩 {MEMBER-FREE_AD5:.2f} 元 ——
+     用户会算出来「看广告就够了」，付费失去理由。<br>
+  ③ <b>广告不能换「会员天数」</b>：¥{PRICE} ÷ {ONE_AD:.2f} = {PRICE/ONE_AD:.0f} 条才等值一个月，
+     按 2 条/天上限要 {PRICE/ONE_AD/2:.0f} 天 —— 只能换<b>单次权益</b>。<br>
   <br>
-  <b>一句话：成本不是约束，付费转化才是。</b>
+  <b>一句话：这个生意里流量不是成本，服务器月租才是；收入不靠省流量，靠转化。</b>
 </div>
 
 <div class="card info">
