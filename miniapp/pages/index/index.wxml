@@ -21,8 +21,11 @@
         </navigator>
       </view>
 
-      <!-- 主文案：转化核心，20px -->
-      <view class="hero-main">去掉水印 只要干净素材</view>
+      <!-- 主文案：转化核心，20px
+           ⚠️ 措辞用「解析视频」不用「去掉水印」（用户 2026-10-22 确定）：
+              我们的能力是「拿到平台源头就干净的原始文件」，
+              不是「擦除他人作品上的版权标识」—— 后者才是规范禁止的。 -->
+      <view class="hero-main">粘贴链接 一键解析视频</view>
       <!-- 副文案 -->
       <view class="hero-sub">{{platforms[0]}} · {{platforms[1]}} · {{platforms[2]}} · {{platformCount || 8}} 个平台</view>
     </block>

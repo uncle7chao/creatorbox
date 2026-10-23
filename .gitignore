@@ -107,3 +107,11 @@ project.private.config.json
 # 两者都入库保历史，但【不要在 app/ 里继续开发】—— 正式开发在 app_flutter/。
 app/windows/flutter/ephemeral/
 app/.dart_tool/
+# ────────── 运行时缓存产物（2026-10-23 补）──────────
+# 封面代理缓存：每次解析按 URL hash 落盘，可随时重建，入库只会让仓库变脏。
+# 之前误入库了 13 个 .img/.type —— 换个链接就多一对文件。
+server/media/covers/
+# PDF 处理产物：用户上传后生成的中间文件，属于运行时数据
+server/media/pdf/
+# 临时探测数据（我自己调试用的，不该入库）
+.tmp*
