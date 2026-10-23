@@ -19,41 +19,38 @@ PRICE = 9.9        # 月费
 FEE = 0.006        # 微信支付费率
 ONE_AD = ECPM / 1000
 
-# ⚠️ 2026-10-23 二次修正：
-#   ① 原来按「服务器中转 25MB 视频」算 → 错，wx.downloadFile 是直连 CDN
-#   ② 改成「每次操作多少流量费」→ **方法本身也不对**：
-#      流量费小到千分之一元，算它没有意义；
-#      真正的成本是【服务器月租】这个固定开销。
-#   → 正确视角：成本 = 月租 ÷ 用户数（每用户分摊），不是「每次操作单价」。
-RENT = 80          # 2C2G 轻量月租（元/月）—— 真正的成本大头
-PARSE_KB = 1058    # 一次解析的总出网：抓页面(抖音150/B站800) + JSON 8 + 封面 100
-COVER_KB = 100
-
-
-def gb(kb):
-    return kb / 1024 / 1024
-
-
-# ⭐ 保存那一项不存在 —— 视频从平台 CDN 直接进用户手机
-SRV_COST_CN = gb(PARSE_KB) * BW      # 单次解析的流量费（国内）
-SRV_COST_HK = gb(PARSE_KB) * 2.0     # 单次解析的流量费（香港出网）
+# ⚠️ 2026-10-23 三次修正，最终口径：
+#   ① 一开始按「服务器中转 25MB 视频」→ 错（视频直连 CDN）
+#   ② 改成「按 GB 单价算每次成本」→ 方法错（流量费小到无意义）
+#   ③ 最终（本次）：服务器是【固定月租 + 月流量包】，包内边际流量成本 = 0
+#      → **成本 = 月租 ÷ 用户数**，流量只有在「爆包」时才成为问题
+#      → 参考 docs/CreatorBox-云资源选型与成本重算.md（那份文档早就写清了
+#         「没有任何云厂商提供不限流量的固定带宽」，我漏看了）
+RENT = 15.7        # 腾讯云轻量 2C4G/5M 年付折月（文档实测价）
+QUOTA_GB = 500     # 该套餐月流量包
+PARSE_MB = 1058 / 1024    # 单次解析出网 ≈ 1.03MB
+VIDEO_MB = 25      # 一条典型视频
+PARSE_CAP = int(QUOTA_GB * 1024 / PARSE_MB)    # 流量包能撑的解析次数
+VIDEO_CAP = int(QUOTA_GB * 1024 / VIDEO_MB)    # 流量包能撑的中转下载次数
 
 
 def cost_per_user(dau):
-    """每用户每月的真实成本分摊 = (月租 + 流量) ÷ 日活"""
-    parses = dau * 2 * 30
-    return (RENT + parses * SRV_COST_CN) / dau
+    """每用户每月成本 = 月租 ÷ 日活（包内流量不额外花钱）"""
+    return RENT / dau
+
+
+def quota_pct(dau, per_day=2):
+    """流量包使用率（只做解析）"""
+    return dau * per_day * 30 * PARSE_MB / (QUOTA_GB * 1024) * 100
 
 
 def monthly(ad_per_day, dau=1000):
-    """月度净收益。成本用「分摊到每用户」的口径"""
-    income = ONE_AD * ad_per_day * 30
-    return income - cost_per_user(dau)
+    return ONE_AD * ad_per_day * 30 - cost_per_user(dau)
 
 
-FREE_NONE = monthly(0)           # 免费、不看广告
-FREE_AD2 = monthly(2)            # 每天看 2 条
-FREE_AD5 = monthly(5)            # 每天看满 5 条
+FREE_NONE = monthly(0)
+FREE_AD2 = monthly(2)
+FREE_AD5 = monthly(5)
 MEMBER = PRICE * (1 - FEE) - cost_per_user(1000)
 
 CSS = '''
@@ -309,85 +306,114 @@ HTML = f'''<!DOCTYPE html>
   比放着点了没反应好。
 </div>
 
-<h2><span class="n">05</span>成本与收入（先纠正两个前提错误）</h2>
-<div class="sub">参数：激励视频 eCPM ¥{ECPM:.0f} · 国内 CDN ¥{BW}/GB · 服务器月租 ¥{RENT} · 月费 ¥{PRICE}</div>
-
-<div class="card ok">
-  <b>先回答一个关键问题：保存视频要花我们钱吗？—— 不花，一分钱都不花。</b><br>
-  <code>wx.downloadFile</code> 从平台 CDN <b>直连到用户手机</b>，25MB 也好 100MB 也好，
-  我们服务器<b>出网 0 字节</b>，不进流量账单。
-</div>
+<h2><span class="n">05</span>成本模型（三次修正后的最终口径）</h2>
+<div class="sub">套餐：腾讯云轻量 2C4G/5M · ¥{RENT}/月（年付折月）· 月流量包 {QUOTA_GB}GB</div>
 
 <div class="card warn">
-  <b>⚠️ 但这个方案的前两版都算错了：</b><br>
-  · 第一版：按「服务器中转 25MB 视频」算 → 错，根本没中转<br>
-  · 第二版：改成「每次操作多少流量费」→ <b>方法还是错的</b>：
-    流量费小到千分之一元，算它没有意义。
-  <br><br>
-  ✅ <b>正确口径：成本 = 服务器月租 ÷ 用户数。</b>
-  月租是固定的（付不付流量都要付），用户越多，每人摊得越薄。
+  <b>⚠️ 这个成本模型我改了三版，把错误过程也留下 —— 因为它会影响你怎么做决策：</b><br>
+  <b>第一版</b>：按「服务器中转 25MB 视频」算 → 错，视频是直连 CDN，服务器压根不碰<br>
+  <b>第二版</b>：改成按 GB 单价算每次成本 → 数字对，<b>但方法错</b>：
+  流量费小到千分之一元，算它只会制造「每次操作都花钱」的错觉<br>
+  <b>第三版（本版）</b>：你是<b>固定月租 + 月流量包</b>，<b>包内边际流量成本 = 0</b>
+  → 成本就是 <b>月租 ÷ 用户数</b>，只有「爆包」时流量才成为问题
 </div>
 
-<h3>真实的成本构成</h3>
+<div class="card ok">
+  <b>关于「不限流量」要说清楚一件事：</b><br>
+  主流云（腾讯/阿里/华为）<b>没有真正「不限流量的固定带宽」套餐</b>。
+  你买的是「固定带宽 + 月流量包」（如 {QUOTA_GB}GB），<b>包内不额外收费</b>，
+  这在使用体验上就等于不限流量 —— 但<b>超了会限速</b>。<br>
+  <br>
+  这个区别很关键：<b>它决定了「能不能做视频中转」</b>（见下方红线表）。
+</div>
+
+<h3>真实成本构成</h3>
 <table>
 <tr><th>项</th><th style="width:150px">金额</th><th>说明</th></tr>
 <tr><td><b>保存视频</b></td><td class="num" style="color:#0F7A50">0 元</td>
-    <td>客户端直连平台 CDN，服务器不参与</td></tr>
-<tr><td>解析（抓页面 + 返回 JSON）</td><td class="num">{SRV_COST_CN:.7f} 元/次</td>
-    <td>≈ {SRV_COST_CN*10000:.2f} 元 / 1 万次。B站页面 800KB 是最大的那个</td></tr>
-<tr><td><b>服务器月租</b></td><td class="num" style="color:#C0392B">{RENT} 元/月</td>
-    <td><b>真正的成本大头</b>，固定支出，与流量无关</td></tr>
+    <td>直连平台 CDN，服务器不参与</td></tr>
+<tr><td>解析（流量）</td><td class="num" style="color:#0F7A50">0 元</td>
+    <td>包内不额外收费。单次约 {PARSE_MB:.2f}MB，{QUOTA_GB}GB 包可撑 <b>{PARSE_CAP:,} 次/月</b></td></tr>
+<tr><td><b>服务器月租</b></td><td class="num" style="color:#C0392B">¥{RENT}/月</td>
+    <td><b>唯一的成本项</b>，固定支出</td></tr>
 </table>
 
-<h3>每用户分摊成本（按日活算）</h3>
+<h3>每用户成本（月租摊薄，日活 1000 档）</h3>
 <table>
-<tr><th>日活</th><th style="width:150px">每用户成本/月</th><th>说明</th></tr>
-<tr><td>100 人</td><td class="num">{cost_per_user(100):.3f} 元</td><td>月租摊得薄不下来 —— 早期主要成本</td></tr>
-<tr><td>500 人</td><td class="num">{cost_per_user(500):.3f} 元</td><td></td></tr>
-<tr><td><b>1000 人</b></td><td class="num">{cost_per_user(1000):.3f} 元</td><td>定价测算按这一档</td></tr>
-<tr><td>3000 人</td><td class="num">{cost_per_user(3000):.3f} 元</td><td>几乎可以忽略</td></tr>
+<tr><th>日活</th><th style="width:150px">每用户成本/月</th><th style="width:130px">流量包使用率</th><th>说明</th></tr>
+<tr><td>100 人</td><td class="num">{cost_per_user(100):.3f} 元</td>
+    <td class="num">{quota_pct(100):.1f}%</td><td>早期成本几乎全是月租</td></tr>
+<tr><td>500 人</td><td class="num">{cost_per_user(500):.3f} 元</td>
+    <td class="num">{quota_pct(500):.1f}%</td><td></td></tr>
+<tr><td><b>1000 人</b></td><td class="num">{cost_per_user(1000):.3f} 元</td>
+    <td class="num">{quota_pct(1000):.1f}%</td><td>定价测算按这一档</td></tr>
+<tr><td>3000 人</td><td class="num">{cost_per_user(3000):.3f} 元</td>
+    <td class="num">{quota_pct(3000):.1f}%</td><td></td></tr>
+<tr><td>8000 人</td><td class="num">{cost_per_user(8000):.3f} 元</td>
+    <td class="num" style="color:#A85D18">{quota_pct(8000):.1f}%</td>
+    <td>⚠️ 接近 {QUOTA_GB}GB 包上限，该升级套餐了</td></tr>
 </table>
+
+<h3>⭐ 流量包红线：为什么「绝对不能全量中转」</h3>
+<table>
+<tr><th>做法</th><th style="width:150px">流量包能撑</th><th style="width:140px">对应日活上限</th><th>说明</th></tr>
+<tr><td><b>只做解析（直连保存）</b></td><td class="num">{PARSE_CAP:,} 次/月</td>
+    <td class="num" style="color:#0F7A50">≈ {PARSE_CAP/60:,.0f} 人</td>
+    <td>✅ 现在的架构。单次仅 {PARSE_MB:.2f}MB</td></tr>
+<tr><td>如果视频走服务器中转</td><td class="num">{VIDEO_CAP:,} 次/月</td>
+    <td class="num" style="color:#C0392B">≈ {VIDEO_CAP/30:,.0f} 人</td>
+    <td>❌ 单次 25MB，<b>日活 700 就爆包限速</b></td></tr>
+</table>
+
+<div class="quote">
+  <b>差 12 倍。</b>这就是 P0 那个决策的量化依据：<br>
+  · <b>直连保存</b>：{QUOTA_GB}GB 包撑得住日活 {PARSE_CAP/60:,.0f} 人<br>
+  · <b>全量中转</b>：同样套餐只撑得住日活 {VIDEO_CAP/30:,.0f} 人<br>
+  <br>
+  ✅ 所以 <code>need_proxy</code> 的正确用途是<b>「直连失败时的兜底」</b>，
+  不是「所有视频都中转」。按 90% 直连成功、10% 兜底中转算，
+  流量包仍然够用（中转只占 {VIDEO_CAP*0.1/VIDEO_CAP*100:.0f}% 的调用量）。
+</div>
 
 <h3>三类用户月净收益（日活 1000 档）</h3>
 <table>
 <tr><th>用户类型</th><th style="width:140px">月净收益</th><th>说明</th></tr>
-<tr><td>免费 · 完全不看广告</td><td class="num" style="color:#6B7280">{FREE_NONE:+.3f} 元</td>
-    <td>只摊 {cost_per_user(1000):.3f} 元成本，<b>不产生收入</b></td></tr>
+<tr><td>免费 · 完全不看广告</td><td class="num" style="color:#6B7280">{FREE_NONE:+.4f} 元</td>
+    <td>只摊 {cost_per_user(1000):.4f} 元月租，<b>不产生收入</b></td></tr>
 <tr><td>免费 · 每天看 2 条（<b>建议上限</b>）</td><td class="num" style="color:#0F7A50">{FREE_AD2:+.2f} 元</td>
     <td>✅ 与付费差 {MEMBER-FREE_AD2:.1f} 元</td></tr>
 <tr><td>免费 · 每天看 5 条（⚠️ 不建议）</td><td class="num" style="color:#A85D18">{FREE_AD5:+.2f} 元</td>
     <td>❌ 与付费只差 {MEMBER-FREE_AD5:.2f} 元</td></tr>
 <tr><td><b>付费会员 ¥{PRICE}</b></td><td class="num" style="color:#0F7A50">{MEMBER:+.2f} 元</td>
-    <td>扣掉支付费率与分摊成本</td></tr>
+    <td>扣支付费率与月租分摊</td></tr>
 </table>
 
 <div class="quote">
   <b>三条结论：</b><br>
-  ① <b>成本几乎可以忽略</b>（日活 1000 时每用户 {cost_per_user(1000):.3f} 元/月，
-     流量费 1 万次才 {SRV_COST_CN*10000:.2f} 元）——
-     <b>所以「广告上限」的约束跟成本完全无关</b>。<br>
-  ② <b>真正的约束是付费转化</b>：看满 5 条时月贡献 {FREE_AD5:.2f} 元
-     vs 付费 {MEMBER:.2f} 元，差距只剩 {MEMBER-FREE_AD5:.2f} 元 ——
-     用户会算出来「看广告就够了」，付费失去理由。<br>
+  ① <b>成本可以忽略</b>：日活 1000 时每用户 {cost_per_user(1000):.4f} 元/月
+     （月租 {RENT} 元摊到 1000 人），流量包只用 {quota_pct(1000):.0f}%。<br>
+  ② <b>所以「广告上限」跟成本完全无关</b>，纯粹是商业策略：
+     看满 5 条月贡献 {FREE_AD5:.2f} 元 vs 付费 {MEMBER:.2f} 元，
+     差距只剩 {MEMBER-FREE_AD5:.2f} 元 —— 用户会算出来「看广告就够了」。<br>
   ③ <b>广告不能换「会员天数」</b>：¥{PRICE} ÷ {ONE_AD:.2f} = {PRICE/ONE_AD:.0f} 条才等值一个月，
      按 2 条/天上限要 {PRICE/ONE_AD/2:.0f} 天 —— 只能换<b>单次权益</b>。<br>
   <br>
-  <b>一句话：这个生意里流量不是成本，服务器月租才是；收入不靠省流量，靠转化。</b>
+  <b>一句话：成本是固定的月租，收入是转化的结果；流量只在你自己做中转时才是问题。</b>
 </div>
 
 <div class="card info">
-  <b>但直连带来一个真实的技术门槛（比成本重要得多）：</b><br>
-  小程序 <code>wx.downloadFile</code> 要求域名在<b>微信后台的 downloadFile 合法域名</b>里，
-  且<b>不支持通配符</b>。而平台 CDN 域名带随机/地域前缀：<br>
+  <b>但直连有一个真实门槛（比成本重要得多）：</b><br>
+  <code>wx.downloadFile</code> 要求域名在<b>微信后台的 downloadFile 合法域名</b>里，
+  且<b>不支持通配符</b>。平台 CDN 域名带随机/地域前缀：<br>
   <code>n98-v-ncdncold.douyinvod.com</code>（抖音）·
   <code>cn-hbyc-ct-01-01.bilivideo.com</code>（B站，含地域+运营商）·
   <code>vd3.bdstatic.com</code>（百度）<br>
-  <b>换视频 / 换地域时域名可能变，白名单配不全 → 用户点了保存直接失败。</b>
-  代码里已有 <code>need_proxy</code> 标记（百度=True / B站=False），
-  但<b>它只用于显示「需服务器中转，会稍慢」的提示文案，实际仍是直连</b> ——
-  服务端只有 <code>/api/proxy-cover</code>（封面），<b>没有任何视频中转端点</b>。<br>
+  <b>白名单配不全 → 用户点保存直接失败。</b>
+  代码里 <code>need_proxy</code> 标记（百度=True / B站=False）目前
+  <b>只用于显示「需中转，会稍慢」的提示，实际仍直连</b> ——
+  服务端只有 <code>/api/proxy-cover</code>，<b>没有视频中转端点</b>。<br>
   <br>
-  <b>这是 P0 级的坑：付费用户点了保存，可能因为白名单没配而下不了。</b>
+  <b>P0：付费用户点保存可能下不了，这是最伤付费意愿的故障。</b>
 </div>
 
 <h2><span class="n">06</span>落地清单</h2>

@@ -167,7 +167,7 @@ code{background:#F3F4F6;padding:1.5px 6px;border-radius:4px;
 
 <div class="quote">
   <b>⚠️ 广告上限必须是 2 条/天，不能给 5 条。</b>下面第 05 节有实测数据：
-  给 5 条时广告重度用户月贡献 8.91 元，而付费用户只有 9.75 元 ——
+  给 5 条时广告重度用户月贡献 8.98 元，而付费用户只有 9.82 元 ——
   <b>用户会算出来「看广告就够了」，付费转化被自己的广告体系吃掉。</b>
 </div>
 
@@ -242,85 +242,114 @@ code{background:#F3F4F6;padding:1.5px 6px;border-radius:4px;
   比放着点了没反应好。
 </div>
 
-<h2><span class="n">05</span>成本与收入（先纠正两个前提错误）</h2>
-<div class="sub">参数：激励视频 eCPM ¥60 · 国内 CDN ¥0.12/GB · 服务器月租 ¥80 · 月费 ¥9.9</div>
-
-<div class="card ok">
-  <b>先回答一个关键问题：保存视频要花我们钱吗？—— 不花，一分钱都不花。</b><br>
-  <code>wx.downloadFile</code> 从平台 CDN <b>直连到用户手机</b>，25MB 也好 100MB 也好，
-  我们服务器<b>出网 0 字节</b>，不进流量账单。
-</div>
+<h2><span class="n">05</span>成本模型（三次修正后的最终口径）</h2>
+<div class="sub">套餐：腾讯云轻量 2C4G/5M · ¥15.7/月（年付折月）· 月流量包 500GB</div>
 
 <div class="card warn">
-  <b>⚠️ 但这个方案的前两版都算错了：</b><br>
-  · 第一版：按「服务器中转 25MB 视频」算 → 错，根本没中转<br>
-  · 第二版：改成「每次操作多少流量费」→ <b>方法还是错的</b>：
-    流量费小到千分之一元，算它没有意义。
-  <br><br>
-  ✅ <b>正确口径：成本 = 服务器月租 ÷ 用户数。</b>
-  月租是固定的（付不付流量都要付），用户越多，每人摊得越薄。
+  <b>⚠️ 这个成本模型我改了三版，把错误过程也留下 —— 因为它会影响你怎么做决策：</b><br>
+  <b>第一版</b>：按「服务器中转 25MB 视频」算 → 错，视频是直连 CDN，服务器压根不碰<br>
+  <b>第二版</b>：改成按 GB 单价算每次成本 → 数字对，<b>但方法错</b>：
+  流量费小到千分之一元，算它只会制造「每次操作都花钱」的错觉<br>
+  <b>第三版（本版）</b>：你是<b>固定月租 + 月流量包</b>，<b>包内边际流量成本 = 0</b>
+  → 成本就是 <b>月租 ÷ 用户数</b>，只有「爆包」时流量才成为问题
 </div>
 
-<h3>真实的成本构成</h3>
+<div class="card ok">
+  <b>关于「不限流量」要说清楚一件事：</b><br>
+  主流云（腾讯/阿里/华为）<b>没有真正「不限流量的固定带宽」套餐</b>。
+  你买的是「固定带宽 + 月流量包」（如 500GB），<b>包内不额外收费</b>，
+  这在使用体验上就等于不限流量 —— 但<b>超了会限速</b>。<br>
+  <br>
+  这个区别很关键：<b>它决定了「能不能做视频中转」</b>（见下方红线表）。
+</div>
+
+<h3>真实成本构成</h3>
 <table>
 <tr><th>项</th><th style="width:150px">金额</th><th>说明</th></tr>
 <tr><td><b>保存视频</b></td><td class="num" style="color:#0F7A50">0 元</td>
-    <td>客户端直连平台 CDN，服务器不参与</td></tr>
-<tr><td>解析（抓页面 + 返回 JSON）</td><td class="num">0.0001211 元/次</td>
-    <td>≈ 1.21 元 / 1 万次。B站页面 800KB 是最大的那个</td></tr>
-<tr><td><b>服务器月租</b></td><td class="num" style="color:#C0392B">80 元/月</td>
-    <td><b>真正的成本大头</b>，固定支出，与流量无关</td></tr>
+    <td>直连平台 CDN，服务器不参与</td></tr>
+<tr><td>解析（流量）</td><td class="num" style="color:#0F7A50">0 元</td>
+    <td>包内不额外收费。单次约 1.03MB，500GB 包可撑 <b>495,546 次/月</b></td></tr>
+<tr><td><b>服务器月租</b></td><td class="num" style="color:#C0392B">¥15.7/月</td>
+    <td><b>唯一的成本项</b>，固定支出</td></tr>
 </table>
 
-<h3>每用户分摊成本（按日活算）</h3>
+<h3>每用户成本（月租摊薄，日活 1000 档）</h3>
 <table>
-<tr><th>日活</th><th style="width:150px">每用户成本/月</th><th>说明</th></tr>
-<tr><td>100 人</td><td class="num">0.807 元</td><td>月租摊得薄不下来 —— 早期主要成本</td></tr>
-<tr><td>500 人</td><td class="num">0.167 元</td><td></td></tr>
-<tr><td><b>1000 人</b></td><td class="num">0.087 元</td><td>定价测算按这一档</td></tr>
-<tr><td>3000 人</td><td class="num">0.034 元</td><td>几乎可以忽略</td></tr>
+<tr><th>日活</th><th style="width:150px">每用户成本/月</th><th style="width:130px">流量包使用率</th><th>说明</th></tr>
+<tr><td>100 人</td><td class="num">0.157 元</td>
+    <td class="num">1.2%</td><td>早期成本几乎全是月租</td></tr>
+<tr><td>500 人</td><td class="num">0.031 元</td>
+    <td class="num">6.1%</td><td></td></tr>
+<tr><td><b>1000 人</b></td><td class="num">0.016 元</td>
+    <td class="num">12.1%</td><td>定价测算按这一档</td></tr>
+<tr><td>3000 人</td><td class="num">0.005 元</td>
+    <td class="num">36.3%</td><td></td></tr>
+<tr><td>8000 人</td><td class="num">0.002 元</td>
+    <td class="num" style="color:#A85D18">96.9%</td>
+    <td>⚠️ 接近 500GB 包上限，该升级套餐了</td></tr>
 </table>
+
+<h3>⭐ 流量包红线：为什么「绝对不能全量中转」</h3>
+<table>
+<tr><th>做法</th><th style="width:150px">流量包能撑</th><th style="width:140px">对应日活上限</th><th>说明</th></tr>
+<tr><td><b>只做解析（直连保存）</b></td><td class="num">495,546 次/月</td>
+    <td class="num" style="color:#0F7A50">≈ 8,259 人</td>
+    <td>✅ 现在的架构。单次仅 1.03MB</td></tr>
+<tr><td>如果视频走服务器中转</td><td class="num">20,480 次/月</td>
+    <td class="num" style="color:#C0392B">≈ 683 人</td>
+    <td>❌ 单次 25MB，<b>日活 700 就爆包限速</b></td></tr>
+</table>
+
+<div class="quote">
+  <b>差 12 倍。</b>这就是 P0 那个决策的量化依据：<br>
+  · <b>直连保存</b>：500GB 包撑得住日活 8,259 人<br>
+  · <b>全量中转</b>：同样套餐只撑得住日活 683 人<br>
+  <br>
+  ✅ 所以 <code>need_proxy</code> 的正确用途是<b>「直连失败时的兜底」</b>，
+  不是「所有视频都中转」。按 90% 直连成功、10% 兜底中转算，
+  流量包仍然够用（中转只占 10% 的调用量）。
+</div>
 
 <h3>三类用户月净收益（日活 1000 档）</h3>
 <table>
 <tr><th>用户类型</th><th style="width:140px">月净收益</th><th>说明</th></tr>
-<tr><td>免费 · 完全不看广告</td><td class="num" style="color:#6B7280">-0.087 元</td>
-    <td>只摊 0.087 元成本，<b>不产生收入</b></td></tr>
-<tr><td>免费 · 每天看 2 条（<b>建议上限</b>）</td><td class="num" style="color:#0F7A50">+3.51 元</td>
+<tr><td>免费 · 完全不看广告</td><td class="num" style="color:#6B7280">-0.0157 元</td>
+    <td>只摊 0.0157 元月租，<b>不产生收入</b></td></tr>
+<tr><td>免费 · 每天看 2 条（<b>建议上限</b>）</td><td class="num" style="color:#0F7A50">+3.58 元</td>
     <td>✅ 与付费差 6.2 元</td></tr>
-<tr><td>免费 · 每天看 5 条（⚠️ 不建议）</td><td class="num" style="color:#A85D18">+8.91 元</td>
+<tr><td>免费 · 每天看 5 条（⚠️ 不建议）</td><td class="num" style="color:#A85D18">+8.98 元</td>
     <td>❌ 与付费只差 0.84 元</td></tr>
-<tr><td><b>付费会员 ¥9.9</b></td><td class="num" style="color:#0F7A50">+9.75 元</td>
-    <td>扣掉支付费率与分摊成本</td></tr>
+<tr><td><b>付费会员 ¥9.9</b></td><td class="num" style="color:#0F7A50">+9.82 元</td>
+    <td>扣支付费率与月租分摊</td></tr>
 </table>
 
 <div class="quote">
   <b>三条结论：</b><br>
-  ① <b>成本几乎可以忽略</b>（日活 1000 时每用户 0.087 元/月，
-     流量费 1 万次才 1.21 元）——
-     <b>所以「广告上限」的约束跟成本完全无关</b>。<br>
-  ② <b>真正的约束是付费转化</b>：看满 5 条时月贡献 8.91 元
-     vs 付费 9.75 元，差距只剩 0.84 元 ——
-     用户会算出来「看广告就够了」，付费失去理由。<br>
+  ① <b>成本可以忽略</b>：日活 1000 时每用户 0.0157 元/月
+     （月租 15.7 元摊到 1000 人），流量包只用 12%。<br>
+  ② <b>所以「广告上限」跟成本完全无关</b>，纯粹是商业策略：
+     看满 5 条月贡献 8.98 元 vs 付费 9.82 元，
+     差距只剩 0.84 元 —— 用户会算出来「看广告就够了」。<br>
   ③ <b>广告不能换「会员天数」</b>：¥9.9 ÷ 0.06 = 165 条才等值一个月，
      按 2 条/天上限要 82 天 —— 只能换<b>单次权益</b>。<br>
   <br>
-  <b>一句话：这个生意里流量不是成本，服务器月租才是；收入不靠省流量，靠转化。</b>
+  <b>一句话：成本是固定的月租，收入是转化的结果；流量只在你自己做中转时才是问题。</b>
 </div>
 
 <div class="card info">
-  <b>但直连带来一个真实的技术门槛（比成本重要得多）：</b><br>
-  小程序 <code>wx.downloadFile</code> 要求域名在<b>微信后台的 downloadFile 合法域名</b>里，
-  且<b>不支持通配符</b>。而平台 CDN 域名带随机/地域前缀：<br>
+  <b>但直连有一个真实门槛（比成本重要得多）：</b><br>
+  <code>wx.downloadFile</code> 要求域名在<b>微信后台的 downloadFile 合法域名</b>里，
+  且<b>不支持通配符</b>。平台 CDN 域名带随机/地域前缀：<br>
   <code>n98-v-ncdncold.douyinvod.com</code>（抖音）·
   <code>cn-hbyc-ct-01-01.bilivideo.com</code>（B站，含地域+运营商）·
   <code>vd3.bdstatic.com</code>（百度）<br>
-  <b>换视频 / 换地域时域名可能变，白名单配不全 → 用户点了保存直接失败。</b>
-  代码里已有 <code>need_proxy</code> 标记（百度=True / B站=False），
-  但<b>它只用于显示「需服务器中转，会稍慢」的提示文案，实际仍是直连</b> ——
-  服务端只有 <code>/api/proxy-cover</code>（封面），<b>没有任何视频中转端点</b>。<br>
+  <b>白名单配不全 → 用户点保存直接失败。</b>
+  代码里 <code>need_proxy</code> 标记（百度=True / B站=False）目前
+  <b>只用于显示「需中转，会稍慢」的提示，实际仍直连</b> ——
+  服务端只有 <code>/api/proxy-cover</code>，<b>没有视频中转端点</b>。<br>
   <br>
-  <b>这是 P0 级的坑：付费用户点了保存，可能因为白名单没配而下不了。</b>
+  <b>P0：付费用户点保存可能下不了，这是最伤付费意愿的故障。</b>
 </div>
 
 <h2><span class="n">06</span>落地清单</h2>
