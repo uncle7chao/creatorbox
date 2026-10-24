@@ -157,7 +157,10 @@ Page({
     this.setData({ parsing: true, errorMsg: '' });
     wx.showLoading({ title: '提取文案…', mask: true });
     try {
-      const raw = await api.parse(text, `${FREE_MAX_HEIGHT}p`);
+      // ⭐ 静默取 openid（首次一次 wx.login，之后走本地缓存零网络），
+      //    用于按人限流 —— 不带则退化成按 IP，共享出口 IP 时会误伤。
+      const openid = await QUOTA.ensureLogin();
+      const raw = await api.parse(text, `${FREE_MAX_HEIGHT}p`, false, openid);
       const r = new ParseResult(raw);
       if (!r.success) {
         this.setData({ errorMsg: r.error || '解析失败' });
@@ -250,7 +253,10 @@ Page({
     this._startProgress();
 
     try {
-      const raw = await api.parse(text, `${FREE_MAX_HEIGHT}p`);
+      // ⭐ 静默取 openid（首次一次 wx.login，之后走本地缓存零网络），
+      //    用于按人限流 —— 不带则退化成按 IP，共享出口 IP 时会误伤。
+      const openid = await QUOTA.ensureLogin();
+      const raw = await api.parse(text, `${FREE_MAX_HEIGHT}p`, false, openid);
       const r = new ParseResult(raw);
 
       if (!r.success) {

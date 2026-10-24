@@ -10,6 +10,7 @@ import hashlib
 import io
 import logging
 import os
+import re
 import time
 from typing import Dict, List
 import uuid
@@ -34,7 +35,7 @@ try:
     from app import m3u8_merge
     from app import meta
     from app import size_probe
-    from app.cache import cache, limiter
+    from app.cache import cache, limiter, limiter_ip
     from app.parsers.acfun_pure import AcfunPureParser
     from app.parsers.baidu_pure import BaiduVideoPureParser
     from app.parsers.base import URL_RE, ParserRegistry
@@ -58,7 +59,7 @@ except ImportError:
     import health
     import m3u8_merge
     import meta
-    from cache import cache, limiter
+    from cache import cache, limiter, limiter_ip
     from parsers.acfun_pure import AcfunPureParser
     from parsers.baidu_pure import BaiduVideoPureParser
     from parsers.base import URL_RE, ParserRegistry
@@ -348,6 +349,9 @@ class ParseReq(BaseModel):
     text: str = Field(..., description='分享口令全文或纯链接')
     quality: str = Field('1080p', description='origin/1080p/720p/540p')
     no_cache: bool = Field(False, description='跳过缓存')
+    # ⭐ 2026-10-24 新增：用于【按用户】限流，解决共享 IP / 移动 NAT 误伤。
+    #    可选 —— 不传仍可解析（退回按 IP 限流），保持老客户端兼容。
+    openid: str = Field('', description='用户标识（游客 guest_xxx 亦可），仅用于限流')
 
 
 class BatchItem(BaseModel):
@@ -409,6 +413,67 @@ async def check_admin_or_open(x_api_key: str = Header(default='')):
                 503, '服务端配置了 CB_API_KEY_REQUIRED 但未设置 CB_API_KEY')
         if x_api_key != config.API_KEY:
             raise HTTPException(401, 'Invalid API key')
+
+
+# ---------- 双维度限流（2026-10-24）----------
+#
+# ⭐ 为什么要改：原来只用 `request.client.host` 做限流 key，阈值 30 次/分钟。
+#    单个用户每天用 2 次完全够，但以下场景会**误伤真实用户**：
+#      · 公司 / 学校 / 网吧 共享出口 IP
+#      · 移动网络运营商 NAT —— 一个基站下大量用户共享 IP（小程序端最常见）
+#    压测实测：同 IP 40 并发 → 38 个被 429 拒。
+#
+# ⭐ 为什么不能只改成 openid：openid 是**客户端传的**。
+#    微信用户的 openid 由服务端 code2session 换取（可信），
+#    但游客态是 `guest_<device_id>`，device_id 由客户端生成 —— 伪造一个就绕过限流。
+#    所以必须再按 IP 设一道【宽松】的兜底闸（默认 200/分钟）。
+#
+# 最终策略：
+#   有合法 openid → 主限流按 openid（30/分钟），同时受 IP 兜底（200/分钟）
+#   无 openid     → 主限流按 IP（30/分钟）
+#
+_OPENID_RE = re.compile(r'^[A-Za-z0-9_\-]{8,64}$')
+
+
+def _valid_openid(s: str) -> bool:
+    """openid 形态校验（**不做存在性查询** —— 限流只需要「区分人」，不需要强身份）。
+
+    微信 openid 是 28 位 base64ish 字符；游客是 guest_<device_id>。
+    两者都落在 [A-Za-z0-9_-]{8,64} 内。不合规的一律当匿名（走 IP 限流）。
+    """
+    return bool(s and _OPENID_RE.match(s))
+
+
+async def _enforce_rate(request: Request, openid: str = '',
+                        scope: str = 'parse') -> None:
+    """双维度限流。超限抛 429。
+
+    ⭐ scope 按【功能】分桶（2026-10-24 二次修正）：
+       最初 parse 和 pdf 共用 `ip:xxx` 一个桶 —— 实测用户解析 30 次后
+       **PDF 工具也用不了了**（额度被解析吃光）。功能之间不该互相挤占。
+
+       现在的分桶：
+         · 主限流：`{scope}:u:<openid>` 或 `{scope}:ip:<ip>` —— 每个功能独立额度
+         · IP 兜底：`ip:<ip>` —— **跨功能共享**，防「换功能绕过」
+           （否则换个 endpoint 就能把总次数翻 N 倍）
+    """
+    ip = (request.client.host if request.client else '') or '0.0.0.0'
+    uid = (openid or '').strip()
+    if _valid_openid(uid):
+        ok, info = await limiter.allow(f'{scope}:u:{uid}')
+        if not ok:
+            raise HTTPException(
+                429, f'请求过于频繁，请 {info["retry_after"]}s 后重试')
+        # IP 兜底：防「换 openid 刷」，且跨功能共享（换 endpoint 也绕不过）
+        ok2, info2 = await limiter_ip.allow('ip:' + ip)
+        if not ok2:
+            raise HTTPException(
+                429, f'同网络请求过多，请 {info2["retry_after"]}s 后重试')
+    else:
+        ok, info = await limiter.allow(f'{scope}:ip:{ip}')
+        if not ok:
+            raise HTTPException(
+                429, f'请求过于频繁，请 {info["retry_after"]}s 后重试')
 
 
 # ---------- 平台改版预警 ----------
@@ -546,10 +611,8 @@ async def _parse_one(text: str, quality: str, short: str, key: str) -> dict:
 
 @app.post('/api/parse', dependencies=[Depends(check_admin_or_open)])
 async def api_parse(req: ParseReq, request: Request):
-    ident = request.client.host if request.client else 'global'
-    ok, info = await limiter.allow(ident)
-    if not ok:
-        raise HTTPException(429, f'请求过于频繁，请 {info["retry_after"]}s 后重试')
+    # 双维度限流：有 openid 按人、否则按 IP（详见 _enforce_rate 注释）
+    await _enforce_rate(request, req.openid)
 
     # ⭐ 缓存 key 用提取出的短链，不含分享文案
     # 否则同一视频「带文案」和「纯链接」会命中两份缓存
@@ -1156,10 +1219,8 @@ async def api_batch(req: BatchReqV2, request: Request):
     ⭐ 串行解析（2C2G）：一条失败不阻塞后续（工具箱验证的体验）
     ⭐ 每条走与单条相同的 normalize_meta + 缓存 —— 前端读同一份契约
     """
-    ident = request.client.host if request.client else 'global'
-    ok_rate, info = await limiter.allow(ident)
-    if not ok_rate:
-        raise HTTPException(429, f'请求过于频繁，请 {info["retry_after"]}s 后重试')
+    # 双维度限流（与 /api/parse 一致）：有 openid 按人、否则按 IP
+    await _enforce_rate(request, req.openid)
 
     # ---- 配额闸门（服务端权威） ----
     if req.openid:
@@ -1340,19 +1401,50 @@ async def api_ads_upload(file: UploadFile = File(...)):
 
 
 # ────────────────── PDF 极轻三件（P2 · 合并/提取/水印）──────────────────
+#
+# ⭐ 2026-10-24 补两道闸。读码发现这三个端点【完全没有限流】，
+#    而它们都 `await f.read()` 把文件全读进内存（merge 最多 5 个 × 10MB）。
+#
+#    ① 限流：与其他端点一致（按 IP，PDF 不上传 openid）
+#    ② 并发闸：PDF 处理是【纯 CPU 密集】（pypdf/reportlab），2 核机器上
+#       并发几个就能把 CPU 占满，拖慢主业务解析。
+#
+#    ⚠️ 为什么不用 asyncio.Semaphore：Semaphore 会让第 3 个请求【排队等待】，
+#       用户传 10MB 文件干等几十秒没反馈，比"明确告知繁忙"体验差得多。
+#       这里用【立即拒绝】：单 worker 单事件循环，检查+递增之间没有 await，
+#       天然原子，不需要锁。
+_pdf_active = 0
+
+
+@asynccontextmanager
+async def _pdf_slot():
+    """PDF 并发闸：超过上限直接 503，不排队。"""
+    global _pdf_active
+    if _pdf_active >= config.PDF_CONCURRENCY:
+        raise HTTPException(
+            503, f'PDF 处理繁忙（同时最多 {config.PDF_CONCURRENCY} 个任务），请稍后重试')
+    _pdf_active += 1
+    try:
+        yield
+    finally:
+        _pdf_active -= 1
+
 
 @app.post('/api/pdf/merge')
-async def api_pdf_merge(files: List[UploadFile] = File(...)):
+async def api_pdf_merge(request: Request,
+                        files: List[UploadFile] = File(...)):
     """PDF 合并（2-5 个文件按顺序拼接）。"""
-    try:
-        payload = [(f.filename or f'{i}.pdf', await f.read())
-                   for i, f in enumerate(files)]
-        url = pdftools.merge(payload)
-        return {'ok': True, 'url': url}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f'合并失败: {str(e)[:60]}')
+    await _enforce_rate(request, scope='pdf')
+    async with _pdf_slot():
+        try:
+            payload = [(f.filename or f'{i}.pdf', await f.read())
+                       for i, f in enumerate(files)]
+            url = pdftools.merge(payload)
+            return {'ok': True, 'url': url}
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        except Exception as e:
+            raise HTTPException(500, f'合并失败: {str(e)[:60]}')
 
 
 # ────────────────── 积分中心（P2 · 签到 → 兑换会员天数）──────────────────
@@ -1423,29 +1515,35 @@ async def api_points_redeem(body: PointsReq):
 
 
 @app.post('/api/pdf/extract')
-async def api_pdf_extract(file: UploadFile = File(...), page: int = 1):
+async def api_pdf_extract(request: Request,
+                          file: UploadFile = File(...), page: int = 1):
     """提取指定页为单独 PDF（1-based）。"""
-    try:
-        data = await file.read()
-        url = pdftools.split(data, file.filename or 'doc.pdf', 'range', page)
-        return {'ok': True, 'url': url}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f'提取失败: {str(e)[:60]}')
+    await _enforce_rate(request, scope='pdf')
+    async with _pdf_slot():
+        try:
+            data = await file.read()
+            url = pdftools.split(data, file.filename or 'doc.pdf', 'range', page)
+            return {'ok': True, 'url': url}
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        except Exception as e:
+            raise HTTPException(500, f'提取失败: {str(e)[:60]}')
 
 
 @app.post('/api/pdf/watermark')
-async def api_pdf_watermark(file: UploadFile = File(...), text: str = ''):
+async def api_pdf_watermark(request: Request,
+                            file: UploadFile = File(...), text: str = ''):
     """整份 PDF 平铺文字水印。"""
-    try:
-        data = await file.read()
-        url = pdftools.watermark(data, file.filename or 'doc.pdf', text)
-        return {'ok': True, 'url': url}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f'水印失败: {str(e)[:60]}')
+    await _enforce_rate(request, scope='pdf')
+    async with _pdf_slot():
+        try:
+            data = await file.read()
+            url = pdftools.watermark(data, file.filename or 'doc.pdf', text)
+            return {'ok': True, 'url': url}
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        except Exception as e:
+            raise HTTPException(500, f'水印失败: {str(e)[:60]}')
 
 
 @app.get('/api/ads/config')

@@ -37,8 +37,22 @@ REDIS_URL = os.getenv('CB_REDIS_URL', '')
 CACHE_TTL = int(os.getenv('CB_CACHE_TTL', '600'))          # 10 分钟
 
 # ---------- 限流（内存态，单进程） ----------
+# 用户维度阈值：已登录按 openid、未登录按 IP（2026-10-24 改）
 RATE_LIMIT_PER_MIN = int(os.getenv('CB_RATE_LIMIT', '30'))
 RATE_LIMIT_WINDOW = 60
+
+# ⭐ IP 兜底阈值（2026-10-24）：openid 是客户端可传的，换一个假 openid 就能
+#    绕过用户维度限流 —— 所以必须再按 IP 设一道【宽松】的闸。
+#    200/分钟 ≈ 一个 NAT 出口下 50 个用户同时用（每人 2 次）也够，
+#    但单机脚本刷不动（1 小时最多 12000 次）。
+RATE_LIMIT_IP_PER_MIN = int(os.getenv('CB_RATE_LIMIT_IP', '200'))
+
+# ---------- PDF 工具并发（2026-10-24） ----------
+# 为什么需要：三个 PDF 端点都用 `await f.read()` 把文件全读进内存，
+# 且 merge 最多 5 个文件 × 10MB。8G 内存不怕，但 PDF 处理是【纯 CPU 密集】
+# （pypdf/reportlab），并发一多会把 2 核占满，拖慢主业务解析。
+# 2 核 → 同时跑 2 个 PDF 任务，第 3 个直接返回 503「繁忙」而不是排队干等。
+PDF_CONCURRENCY = int(os.getenv('CB_PDF_CONCURRENCY', '2'))
 
 # ---------- 降级阈值（平台改版预警） ----------
 DEGRADE_FAIL_RATIO = 0.4      # 失败率超 40% 告警

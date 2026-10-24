@@ -135,7 +135,9 @@ Page({
     this.setData({ parsing: true });
     wx.showLoading({ title: '解析中…', mask: true });
     try {
-      const raw = await api.parse(item.url, `${FREE_MAX_HEIGHT}p`);
+      // 同上：openid 用于按人限流（榜单入口同样会撞共享 IP）
+      const openid = await QUOTA.ensureLogin();
+      const raw = await api.parse(item.url, `${FREE_MAX_HEIGHT}p`, false, openid);
       const r = new ParseResult(raw);
       if (!r.success) {
         wx.hideLoading();

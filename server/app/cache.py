@@ -105,3 +105,6 @@ class RateLimiter:
 
 cache = Cache(config.CACHE_TTL)
 limiter = RateLimiter(config.RATE_LIMIT_PER_MIN, config.RATE_LIMIT_WINDOW)
+# ⭐ IP 兜底限流（2026-10-24）：防「换 openid 绕过用户维度限流」
+#   主限流按 openid（解决共享 IP 误伤），这道按 IP 且阈值宽松（默认 200/分钟）
+limiter_ip = RateLimiter(config.RATE_LIMIT_IP_PER_MIN, config.RATE_LIMIT_WINDOW)

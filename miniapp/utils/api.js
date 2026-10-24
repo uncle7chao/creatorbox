@@ -52,10 +52,16 @@ function request(path, options = {}) {
 }
 
 // ── 单条解析 ──
-function parse(text, quality = '720p', noCache = false) {
+// ⭐ openid 用于【按用户限流】（2026-10-24）：不传则服务端按 IP 限流。
+//   为什么需要：移动网络 / 公司学校常共享出口 IP，纯 IP 限流（30 次/分钟）
+//   会在高峰期误伤「和自己无关的其他用户」。传了 openid 就按人计。
+//   ⚠️ 兼容：openid 为空时保持旧行为，不传该字段。
+function parse(text, quality = '720p', noCache = false, openid = '') {
+  const payload = { text, quality, no_cache: noCache };
+  if (openid) payload.openid = openid;   // 空则不下发，服务端退回按 IP 限流
   return request('/api/parse', {
     method: 'POST',
-    data: { text, quality, no_cache: noCache }
+    data: payload
   }).then(({ data }) => data);
 }
 
