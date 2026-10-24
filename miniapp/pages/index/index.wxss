@@ -483,21 +483,53 @@
   position: relative;
 }
 
+/* ══ 3D 拟物图标底座（2026-10-24，用户要求加拟物质感）══
+ *
+ * 做法：靠「多层渐变 + 内高光 + 内暗部 + 外投影」四层叠出立体感，
+ *      不改图形本身（图形是白色线条 PNG，改了会糊）。
+ *
+ * 四层光影的分工（少一层就变回扁平）：
+ *   ① 155deg 渐变   顶部亮 → 底部暗，模拟光从左上打过来
+ *   ② inset 上高光  1~3rpx 白色内阴影，模拟棱边反光（拟物的灵魂）
+ *   ③ inset 下暗部  底部 -5rpx 深色内阴影，模拟转角的凹陷
+ *   ④ 外投影       双段（近处实、远处散），模拟离地悬浮
+ *
+ * ⚠️ 不用 ::before 画高光椭圆：那会盖在白色线条图标上把它糊掉。
+ * ⚠️ 只做 classic（默认皮肤）。dark/jade 走描边风、sakura 走圆形柔和，
+ *    深色底上做拟物反而显脏 —— 「皮肤不只是配色，图标语言也不同」是原设计。
+ */
 .ti-orange {
-  background: linear-gradient(135deg, var(--brand-3), var(--brand));
-  box-shadow: 0 8rpx 20rpx rgba(232, 121, 12, .30);
+  background: linear-gradient(155deg,
+    #FFE3AE 0%, #F7BC63 28%, var(--brand) 68%, #A85D18 100%);
+  box-shadow:
+    inset 0 3rpx 5rpx rgba(255, 255, 255, .70),
+    inset 0 -5rpx 8rpx rgba(110, 55, 0, .25),
+    0 10rpx 20rpx rgba(217, 122, 38, .38),
+    0 2rpx 4rpx rgba(61, 32, 0, .10);
 }
 
 .ti-green {
-  background: linear-gradient(135deg, #3DCA8C, #0F9E66);
-  box-shadow: 0 8rpx 20rpx rgba(15, 158, 102, .28);
+  background: linear-gradient(155deg,
+    #A8F3CE 0%, #4FD79A 30%, #0F9E66 70%, #0A7A4E 100%);
+  box-shadow:
+    inset 0 3rpx 5rpx rgba(255, 255, 255, .62),
+    inset 0 -5rpx 8rpx rgba(0, 70, 45, .28),
+    0 10rpx 20rpx rgba(15, 158, 102, .34),
+    0 2rpx 4rpx rgba(0, 50, 30, .10);
 }
 
 .ti-red {
-  background: linear-gradient(135deg, #FF7B6B, #E24B4A);
-  box-shadow: 0 8rpx 20rpx rgba(226, 75, 74, .28);
+  background: linear-gradient(155deg,
+    #FFC2B8 0%, #FF8A78 30%, #E24B4A 70%, #B3322F 100%);
+  box-shadow:
+    inset 0 3rpx 5rpx rgba(255, 255, 255, .60),
+    inset 0 -5rpx 8rpx rgba(110, 20, 20, .26),
+    0 10rpx 20rpx rgba(226, 75, 74, .34),
+    0 2rpx 4rpx rgba(80, 10, 10, .10);
 }
 
+/* 「更多工具」不拟物 —— 它是次要入口，立体感会抢戏。
+   保留虚线的「未完成/待探索」语义。 */
 .ti-ghost {
   background: var(--bg-soft);
   border: 2rpx dashed var(--ink-300);
@@ -508,6 +540,10 @@
 .hic {
   width: 44rpx;
   height: 44rpx;
+  /* ⭐ 浮雕感（2026-10-24）：白色线条本身是平的，加一层极短的下投影，
+     图形就从底座上「浮」起来了 —— 这是让线条图标有体积感最省的一招。
+     ⚠️ 阴影必须极短（2rpx）且偏下：拉长就变成「脏边」，像图没抠干净。 */
+  filter: drop-shadow(0 2rpx 2rpx rgba(0, 0, 0, .28));
 }
 
 /* 图形 */
