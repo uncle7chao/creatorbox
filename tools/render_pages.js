@@ -244,6 +244,17 @@ function renderNodes(nodes, data) {
 }
 
 function renderElement(n, data) {
+  // ── 自定义组件：渲染成占位块，标出它是什么位 ──
+  // 组件内部逻辑（读服务端配置、按 mode 分支）转换器不执行，
+  // 所以只画出「这里有一个广告位」+ 位置名，用来检查排布位置对不对。
+  if (n.tag === 'ad-banner') {
+    const place = interp(n.attrs.placement, data) || '(未指定)';
+    return `<div class="wx-ad-banner"><span class="wx-ad-tag">广告位</span>`
+      + `<span class="wx-ad-name">${esc(String(place))}</span>`
+      + `<span class="wx-ad-note">banner · 320×100 等比</span></div>`;
+  }
+  if (n.tag === 'theme-deco') return '';   // 装饰层不影响排版，跳过
+
   const mapped = TAG_MAP[n.tag];
   // block / 未知标签 → 透明
   if (mapped === null) return renderNodes(n.children, data);
@@ -398,6 +409,16 @@ html,body{background:#EDE5D8;padding:0;margin:0;overflow-x:hidden}
 }
 .wx-scroll{overflow:auto}
 .wx-textarea{min-height:42px}
+/* 广告位占位：虚线框 + 位置名（检查排布用，不是真实广告） */
+.wx-ad-banner{
+  margin:11px 12px 0;height:66px;border:1px dashed #C9B99F;border-radius:10px;
+  background:repeating-linear-gradient(45deg,#FBF6EE,#FBF6EE 7px,#F5EEE2 7px,#F5EEE2 14px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  color:#A08C6E;font-size:10px;
+}
+.wx-ad-tag{font-size:9px;font-weight:800;color:#B4671F;letter-spacing:1px}
+.wx-ad-name{font-size:10.5px;font-weight:700;color:#8B7355;font-family:ui-monospace,Consolas,monospace}
+.wx-ad-note{font-size:9px;color:#B5A895}
 /* placeholder：小程序里是灰色提示文字，这里用 ::before 还原 */
 [data-ph]::before{content:attr(data-ph);color:#B5A895;pointer-events:none}
 [data-value]::after{content:""}
@@ -416,7 +437,8 @@ ${body}
 }
 
 function main() {
-  const only = process.argv[2];
+  // 支持多个页名：node tools/render_pages.js index result
+  const only = process.argv.slice(2).filter(Boolean);
   const appCss = fs.readFileSync(path.join(MP, 'app.wxss'), 'utf8');
   const appJson = JSON.parse(fs.readFileSync(path.join(MP, 'app.json'), 'utf8'));
 
@@ -424,7 +446,7 @@ function main() {
 
   const pages = appJson.pages
     .map(p => p.split('/')[1])
-    .filter(n => !only || n === only);
+    .filter(n => !only.length || only.includes(n));
 
   let ok = 0, fail = 0;
   for (const name of pages) {

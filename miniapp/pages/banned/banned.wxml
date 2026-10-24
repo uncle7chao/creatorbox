@@ -79,6 +79,8 @@
     </view>
   </block>
 
+  <ad-banner placement="banned_banner" />
+
   <!-- 说明 -->
   <view class="disc">
     检测结果基于公开资料整理的词库，为风险提示而非法律意见；

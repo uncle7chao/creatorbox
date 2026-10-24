@@ -4,6 +4,7 @@
   "navigationBarTextStyle": "white",
   "backgroundColor": "#FAF7F4",
   "usingComponents": {
-    "theme-deco": "/components/theme-deco/theme-deco"
+    "theme-deco": "/components/theme-deco/theme-deco",
+    "ad-banner": "/components/ad-banner/ad-banner"
   }
 }

@@ -1,1 +1,5 @@
-{}
+{
+  "usingComponents": {
+    "ad-banner": "/components/ad-banner/ad-banner"
+  }
+}

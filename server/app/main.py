@@ -1294,7 +1294,13 @@ ADS_DEFAULT = {
 }
 
 # 各广告位的人类可读名（后台看板显示 + 用户可自定义覆盖）
+# ⭐ 每个页面一个独立位（2026-10-24 扩到 14 个）
+#   为什么要一页一位、不共用：
+#     ① 后台能单独开关某页的广告（比如会员页发现伤转化，单独关掉）
+#     ② 数据能按位统计（哪个页面的 banner 真有人点）
+#   历史 7 个位保持原名不动 —— 后台已存的配置和图片不能因为改名丢失。
 PLACEMENT_LABELS = {
+    # ── 原有 7 位（勿改名）──
     'hero_banner': '首页顶部轮播',
     'index_banner': '首页横幅',
     'result_banner': '结果页横幅',
@@ -1302,6 +1308,15 @@ PLACEMENT_LABELS = {
     'ranking_banner': '热榜横幅',
     'library_banner': '素材库横幅',
     'member_banner': '会员中心横幅',
+    # ── 2026-10-24 补齐：让 14 个页面都有位 ──
+    'batch_banner': '批量解析横幅',
+    'points_banner': '积分中心横幅',
+    'banned_banner': '违禁词检测横幅',
+    'pdftool_banner': 'PDF 工具横幅',
+    'teleprompter_banner': '提词器横幅',
+    'column_banner': '干货列表横幅',
+    'article_banner': '文章详情横幅',
+    'compliance_banner': '合规说明横幅',
 }
 POPUP_LABEL = '弹窗广告'
 

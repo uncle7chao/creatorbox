@@ -87,6 +87,8 @@
       <view class="tips-i">· 手机横屏架在镜头正上方，视线偏移最小</view>
       <view class="tips-i">· 点屏幕随时暂停，底部可即时调速</view>
       <view class="tips-i">· 台词只存在你的手机里，不上传服务器</view>
+
+    <ad-banner placement="teleprompter_banner" />
     </view>
   </block>
 </view>

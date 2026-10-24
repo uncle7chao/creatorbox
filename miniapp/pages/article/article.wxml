@@ -25,6 +25,8 @@
       </view>
     </view>
 
+  <ad-banner placement="article_banner" />
+
     <!-- 合规提示（固定，内容页必备） -->
     <view class="compliance">
       以上为运营方法建议，不构成收益承诺。请遵守平台规则与著作权法规，

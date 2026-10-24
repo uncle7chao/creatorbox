@@ -56,9 +56,6 @@
     </view>
   </view>
 
-  <!-- 广告位 · Banner（后台可开关） -->
-  <ad-banner placement="toolbox_banner" />
-
   <!-- 即将上线（占位卡，展示不开发） -->
   <view class="sec">
     <view class="sec-h sec-ghost">即将上线<text class="ghost-tag">规划中 · 点击了解</text></view>
@@ -77,6 +74,9 @@
       </view>
     </view>
   </view>
+
+  <!-- 广告位 · Banner（后台可开关；放最底部，不打断找工具） -->
+  <ad-banner placement="toolbox_banner" />
 
   <view class="disc">「规划中」为功能规划展示，上线时间以后续版本公告为准；标注「PC / App」的能力需在电脑端或 App 内使用</view>
 </view>

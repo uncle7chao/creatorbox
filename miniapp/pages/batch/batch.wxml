@@ -51,6 +51,8 @@
 
   <view class="disc">批量结果与单条解析使用同一服务与缓存</view>
 
+  <ad-banner placement="batch_banner" />
+
 <!-- ══ 批量解析进度卡（首页同款：条纹流动 + 诚实封顶）══ -->
 <view wx:if="{{parsing && bProgress > 0}}" class="bpmask">
   <view class="bpcard">

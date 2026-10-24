@@ -54,6 +54,8 @@
     </view>
   </view>
 
+  <ad-banner placement="points_banner" />
+
   <view class="disc">
     积分不可转让 · 兑换立即生效且不可撤销 · 规则调整会提前在专栏公告
   </view>

@@ -63,6 +63,8 @@
     <view class="r-btn" bindtap="run">再处理一次</view>
   </view>
 
+  <ad-banner placement="pdftool_banner" />
+
   <view class="disc">
     <view>· 文件经本机解析服务处理，产物保留 1 天后自动清除</view>
     <view>· 单文件上限 10MB · 合并最多 5 个 · 提取前先确认页码</view>

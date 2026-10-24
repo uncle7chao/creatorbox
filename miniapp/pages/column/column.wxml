@@ -42,5 +42,7 @@
     </view>
   </view>
 
+  <ad-banner placement="column_banner" />
+
   <view class="foot">共 {{total}} 篇 · 内容持续更新</view>
 </view>

@@ -49,5 +49,8 @@
     <view class="act act-ghost" bindtap="onCopyEmail">复制投诉邮箱</view>
   </view>
 
+  <!-- 广告位：放最末尾 —— 不能夹在说明正文和「我要投诉」之间，那会挡住用户投诉 -->
+  <ad-banner placement="compliance_banner" />
+
   <view class="ver">星创映画 v{{version}}</view>
 </view>

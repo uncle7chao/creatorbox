@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "违禁词检测"
+  "navigationBarTitleText": "违禁词检测",
+  "usingComponents": {
+    "ad-banner": "/components/ad-banner/ad-banner"
+  }
 }

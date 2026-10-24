@@ -1,1 +1,6 @@
-{"navigationBarTitleText": "PDF 工具"}
+{
+  "navigationBarTitleText": "PDF 工具",
+  "usingComponents": {
+    "ad-banner": "/components/ad-banner/ad-banner"
+  }
+}
