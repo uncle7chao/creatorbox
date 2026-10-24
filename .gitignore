@@ -118,3 +118,6 @@ server/media/pdf/
 
 # 验证用产物（封面压缩前后对比图等），不入库
 test/out/
+
+# 页面渲染产物（重跑 tools/render_pages.js 即可重建，不入库）
+test/pages/
