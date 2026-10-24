@@ -115,3 +115,6 @@ server/media/covers/
 server/media/pdf/
 # 临时探测数据（我自己调试用的，不该入库）
 .tmp*
+
+# 验证用产物（封面压缩前后对比图等），不入库
+test/out/

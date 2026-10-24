@@ -30,3 +30,12 @@ playwright>=1.45
 python-multipart
 pypdf
 reportlab
+
+# ---------- 封面压缩（2026-10-24） ----------
+# 封面代理原来是「原图直转」：B站封面 651KB 原封不动发给客户端，
+# 而结果页只显示到 640px 宽 —— 浪费是 20 倍级别（实测 抖音 30KB / 百度 55KB / B站 651KB）。
+# 缩到 640px + webp 后约 30KB，单次出网从 253KB 降到 40KB 级别。
+#
+# ⚠️ 没装 Pillow 也不会崩：_compress_cover() 里做了 ImportError 兜底，
+#    退化成原图直转（功能正常，只是费流量）。但生产必须装。
+Pillow>=10,<13

@@ -7,6 +7,8 @@ POST /api/batch        批量解析
 """
 import asyncio
 import hashlib
+import io
+import logging
 import os
 import time
 from typing import Dict, List
@@ -20,6 +22,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger('creatorbox')
 
 try:
     from app import config
@@ -304,6 +308,14 @@ async def lifespan(app: FastAPI):
     # M1 Gate：平台健康度探针 + 域名注册表
     health.monitor.attach(pool.pure)
     health.monitor.start()
+
+    # 封面压缩（2026-10-24）升级后，老的无版本前缀缓存永远命中不到 → 清掉省磁盘
+    try:
+        _purged = _purge_legacy_cover_cache()
+        if _purged:
+            logger.info('清理旧封面缓存 %d 个（压缩策略升级前的原图）', _purged)
+    except Exception as e:
+        logger.warning('清理旧封面缓存失败（不影响启动）: %s', str(e)[:60])
 
     # P2：PDF 产物定期清理（默认保留 1 天——1TB 月流量下不能堆积）
     async def _pdf_cleanup_loop():
@@ -1539,6 +1551,51 @@ _COVER_REFERER = {
     'sohu': 'https://tv.sohu.com/',
 }
 
+# ⭐ 图片 CDN 后缀 → 平台（2026-10-24 新增，修 B站封面 404）
+#
+# 为什么不能复用 domains.registry.match()：那张表登记的是【视频 CDN】，
+# 图片 CDN 是另一套域名，两者根本没有交集。实测：
+#   registry.match('https://i1.hdslb.com/x.jpg')          → None
+#   registry.match('https://p26-sign.douyinpic.com/x.jpg') → None
+#   registry.match('https://cn-jsnt-ct-01-01.bilivideo.com/v.mp4') → bilibili ✅
+# plat 恒为 None → Referer 回落到默认的 douyin：
+#   · B站封面对 Referer 校验严 → 403 → 代理 404 → **结果页封面全黑**
+#   · 抖音封面恰好默认值就是抖音 → 蒙对，所以这个 bug 一直没被发现
+#
+# 正确做法：直接按图片域后缀反查平台（与 _COVER_HOST_SUFFIXES 同源）。
+# 长后缀优先匹配（'v.video.weibocdn.com' 之类），故按长度倒序查。
+_COVER_PLATFORM_BY_SUFFIX = {
+    'hdslb.com': 'bilibili',
+    'bilivideo.com': 'bilibili',
+    'douyinpic.com': 'douyin',
+    'byteimg.com': 'douyin',
+    'zjcdn.com': 'douyin',
+    'kwaicdn.com': 'kuaishou',
+    'kwimgs.com': 'kuaishou',
+    'yximgs.com': 'kuaishou',
+    'xhscdn.com': 'xiaohongshu',
+    'sinaimg.cn': 'weibo',
+    'weibocdn.com': 'weibo',
+    'bdstatic.com': 'haokan',
+    'bcebos.com': 'haokan',
+    'baidu.com': 'baidu',
+    'acfun.cn': 'acfun',
+    'itc.cn': 'sohu',
+    'sohu.com': 'sohu',
+}
+_COVER_SUFFIX_KEYS = tuple(sorted(_COVER_PLATFORM_BY_SUFFIX,
+                                  key=len, reverse=True))
+
+# ── 封面压缩（2026-10-24）────────────────────────────────────────
+# 目标：结果页封面容器宽约 347px 逻辑宽（400rpx 高 × 16:9），
+#       2x 屏需要 ~694 物理像素 → 取 640px 宽，肉眼无差。
+# 效果：B站原图 651KB → 约 30KB（实测），单次出网 253KB → 40KB 级别。
+_COVER_TARGET_W = 640
+_COVER_WEBP_Q = 80
+# 缓存 key 加版本前缀：老缓存是「原图直转」的，不换版本会一直被命中，
+# 压缩就永远不生效（这是最容易漏的一步）。
+_COVER_CACHE_VER = 'v3'
+
 # 图片 CDN 域名后缀白名单（SSRF 闸①）。
 # ⚠️ 不能直接复用 domains.registry 的视频 CDN 模式——图片子域编号随机
 #   （p26-sign.douyinpic.com 就匹配不上 p3/p9-pc-sign 模式，实测 403）。
@@ -1577,30 +1634,160 @@ def _cover_host_allowed(url: str) -> bool:
     return domains.registry.match(url) is not None     # 注册表兜底
 
 
+def _cover_platform(url: str) -> str:
+    """封面 URL 属于哪个平台 —— 用来选 Referer。
+
+    ⭐ 顺序很重要：先查【图片 CDN 后缀表】，再回落视频注册表。
+      反过来（原来那样只查注册表）会让所有图片域都匹配不到，
+      Referer 全部落到默认的 douyin —— B站因此 403/404。
+    """
+    try:
+        from urllib.parse import urlsplit
+        host = (urlsplit(url).hostname or '').lower()
+    except Exception:
+        return ''
+    for suf in _COVER_SUFFIX_KEYS:          # 长后缀优先，避免 v.x.com 被 x.com 抢
+        if host == suf or host.endswith('.' + suf):
+            return _COVER_PLATFORM_BY_SUFFIX[suf]
+    return domains.registry.match(url) or ''
+
+
 def _fetch_cover_sync(url: str, referer: str):
-    """阻塞拉图（线程池跑）。返回 (data, content_type) 或 (None, err_msg)。"""
+    """阻塞拉图（线程池跑）。返回 (data, content_type) 或 (None, err_msg)。
+
+    ⭐ 两道保险（2026-10-24）：
+      ① 带平台 Referer 先试；
+      ② 若被 401/403 拒（Referer 校验没通过 / 平台判断错了），
+         用【不带 Referer】重试一次 —— 实测很多图片 CDN 对空 Referer
+         比错 Referer 宽容（B站 i1.hdslb.com：错 Referer 403，空 Referer 200）。
+         不重试的后果是「封面全黑」，而错误信息只是 403，很难联想到是 Referer。
+    """
     import ssl
+    import urllib.error
     import urllib.request
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    req = urllib.request.Request(url, headers={
-        'User-Agent': _COVER_UA,
-        'Referer': referer,
-        'Accept': 'image/avif,image/webp,image/*,*/*',
-    })
-    try:
+
+    def _try(ref: str):
+        headers = {
+            'User-Agent': _COVER_UA,
+            'Accept': 'image/avif,image/webp,image/*,*/*',
+        }
+        if ref:
+            headers['Referer'] = ref
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=12, context=ctx) as r:
             data = r.read(_COVER_MAX_BYTES + 1)
             ctype = (r.headers.get('Content-Type')
                      or 'image/jpeg').split(';')[0].strip()
-        if len(data) > _COVER_MAX_BYTES:
-            return None, '封面超过 5MB'
-        if not ctype.startswith('image/'):
-            return None, f'非图片内容（{ctype}）'
         return data, ctype
+
+    try:
+        data, ctype = _try(referer)
+    except urllib.error.HTTPError as e:
+        # 只有 401/403 值得换 Referer 重试；404 是图真没了，重试没意义
+        if e.code not in (401, 403):
+            return None, f'HTTP {e.code}'
+        try:
+            data, ctype = _try('')
+        except Exception as e2:
+            return None, f'HTTP {e.code}（无 Referer 重试也失败: {str(e2)[:40]}）'
     except Exception as e:
         return None, str(e)[:80]
+
+    if len(data) > _COVER_MAX_BYTES:
+        return None, '封面超过 5MB'
+    if not ctype.startswith('image/'):
+        return None, f'非图片内容（{ctype}）'
+    return data, ctype
+
+
+def _compress_cover(data: bytes, ctype: str):
+    """缩图 + 转 webp。返回 (data, ctype, saved_bytes)。
+
+    ⭐ 三条铁律（都是为了「压缩失效也不能影响可用」）：
+      ① Pillow 没装 / 解码失败 / 是动图 → 原样返回，绝不让压缩变成 404；
+      ② 压完反而更大（小图、已优化过的图）→ 返回原图；
+      ③ 只缩不放 —— 宽于 640 才缩，小图原样保留（放大只会更糊更大）。
+
+    ⚠️ 为什么转 webp：同样 640px 宽，JPEG q80 约 60~80KB，webp q80 约 25~35KB。
+       微信小程序 <image> 全平台支持 webp（iOS 一直支持，Android 需基础库 2.9+，
+       2026 年线上基础库版本远高于此），所以优先 webp。
+       万一要回退 JPEG：把 _COVER_WEBP_Q 置 None 即可（见下方分支）。
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        return data, ctype, 0                    # 没装 Pillow：原图直转
+
+    try:
+        im = Image.open(io.BytesIO(data))
+        # ⭐ JPEG 专用加速：draft() 让解码器直接按 1/2、1/4、1/8 降采样解码，
+        #    不解出全尺寸再缩。B站 1920x1080 封面实测 397ms → 约 100ms。
+        #    对非 JPEG 是无操作（PIL 自己判断），所以可以无脑调。
+        try:
+            im.draft('RGB', (_COVER_TARGET_W, _COVER_TARGET_W))
+        except Exception:
+            pass
+        # 动图（GIF/webp 动画）转静态会丢帧 → 不动它
+        if getattr(im, 'n_frames', 1) > 1:
+            return data, ctype, 0
+        # 调色板 / CMYK / LA 等模式 webp 写不了，统一转 RGBA（保透明）或 RGB
+        if im.mode in ('P', 'CMYK', 'LA', 'PA'):
+            im = im.convert('RGBA' if 'transparency' in im.info
+                            or im.mode in ('LA', 'PA') else 'RGB')
+        elif im.mode not in ('RGB', 'RGBA'):
+            im = im.convert('RGB')
+
+        w, h = im.size
+        if w > _COVER_TARGET_W:
+            nh = max(1, round(h * _COVER_TARGET_W / w))
+            im = im.resize((_COVER_TARGET_W, nh), Image.LANCZOS)
+
+        buf = io.BytesIO()
+        if _COVER_WEBP_Q is None:                # 回退通道：JPEG
+            if im.mode == 'RGBA':
+                bg = Image.new('RGB', im.size, (255, 255, 255))
+                bg.paste(im, mask=im.split()[-1])
+                im = bg
+            im.save(buf, 'JPEG', quality=82, optimize=True)
+            new_ctype = 'image/jpeg'
+        else:
+            im.save(buf, 'WEBP', quality=_COVER_WEBP_Q, method=4)
+            new_ctype = 'image/webp'
+        out = buf.getvalue()
+
+        if len(out) >= len(data):                # 压完更大 → 用原图
+            return data, ctype, 0
+        return out, new_ctype, len(data) - len(out)
+    except Exception:
+        return data, ctype, 0                    # 任何解码异常都退回原图
+
+
+def _purge_legacy_cover_cache() -> int:
+    """清掉压缩策略升级前的老缓存（无 `v*_` 前缀的 xx.img / xx.img.type）。
+
+    老缓存不删也不会被命中（key 已加版本前缀），但会白占磁盘。
+    ⚠️ 只删【严格匹配老格式】的名字：24 位小写十六进制 + .img(.type)。
+       不用通配符批量删 —— 缓存目录以后可能放别的东西，通配符是隐患。
+    """
+    import re
+    pat = re.compile(r'^[0-9a-f]{24}\.img(?:\.type)?$')
+    n = 0
+    try:
+        for name in os.listdir(_COVER_CACHE_DIR):
+            if not pat.match(name):
+                continue
+            try:
+                os.remove(os.path.join(_COVER_CACHE_DIR, name))
+                n += 1
+            except OSError:
+                pass
+    except OSError:
+        return 0
+    return n
+
 
 
 @app.get('/api/proxy-cover')
@@ -1610,10 +1797,11 @@ async def api_proxy_cover(url: str = ''):
         raise HTTPException(400, '仅支持 https 封面地址')
     if not _cover_host_allowed(url):
         raise HTTPException(403, '非已知平台 CDN 域名')
-    plat = domains.registry.match(url)               # 仅用于选 Referer
+    plat = _cover_platform(url)                      # 决定 Referer（图片域反查）
 
     key = hashlib.sha1(url.encode()).hexdigest()[:24]
-    cache_path = os.path.join(_COVER_CACHE_DIR, key + '.img')
+    # 版本前缀：换压缩策略后老缓存必须失效，否则「改了代码但用户还收原图」
+    cache_path = os.path.join(_COVER_CACHE_DIR, f'{_COVER_CACHE_VER}_{key}.img')
     type_path = cache_path + '.type'
     if os.path.exists(cache_path) and os.path.getsize(cache_path) > 0:
         try:
@@ -1628,15 +1816,24 @@ async def api_proxy_cover(url: str = ''):
     data, ctype = await loop.run_in_executor(
         None, _fetch_cover_sync, url, referer)
     if data is None:
-        raise HTTPException(404, f'封面获取失败: {ctype}')
+        raise HTTPException(404, f'封面获取失败({plat or "未知平台"}): {ctype}')
+
+    # ⭐ 压缩（CPU 也放线程池，别阻塞事件循环）
+    data, ctype, saved = await loop.run_in_executor(
+        None, _compress_cover, data, ctype)
+
     tmp = cache_path + '.tmp'
     with open(tmp, 'wb') as f:
         f.write(data)
     os.replace(tmp, cache_path)          # 原子落盘，并发请求不读到半个文件
     with open(type_path, 'w', encoding='utf-8') as f:
         f.write(ctype)
+    if saved:
+        logger.info('封面压缩 %s → %s KB（省 %s KB）',
+                    url[:60], len(data) // 1024, saved // 1024)
     return FileResponse(cache_path, media_type=ctype,
                         headers={'Cache-Control': 'public, max-age=86400'})
+
 
 
 @app.get('/api/trending')

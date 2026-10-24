@@ -543,6 +543,44 @@ console.log('\n▸ 零 emoji（UI 层严格禁止）');
     symbolRe.test(commented) && !symbolRe.test(stripCmt(commented)));
 }
 
+// ── 封面 webp 属性（2026-10-24）───────────────────────────────────────
+// ⭐ 服务端 /api/proxy-cover 现在把封面压成 webp（640px 宽，B站 636KB → 10KB）。
+//    但微信 <image> 的 webp 属性**默认 false** —— 不显式开就完全不解析 webp，
+//    结果页封面会变成一块黑。这个坑的可怕之处是：接口 200、数据正常、
+//    控制台无报错，只有肉眼看屏幕才发现。
+//    → 凡是 src 绑定到代理封面（cover / coverProxy）的 image 都必须带 webp。
+console.log('\n── 封面 webp 属性 ──');
+(function checkCoverWebp() {
+  // 只查「主封面」这一类：src 直接是 {{cover}} 或 api.coverProxy 产出的变量
+  const coverImgs = [];
+  allWxml.forEach(p2 => {
+    const src = read(p2 + '.wxml');
+    // 抓每个 <image ...> 标签（到 /> 或 > 结束）
+    const tags = src.match(/<image\b[^>]*\/?>/g) || [];
+    tags.forEach(tag => {
+      // 只关心「代理封面」：src="{{cover}}" 这类（不是本地图片、不是 item.url 直链）
+      if (!/src="\{\{\s*cover\s*\}\}"/.test(tag)) return;
+      coverImgs.push({ page: p2, tag: tag.replace(/\s+/g, ' ') });
+    });
+  });
+  check('结果页有封面 image（前提检查）', coverImgs.length > 0,
+    '没找到 src="{{cover}}" 的 image，检查是否改过结构');
+  const noWebp = coverImgs.filter(o => !/webp="\{\{\s*true\s*\}\}"/.test(o.tag));
+  check('代理封面的 image 都开了 webp="{{true}}"（不开会全黑）',
+    noWebp.length === 0,
+    noWebp.map(o => o.page).join(', '));
+
+  // 另一面：webp 属性只对 image 有效，别写到 view 上凑数
+  const bogus = [];
+  allWxml.forEach(p2 => {
+    const src = read(p2 + '.wxml');
+    const views = src.match(/<view\b[^>]*\bwebp=/g) || [];
+    if (views.length) bogus.push(p2);
+  });
+  check('没有把 webp 属性写到非 image 标签上', bogus.length === 0,
+    bogus.join(', '));
+})();
+
 console.log('\n' + '─'.repeat(52));
 console.log(`${pass} PASS / ${fail} FAIL`);
 if (fail > 0) process.exit(1);

@@ -51,8 +51,15 @@
 
     <!-- 视频：16:9 -->
     <view wx:elif="{{isVideo}}" class="video-wrap">
+      <!-- ⭐ webp="{{true}}" 不能省（2026-10-24）：
+           服务端 /api/proxy-cover 现在会压成 webp（640px 宽，B站 636KB → 10KB）。
+           但微信 <image> 的 webp 属性**默认 false** —— 不开就完全不解析 webp，
+           封面会一块黑。基础库 2.9.0+ 支持；更老的库会走 binderror →
+           onCoverErr 回退到 coverRaw 原图，仍然能显示（只是费流量）。
+           ⚠️ 凡是 src 指向 /api/proxy-cover 的 image 都要加这个属性。 -->
       <image wx:if="{{cover}}" src="{{cover}}" mode="aspectFill" class="video-cover"
-             bindtap="onVideoPlay" binderror="onCoverErr" />
+             webp="{{true}}" bindtap="onVideoPlay" binderror="onCoverErr" />
+
       <view wx:else class="video-nocover" bindtap="onVideoPlay"></view>
       <view class="video-play" bindtap="onVideoPlay"></view>
       <!-- ⭐ 右下角信息浮层（竞品对齐）：时长 + 文件大小。
