@@ -255,14 +255,30 @@ console.log('\n▸ 皮肤系统（M1.5+）');
     missHome.join(','));
   const idxWxml2 = read('pages/index/index.wxml');
   check('首页图标用根绝对路径（/images/…，小程序 image 最稳写法）',
-    idxWxml2.includes('src="/images/home/batch-classic.png"'));
+    idxWxml2.includes('src="/images/home/3d-batch.png"'));
   check('首页图标为静态字面量 src（不用动态插值）',
     !/src="\/images\/home\/[^"]*\{\{/.test(idxWxml2));
+  // ⚠️ class 匹配要兼容两种写法：classic 是 "hic hic3d"，其余皮肤是 "hic"
   check('首页 4 功能 × 4 皮肤共 16 个 image 分支',
-    (idxWxml2.match(/class="hic"/g) || []).length === 16,
-    String((idxWxml2.match(/class="hic"/g) || []).length));
+    (idxWxml2.match(/class="hic(\s|")/g) || []).length === 16,
+    String((idxWxml2.match(/class="hic(\s|")/g) || []).length));
   check('首页图标样式 .hic 已定义',
     /\.hic \{[\s\S]{0,80}width: 44rpx/.test(read('pages/index/index.wxss')));
+
+  // ⭐ 守护：3D 白瓷图标必须配 .hic3d（72rpx）
+  //   3D 图形靠「厚度」表现体积，缩到 44rpx 时厚度只剩 1px，
+  //   看起来就只是「多了个阴影」—— 这是返工过的坑，加守护防复发。
+  const ws2 = read('pages/index/index.wxss');
+  check('3D 图标用了 .hic3d（尺寸放大到 72rpx）',
+    /\.hic3d \{[\s\S]{0,60}72rpx/.test(ws2));
+  check('classic 分支全部指向 3d-*.png',
+    (idxWxml2.match(/class="hic hic3d" src="\/images\/home\/3d-/g) || []).length === 4,
+    String((idxWxml2.match(/class="hic hic3d" src="\/images\/home\/3d-/g) || []).length));
+  check('3D 图标不叠 drop-shadow（白瓷自带灰阶，再叠会脏）',
+    !/\.hic3d \{[\s\S]{0,120}drop-shadow/.test(ws2));
+  check('3D 图标资源文件齐全（4 个 PNG 真实存在）',
+    ['batch', 'library', 'rank', 'more'].every(
+      n => fs.existsSync(path.join(__dirname, '..', 'images', 'home', `3d-${n}.png`))));
 }
 
 // ─────────────────────────────────────────────

@@ -47,50 +47,60 @@ HEAD = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{SIZE}" height="{SIZE}"
         f'viewBox="0 0 {SIZE} {SIZE}">')
 
 # ══════════════════════════════════════════════════════════════════════
-# 配色：严格对齐原来的语义色（批量=橙 / 素材=绿 / 热榜=红 / 更多=灰）
-#   ⚠️ 侧面必须比顶面深两个明度阶，否则 44px 下看不出体积。
-#      这是踩过的坑：第一版侧面用 rgba(255,255,255,.46) 半透明白，
-#      在橙色底上透色后变成"稍暗的橙"，跟白顶面的对比被抹平 ——
-#      看起来就像"只加了个阴影"。
+# 配色：白 3D「白瓷」三阶（图形浮在品牌色渐变底座上）
+#
+# ⭐ 三次试错才定下来，这里把原因写清楚，别再来一遍：
+#
+#   ① 第一版：顶面 #fff + 侧面 rgba(255,255,255,.46)「半透明白」
+#      → 白透在橙底上 = 「变浅的橙」，不是灰
+#      → 白 vs 浅橙，明暗差只跨半阶 → 44px 下就是「加了点阴影」
+#
+#   ② 第二版：顶面 #fff + 侧面 rgba(0,0,0,.26)「半透明黑」
+#      → 压暗成立，立体感有了，但**形状没了**：
+#        文件夹的后板变深绿、厚度更深绿，跟绿底座糊成一片，
+#        只剩前板那块白，看起来像「一个白条」而不是文件夹
+#
+#   ③ 现在：**固定灰阶，不用半透明**
+#        受光面 #FFFFFF → 中间面 #DDE2E8 → 背光面 #B4BCC7
+#      → 灰阶是绝对色，不随底色变，对比恒定
+#      → 三个明度阶跨度足够（L 100 / 89 / 76），小尺寸也分得开
+#      → 底色只负责「品牌色块」，图形只负责「体积」，互不干扰
+#
+#   ⚠️ 结论：彩色底上的 3D 白物体，要画成**白瓷**（白+灰），
+#      不是「半透明白」。透光会带底色，白瓷不会。
 # ══════════════════════════════════════════════════════════════════════
-PALETTE = {
-    'batch':   dict(top='#FFD79B', face='#F5A03A', side='#A85D18', back='#D9862C'),
-    'library': dict(top='#A8F0CE', face='#2EC98A', side='#0B7A4A', back='#1FA96E'),
-    'rank':    dict(top='#FFB8B2', face='#F2665E', side='#A32F2A', back='#D14A44'),
-    'more':    dict(top='#E4EAF3', face='#A8B2C4', side='#5A6577', back='#8A94A8'),
-}
+LIT = '#ffffff'        # 受光面（正对光）
+MID = '#e9eef4'        # 中间面（侧光）—— 提亮，避免整体发灰
+DIM = '#c7cfda'        # 背光面 / 挤出厚度 —— 同上，白瓷的灰要「浅灰」
+EDGE = '#ffffff'       # 棱线（面与面的分界，小尺寸下必须有）
 
 
 def stack(p):
-    """批量解析：三层等轴测叠板（每层 = 顶面 + 厚度 + 棱线高光）"""
+    """批量解析：三层等轴测叠板"""
     o = [HEAD]
-    d = 24                                  # 挤出厚度（显示时约 3.7px）
-    # y 值经过 bbox 实测校准：让三层叠板的视觉中心落在画布 128
-    layers = [(22, 153, 212, .86), (40, 99, 176, .95), (58, 45, 140, 1.0)]
-    for x, y, w, lum in layers:
-        h, rx = 34, 14
-        # 厚度：同形状下移（圆角保持，否则底边会变成直角、看出破绽）
-        o.append(f'<rect x="{x}" y="{y + d}" width="{w}" height="{h}" rx="{rx}" '
-                 f'fill="{p["side"]}" opacity="{lum}"/>')
-        o.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{rx}" '
-                 f'fill="{p["top"]}" opacity="{lum}"/>')
-        # ⭐ 顶面下缘的高光线：既是棱边反光，也是顶面/侧面的分界线
-        o.append(f'<rect x="{x + rx - 2}" y="{y + h - 4}" width="{w - 2 * rx + 4}" '
-                 f'height="4" rx="2" fill="#fff" opacity=".92"/>')
+    d = 20
+    # (x, y, w, 顶面色)  —— 越靠上层越亮，模拟「叠在光里」
+    layers = [(22, 153, 212, '#eef1f5'), (40, 99, 176, '#f7f9fb'), (58, 45, 140, LIT)]
+    for x, y, w, face in layers:
+        h, rx = 38, 14
+        o.append(f'<rect x="{x}" y="{y + d}" width="{w}" height="{h}" rx="{rx}" fill="{DIM}"/>')
+        o.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{rx}" fill="{face}"/>')
+        # 顶面下缘棱线：把顶面和厚度分开（也模拟边缘高光）
+        o.append(f'<rect x="{x + rx - 2}" y="{y + h - 3}" width="{w - 2 * rx + 4}" '
+                 f'height="3" rx="1.5" fill="{EDGE}"/>')
     o.append('</svg>')
     return ''.join(o)
 
 
 def folder(p):
-    """我的素材：等轴测文件夹（后板暗 / 前板亮 / 中间露内腔）"""
+    """我的素材：等轴测文件夹（前板亮 / 后板中 / 厚度与内腔暗）"""
     o = [HEAD]
-    x0, x1, tab = 18, 238, 126
-    # 同样按 bbox 校准过（原中心 140 → 128）
-    y_tab, y_top, y_split, y_front, y_bot = 36, 56, 110, 136, 196
+    x0, x1, tab = 18, 238, 118
+    y_tab, y_top, y_split, y_front, y_bot = 36, 56, 106, 132, 196
     d = 24
 
     def outline(dy):
-        """带标签凸起的文件夹轮廓。dy = 向下偏移量（画厚度用）"""
+        """带标签凸起的文件夹轮廓。dy = 向下偏移（画厚度用）"""
         return (f'M{x0 + 18},{y_tab + dy} L{tab},{y_tab + dy} '
                 f'L{tab + 14},{y_top + dy} L{x1 - 18},{y_top + dy} '
                 f'Q{x1},{y_top + dy} {x1},{y_top + dy + 18} '
@@ -98,59 +108,54 @@ def folder(p):
                 f'L{x0 + 18},{y_bot + dy} Q{x0},{y_bot + dy} {x0},{y_bot + dy - 18} '
                 f'L{x0},{y_tab + dy + 18} Q{x0},{y_tab + dy} {x0 + 18},{y_tab + dy} Z')
 
-    o.append(f'<path d="{outline(d)}" fill="{p["side"]}"/>')      # 厚度
-    o.append(f'<path d="{outline(0)}" fill="{p["back"]}"/>')      # 后板
-    o.append(f'<rect x="{x0 + 12}" y="{y_split}" width="{x1 - x0 - 24}" height="28" '
-             f'rx="8" fill="{p["side"]}" opacity=".75"/>')         # 内腔（开口）
+    o.append(f'<path d="{outline(d)}" fill="{DIM}"/>')      # 挤出厚度（最深）
+    o.append(f'<path d="{outline(0)}" fill="{MID}"/>')      # 后板（中）
+    # 内腔：比后板更暗的一道缝，做出「打开」的深度
+    o.append(f'<rect x="{x0 + 12}" y="{y_split}" width="{x1 - x0 - 24}" height="24" '
+             f'rx="7" fill="{DIM}"/>')
+    # 前板（受光面，最亮）—— 它的面积决定这个图标像不像文件夹
     o.append(f'<rect x="{x0}" y="{y_front}" width="{x1 - x0}" height="{y_bot - y_front}" '
-             f'rx="16" fill="{p["top"]}"/>')                        # 前板
-    o.append(f'<rect x="{x0 + 20}" y="{y_front + 4}" width="{x1 - x0 - 40}" height="4" '
-             f'rx="2" fill="#fff" opacity=".95"/>')                 # 前板上缘高光
+             f'rx="16" fill="{LIT}"/>')
+    o.append(f'<rect x="{x0 + 18}" y="{y_front + 3}" width="{x1 - x0 - 36}" height="3" '
+             f'rx="1.5" fill="{EDGE}"/>')                     # 前板上缘棱线
     o.append('</svg>')
     return ''.join(o)
 
 
 def chart(p):
-    """热榜：三根等轴测柱（正面 / 右侧面 / 顶面菱形）"""
+    """热榜：三根等轴测柱（顶面亮 / 正面中 / 右侧面暗）"""
     o = [HEAD]
-    # ⚠️ 右边界算过：最后一根柱 x+w+dx 必须 < 256，否则右侧面被裁掉
-    dx, dy, w = 20, 12, 54
+    dx, dy, w = 17, 10, 56      # 灰面窄一点 = 白面占比更大 = 更「白瓷」
     base = 196
-    for x, y_top, lum in [(20, 132, .90), (92, 44, 1.0), (164, 148, .90)]:
+    for x, y_top, face in [(20, 132, MID), (92, 44, '#f2f5f8'), (164, 148, MID)]:
         h = base - y_top
-        o.append(f'<rect x="{x}" y="{y_top}" width="{w}" height="{h}" '
-                 f'fill="{p["face"]}" opacity="{lum}"/>')
+        o.append(f'<rect x="{x}" y="{y_top}" width="{w}" height="{h}" fill="{face}"/>')
         o.append(f'<path d="M{x + w},{y_top} L{x + w + dx},{y_top - dy} '
-                 f'L{x + w + dx},{base - dy} L{x + w},{base} Z" '
-                 f'fill="{p["side"]}" opacity="{lum}"/>')
+                 f'L{x + w + dx},{base - dy} L{x + w},{base} Z" fill="{DIM}"/>')
         o.append(f'<path d="M{x},{y_top} L{x + w},{y_top} L{x + w + dx},{y_top - dy} '
-                 f'L{x + dx},{y_top - dy} Z" fill="{p["top"]}" opacity="{lum}"/>')
-        # 正面与右侧面的分界线
-        o.append(f'<rect x="{x + w - 2}" y="{y_top}" width="3" height="{h}" '
-                 f'fill="#fff" opacity=".70"/>')
-    # 地面（让三根柱子站在同一平面上，否则会显得浮空）
-    o.append(f'<rect x="18" y="{base}" width="224" height="12" rx="6" '
-             f'fill="{p["side"]}" opacity=".40"/>')
+                 f'L{x + dx},{y_top - dy} Z" fill="{LIT}"/>')
+        # 正面与右侧面的棱线（这道线是「立体」的关键，去掉就成三块平板）
+        o.append(f'<rect x="{x + w - 1.5}" y="{y_top}" width="2.5" height="{h}" fill="{EDGE}"/>')
+        o.append(f'<rect x="{x}" y="{y_top - 1.5}" width="{w}" height="2.5" fill="{EDGE}" opacity=".8"/>')
+    # 地面（三根柱子站同一平面）
+    o.append(f'<rect x="16" y="{base}" width="228" height="11" rx="5" fill="{DIM}" opacity=".85"/>')
     o.append('</svg>')
     return ''.join(o)
 
 
 def cubes(p):
-    """更多工具：四个等轴测立方体（2×2）"""
+    """更多工具：四个等轴测立方体"""
     o = [HEAD]
-    s, dx, dy = 74, 20, 12
-    for x, y, lum in [(16, 46, 1.0), (130, 46, .92), (16, 148, .92), (130, 148, 1.0)]:
-        o.append(f'<rect x="{x}" y="{y}" width="{s}" height="{s}" '
-                 f'fill="{p["face"]}" opacity="{lum}"/>')
-        o.append(f'<path d="M{x + s},{y} L{x + s + dx},{y - dy} '
-                 f'L{x + s + dx},{y + s - dy} L{x + s},{y + s} Z" '
-                 f'fill="{p["side"]}" opacity="{lum}"/>')
-        o.append(f'<path d="M{x},{y} L{x + s},{y} L{x + s + dx},{y - dy} '
-                 f'L{x + dx},{y - dy} Z" fill="{p["top"]}" opacity="{lum}"/>')
-        o.append(f'<rect x="{x + s - 2}" y="{y}" width="3" height="{s}" '
-                 f'fill="#fff" opacity=".65"/>')
-        o.append(f'<rect x="{x}" y="{y - 2}" width="{s}" height="3" '
-                 f'fill="#fff" opacity=".65"/>')
+    s_, dx, dy = 76, 16, 10
+    for x, y, face in [(16, 46, LIT), (130, 46, '#f2f5f8'),
+                       (16, 148, '#f2f5f8'), (130, 148, LIT)]:
+        o.append(f'<rect x="{x}" y="{y}" width="{s_}" height="{s_}" fill="{face}"/>')
+        o.append(f'<path d="M{x + s_},{y} L{x + s_ + dx},{y - dy} '
+                 f'L{x + s_ + dx},{y + s_ - dy} L{x + s_},{y + s_} Z" fill="{DIM}"/>')
+        o.append(f'<path d="M{x},{y} L{x + s_},{y} L{x + s_ + dx},{y - dy} '
+                 f'L{x + dx},{y - dy} Z" fill="{LIT}"/>')
+        o.append(f'<rect x="{x + s_ - 1.5}" y="{y}" width="2.5" height="{s_}" fill="{EDGE}"/>')
+        o.append(f'<rect x="{x}" y="{y - 1.5}" width="{s_}" height="2.5" fill="{EDGE}"/>')
     o.append('</svg>')
     return ''.join(o)
 
@@ -190,7 +195,7 @@ def main():
         return 1
     os.makedirs(OUT_DIR, exist_ok=True)
     for name, builder in BUILDERS.items():
-        svg = builder(PALETTE[name])
+        svg = builder(None)      # 白 3D 版不依赖配色表；参数保留便于以后扩展彩色版
         out = os.path.join(OUT_DIR, f'3d-{name}.png')
         render(svg, out, chrome)
         if not os.path.exists(out):

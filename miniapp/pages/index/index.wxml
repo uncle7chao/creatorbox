@@ -112,7 +112,7 @@
   <view class="tools">
     <view class="tool" bindtap="navBatch">
       <view class="tool-i ti-orange">
-        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/batch-classic.png" mode="aspectFit" />
+        <image wx:if="{{theme === 'classic'}}" class="hic hic3d" src="/images/home/3d-batch.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/batch-dark.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/batch-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/batch-sakura.png" mode="aspectFit" />
@@ -125,7 +125,7 @@
     </view>
     <view class="tool" bindtap="navLibrary">
       <view class="tool-i ti-green">
-        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/library-classic.png" mode="aspectFit" />
+        <image wx:if="{{theme === 'classic'}}" class="hic hic3d" src="/images/home/3d-library.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/library-dark.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/library-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/library-sakura.png" mode="aspectFit" />
@@ -135,7 +135,7 @@
     </view>
     <view class="tool" bindtap="navRanking">
       <view class="tool-i ti-red">
-        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/rank-classic.png" mode="aspectFit" />
+        <image wx:if="{{theme === 'classic'}}" class="hic hic3d" src="/images/home/3d-rank.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/rank-dark.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/rank-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/rank-sakura.png" mode="aspectFit" />
@@ -145,7 +145,7 @@
     </view>
     <view class="tool" bindtap="navToolbox">
       <view class="tool-i ti-ghost">
-        <image wx:if="{{theme === 'classic'}}" class="hic" src="/images/home/more-classic.png" mode="aspectFit" />
+        <image wx:if="{{theme === 'classic'}}" class="hic hic3d" src="/images/home/3d-more.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/more-dark.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/more-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/more-sakura.png" mode="aspectFit" />
