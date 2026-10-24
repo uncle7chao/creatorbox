@@ -116,8 +116,12 @@
         <image wx:elif="{{theme === 'dark'}}" class="hic" src="/images/home/batch-dark.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/batch-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/batch-sakura.png" mode="aspectFit" />
+        <!-- ⭐ 「新」放图标右上角（2026-10-24）：原来跟在标题后面，
+             红底方块夹在文字里像个标点，视觉噪音大。竞品也是放图标角上。 -->
+        <text class="new">新</text>
       </view>
-      <view class="tool-l">批量解析<text class="new">新</text></view>
+      <view class="tool-l">批量解析</view>
+      <view class="tool-s">一次 10 条</view>
     </view>
     <view class="tool" bindtap="navLibrary">
       <view class="tool-i ti-green">
@@ -126,7 +130,8 @@
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/library-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/library-sakura.png" mode="aspectFit" />
       </view>
-      <view class="tool-l">我的素材</view>
+      <view class="tool-l">我的素材</view>
+      <view class="tool-s">跨端同步</view>
     </view>
     <view class="tool" bindtap="navRanking">
       <view class="tool-i ti-red">
@@ -135,7 +140,8 @@
         <image wx:elif="{{theme === 'jade'}}" class="hic" src="/images/home/rank-jade.png" mode="aspectFit" />
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/rank-sakura.png" mode="aspectFit" />
       </view>
-      <view class="tool-l">热榜</view>
+      <view class="tool-l">热榜</view>
+      <view class="tool-s">B站 · 抖音</view>
     </view>
     <view class="tool" bindtap="navToolbox">
       <view class="tool-i ti-ghost">
@@ -145,7 +151,8 @@
         <image wx:elif="{{theme === 'sakura'}}" class="hic" src="/images/home/more-sakura.png" mode="aspectFit" />
         <view class="more-badge">8+</view>
       </view>
-      <view class="tool-l tool-l-ghost">更多工具</view>
+      <view class="tool-l tool-l-ghost">更多工具</view>
+      <view class="tool-s">共 8 个</view>
     </view>
   </view>
 

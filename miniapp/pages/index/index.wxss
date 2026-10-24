@@ -436,24 +436,45 @@
 }
 
 /* ══ 工具行（抄竞品彩色图标矩阵）══ */
+/* ══ 工具网格（2026-10-24 改版：4 列裸图标 → 2 列卡片）
+ *
+ * 参考竞品的「图标 + 标题 + 副标题」信息密度 —— 原来一行 4 个只有标题，
+ * 用户看不出「批量能批几条」「素材存哪」。加副标题后一眼能判断。
+ *
+ * ⚠️ 视觉不照抄竞品：它用高饱和蓝紫渐变 + 3D 拟物图标，
+ *    我们有 4 套主题（classic/dark/jade/sakura），硬编码颜色会让另外三套崩。
+ *    所以全部走变量（--bg-card / --r-card / --card-shadow），改配色只动主题层。
+ *
+ * ⚠️ 间距用 gap 不用外层 padding：以后工具从 4 个涨到 8 个，
+ *    只改数据不改样式，自动排成 2×4。
+ */
 .tools {
   margin: var(--sec-gap) 24rpx 0;
-  background: var(--bg-card);
-  border-radius: var(--r-card);
-  padding: 24rpx 8rpx;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx 0;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
 }
 
 .tool {
   text-align: center;
   position: relative;
+  background: var(--bg-card);
+  border-radius: var(--r-card);
+  padding: 26rpx 12rpx 22rpx;
+  /* ⚠️ 不用 --card-shadow：那是给「大卡」的，4 个小块都这么重会显碎。
+     小件用更轻的阴影 + 极淡描边，靠间距分隔就够了。 */
+  box-shadow: 0 4rpx 14rpx rgba(61, 32, 0, 0.05);
+  border: 1rpx solid var(--line);
+}
+
+/* 按下微缩：小程序没有 hover，用 active 给一点点击反馈 */
+.tool:active {
+  transform: scale(0.97);
 }
 
 .tool-i {
-  width: 84rpx;
-  height: 84rpx;
+  width: 88rpx;
+  height: 88rpx;
   border-radius: var(--r-card);
   margin: 0 auto;
   display: flex;
@@ -506,19 +527,34 @@
 }
 
 .tool-l {
-  font-size: 22rpx;
-  color: var(--ink-700);
-  margin-top: 10rpx;
+  font-size: 27rpx;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-top: 14rpx;
 }
 
-.tool-l .new {
-  font-size: 16rpx;
+/* 副标题：一句话说清「这个工具解决什么」
+ * ⚠️ 不用 --ink-300（太浅，读不清）；用 --ink-500，4 套主题下都有足够对比 */
+.tool-s {
+  font-size: 21rpx;
+  color: var(--ink-500);
+  margin-top: 4rpx;
+  line-height: 1.4;
+}
+
+/* 「新」角标：挂图标右上角（原来 inline 在标题后，像标点）
+ * ⚠️ 用绝对定位到 .tool-i 上，.tool-i 已是 position:relative */
+.tool-i .new {
+  position: absolute;
+  top: -8rpx;
+  right: -10rpx;
+  font-size: 17rpx;
+  line-height: 1.5;
   background: #E24B4A;
   color: #fff;
-  border-radius: 6rpx;
-  padding: 0 6rpx;
-  vertical-align: 4rpx;
-  margin-left: 4rpx;
+  border-radius: 999rpx;
+  padding: 0 8rpx;
+  white-space: nowrap;
 }
 
 .tool-l-ghost {
