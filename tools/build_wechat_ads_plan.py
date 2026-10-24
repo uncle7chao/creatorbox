@@ -117,6 +117,25 @@ RULES = [
      '封面广告：每天首次启动才出。宁可少赚，不要赶人。'),
 ]
 
+# ── 14 个 banner 位落位（2026-10-24 已实装，代码在 components/ad-banner）──
+# (placement, 页面, 位置, 备注)
+BANNER_SLOTS = [
+    ('index_banner',        '首页',      '工具区下方 · 平台列表之上', ''),
+    ('result_banner',       '结果页',    '「保存到相册」下方',        ''),
+    ('batch_banner',        '批量解析',  '结果列表 + 保存按钮之后',   ''),
+    ('toolbox_banner',      '工具箱',    '页面最底部 · 说明之上',     '原在工具列表中间，截图后挪到底'),
+    ('ranking_banner',      '热榜',      '榜单列表下方',              ''),
+    ('library_banner',      '素材库',    '素材列表下方',              ''),
+    ('member_banner',       '会员中心',  '会员卡下方',                '⚠️ 建议后台关掉：用户正考虑付钱'),
+    ('points_banner',       '积分',      '兑换卡之后 · 免责之前',      ''),
+    ('banned_banner',       '违禁词',    '检测结果之后 · 免责之前',    ''),
+    ('pdftool_banner',      'PDF 工具',  '处理区之后 · 说明之前',      ''),
+    ('teleprompter_banner', '提词器',    '编辑态 tips 之后',          '播放态不放（全屏提词）'),
+    ('column_banner',       '干货',      '文章列表之后 · footer 之前', ''),
+    ('article_banner',      '文章',      '正文读完处',                '最自然的触点'),
+    ('compliance_banner',   '合规说明',  '页面最末尾 · 版本号之上',    '原夹在正文和投诉按钮之间，截图后挪到底'),
+]
+
 # ── 待确认 ────────────────────────────────────────────────────────
 TODO = [
     ('准备 1', '确认开通门槛',
@@ -406,9 +425,36 @@ footer{{text-align:center;color:#B5A895;font-size:11.5px;margin-top:34px;line-he
   </table>
 </div>
 
+<!-- 5b. 14 个 banner 位（已实装） -->
+<div class="blk">
+  <h2><span class="n">06</span>14 个 banner 位落位（已实装）</h2>
+  <div class="sub">服务端 <code>PLACEMENT_LABELS</code> 已扩到 15 位 · 前端 14 个页面各接一个</div>
+
+  <table>
+    <tr><th style="width:190px">placement（后台按此名查）</th><th style="width:90px">页面</th><th>位置</th><th style="width:170px">备注</th></tr>
+    {''.join(f'''<tr>
+      <td><code>{esc(p)}</code></td>
+      <td>{esc(pg)}</td>
+      <td style="color:#5A4E43">{esc(pos)}</td>
+      <td style="color:#8B7355;font-size:11.5px">{esc(note) if note else '—'}</td>
+    </tr>''' for p, pg, pos, note in BANNER_SLOTS)}
+  </table>
+
+  <div class="ok">
+    <b>一页一位，不共用 —— 两个原因：</b><br>
+    ① 后台能<b>单独开关</b>某一页（比如会员页发现伤转化，只关那一页）<br>
+    ② 数据能<b>按位统计</b>（知道哪一页的 banner 真有人点）
+  </div>
+
+  <div class="warn">
+    <b>⚠️ 会员页那一位建议默认关掉。</b>
+    用户正在考虑付 ¥9.9，这时候弹广告等于亲手把他推走。位置留着（后台随时能开），但默认该关。
+  </div>
+</div>
+
 <!-- 6. 待确认 -->
 <div class="blk">
-  <h2><span class="n">06</span>需要你做 / 决定的事</h2>
+  <h2><span class="n">07</span>需要你做 / 决定的事</h2>
   <div class="sub">3 个准备动作 + 2 个拍板</div>
 
   {''.join(f'''<div class="todo">
@@ -418,10 +464,10 @@ footer{{text-align:center;color:#B5A895;font-size:11.5px;margin-top:34px;line-he
 </div>
 
 <div class="blk">
-  <h2><span class="n">07</span>我现在可以先做的部分</h2>
+  <h2><span class="n">08</span>我现在可以先做的部分</h2>
   <div class="sub">不依赖 adUnitId，现在就能埋好，等 ID 一到就生效</div>
   <ul>
-    <li><b>广告配置层</b>：服务端加 <code>/api/ads/wechat</code>，把各形式的 <code>adUnitId</code> 下发给前端 —— 换 ID 不用改代码、不用重新提审</li>
+    <li><b>广告配置层</b>：<span style="color:#0F7A50">✅ 已有</span> —— <code>/api/ads/config</code> 按 placement 下发 unitId/mode/images —— 换 ID 不用改代码、不用重新提审</li>
     <li><b>广告组件封装</b>：一个 <code>utils/wxads.js</code> 统一管激励视频/插屏/Banner 的加载、失败兜底、频次控制</li>
     <li><b>频次控制</b>：插屏「每天 ≤2 次、间隔 ≥3 分钟」的计数放服务端（和现有配额体系同一套）</li>
     <li><b>会员去广告</b>：一个 <code>isMember</code> 判断把全站广告位短路掉</li>
