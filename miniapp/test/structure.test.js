@@ -581,6 +581,35 @@ console.log('\n── 封面 webp 属性 ──');
     bogus.join(', '));
 })();
 
+// ── PC / App 专用占位（2026-10-24）────────────────────────────────
+// ⭐ 这条守护的是「合规边界」：AI 文案创作属微信「深度合成-AI 创作」类目，
+//    **只允许企业主体申请**，个人主体提审必驳回。
+//    所以小程序内【不能提供生成能力】，只能做「告知 + 引导去 PC/App」。
+//    如果有人把 pcOnly 改成普通占位（或加回真实入口），这条会失败。
+console.log('\n── PC / App 专用占位 ──');
+(function checkPcOnly() {
+  const apiSrc = read('utils/api.js');
+  check('TOOLBOX_PLACEHOLDERS 里有 pcOnly 项',
+    /pcOnly:\s*true/.test(apiSrc));
+  // ⚠️ 不要假设字段顺序：desc 可能写在 pcOnly 前后。
+  //    做法是先抠出整个对象字面量，再看对象里有没有 PC / App。
+  const pcObj = (apiSrc.match(/\{[^{}]*pcOnly:\s*true[^{}]*\}/) || [''])[0];
+  check('pcOnly 项的 desc 写明 PC / App 可用',
+    /PC\s*\/\s*App/.test(pcObj), pcObj || '没找到 pcOnly 对象');
+  // ⚠️ 反向：小程序内不能出现「生成文案」类可点击的真实入口
+  const tbxJs = read('pages/toolbox/toolbox.js');
+  check('onPlaceholder 区分 pcOnly（pcOnly 走引导弹窗）',
+    /pcOnly/.test(tbxJs) && /showModal/.test(tbxJs));
+  check('pcOnly 分支不跳转到任何 AI 页面（不能在小程序提供生成）',
+    !/navigateTo[^;]*ai/i.test(tbxJs) && !/switchTab[^;]*ai/i.test(tbxJs));
+
+  const tbxWxml = read('pages/toolbox/toolbox.wxml');
+  check('占位卡把 pcOnly 传给点击事件',
+    /data-pc="\{\{item\.pcOnly\}\}"/.test(tbxWxml));
+  check('pcOnly 用「PC / App」角标而不是「规划中」',
+    /item\.pcOnly\s*\?\s*'PC \/ App'\s*:\s*'规划中'/.test(tbxWxml));
+})();
+
 console.log('\n' + '─'.repeat(52));
 console.log(`${pass} PASS / ${fail} FAIL`);
 if (fail > 0) process.exit(1);

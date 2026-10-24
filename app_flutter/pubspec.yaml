@@ -16,6 +16,26 @@ dependencies:
   shared_preferences: ^2.2.0   # token / device uid 持久化
   uuid: ^4.4.0                 # 设备本地身份生成
 
+  # ── 内置浏览器（AI 文案创作，2026-10-24）──────────────────────────
+  # 用途：PC 端内嵌 chat.deepseek.com，用户【用自己的账号登录】后创作。
+  #
+  # ⭐ 为什么是「内嵌浏览器」而不是「服务端代调接口」：
+  #    1. DeepSeek 网页版每次请求要解 PoW（x-ds-pow-response，SHA3 WASM 签名），
+  #       还要伪造 TLS 指纹和浏览器 telemetry —— 平台一改版全部失效。
+  #    2. **致命**：服务端代调意味着所有用户的请求共用我们一台出口 IP，
+  #       平台风控会很快封掉，属于架构性不可行。
+  #    3. 内嵌浏览器里，签名/PoW 都由页面自己的 JS 算，请求从【用户自己的 IP】
+  #       发出，用【用户自己的额度】—— 零逆向、零伪造。
+  #
+  # 依赖说明：
+  #   webview_flutter          → Android/iOS 官方实现
+  #   webview_win_floating     → Windows 实现（WebView2），实现了 webview_flutter
+  #                              的同一套 API，所以业务代码只写一份
+  # ⚠️ Windows 需要 WebView2 Runtime（Win11 自带；Win10 若缺会报
+  #    environment_creation_failed，本机实测 155.0.4283.62 已具备）
+  webview_flutter: ^4.13.0
+  webview_win_floating: ^3.0.0
+
 dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_test:

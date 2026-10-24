@@ -10,6 +10,7 @@ import '../main.dart' show onSessionChanged;
 import '../state/session.dart';
 import 'banned_page.dart';
 import 'batch_page.dart';
+import 'ai_create_page.dart';
 import 'library_page.dart';
 import 'member_page.dart';
 import 'parse_result_page.dart';
@@ -316,6 +317,18 @@ class _HomePageState extends State<HomePage> {
               },
               icon: const Icon(Icons.playlist_add),
               label: const Text('批量解析（多条一次）'),
+            ),
+            const SizedBox(height: 8),
+            // ⭐ 文案创作（内嵌 DeepSeek 网页版，2026-10-24）
+            //    放首页是因为「解析完就该改文案」是自然动线；
+            //    素材可从解析结果页带过来，这里直接进也行。
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const AiCreatePage()));
+              },
+              icon: const Icon(Icons.edit_note),
+              label: const Text('文案创作（用 DeepSeek 改写）'),
             ),
             const SizedBox(height: 12),
             FilledButton(

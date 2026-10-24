@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../state/session.dart';
+import 'ai_create_page.dart';
 
 class ParseResultPage extends StatefulWidget {
   const ParseResultPage({super.key, required this.session, required this.result});
@@ -66,6 +67,21 @@ class _ParseResultPageState extends State<ParseResultPage> {
   String get _author => (result['author'] as String?) ?? '';
   List get _options => (result['options'] as List?) ?? [];
   String get _subtitle => (result['subtitle_text']?.toString() ?? '');
+
+  /// 是否值得去创作：至少要有文案或字幕
+  bool get _canCreate =>
+      _copyText.trim().isNotEmpty || _subtitle.trim().isNotEmpty;
+
+  /// 带着素材跳到文案创作页（按「标题 / 文案 / 字幕」分段，模型更好理解）
+  void _goCreate() {
+    final parts = <String>[
+      if (_title.trim().isNotEmpty && _title != '（无标题）') '标题：${_title.trim()}',
+      if (_copyText.trim().isNotEmpty) '文案：${_copyText.trim()}',
+      if (_subtitle.trim().isNotEmpty) '字幕：${_subtitle.trim()}',
+    ];
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => AiCreatePage(seedMaterial: parts.join('\n\n'))));
+  }
   String get _musicUrl => (result['music_url']?.toString() ?? '');
 
   // ⭐ 素材清单（2026-10-22，与小程序端同契约）
@@ -346,6 +362,17 @@ class _ParseResultPageState extends State<ParseResultPage> {
               onPressed: (_saving || _saved) ? null : _saveToLibrary,
               icon: Icon(_saved ? Icons.check : Icons.bookmark_add_outlined),
               label: Text(_saved ? '已存入素材库' : '存入素材库（小程序同步）'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // ⭐ 用这段文案去创作（2026-10-24）
+          //    素材自动带过去（标题 + 文案 + 字幕），省掉「复制→切窗口→粘贴」。
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.tonalIcon(
+              onPressed: _canCreate ? _goCreate : null,
+              icon: const Icon(Icons.edit_note),
+              label: const Text('用这段文案创作（DeepSeek）'),
             ),
           ),
           const SizedBox(height: 12),

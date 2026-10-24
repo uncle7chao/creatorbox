@@ -64,6 +64,18 @@
 .lock{position:absolute;right:-6rpx;bottom:-6rpx;width:26rpx;height:26rpx;border-radius:50%;background:var(--ink-300);border:3rpx solid #fff}
 .lock:after{content:'';position:absolute;left:8rpx;top:4rpx;width:8rpx;height:10rpx;border:2rpx solid #fff;border-radius:4rpx}
 .soon{position:absolute;top:-14rpx;left:50%;transform:translateX(-50%);font-size:16rpx;color:#fff;background:linear-gradient(135deg,#C8CDD6,#9BA3B0);border-radius:999rpx;padding:0 10rpx;white-space:nowrap}
+/* ⭐ PC / App 专用角标（2026-10-24）：
+   用品牌橙而不用灰色 —— 灰色「规划中」是【还没有】，
+   橙色「PC / App」是【有，但在另一端】，语义完全不同，不能同色。 */
+.soon-pc{background:linear-gradient(135deg,var(--brand),#F2A94B)}
+/* 端区分标记：右下角小方牌，替代「锁」—— 不是锁着，是换端用 */
+.pc-badge{position:absolute;right:-8rpx;bottom:-8rpx;min-width:30rpx;height:26rpx;line-height:26rpx;
+  padding:0 6rpx;border-radius:8rpx;background:var(--brand);color:#fff;
+  font-size:15rpx;font-weight:700;text-align:center;border:3rpx solid #fff;box-sizing:content-box}
+/* PC 专用的图标底不要虚线（虚线=未完成），改实线淡底 */
+.ti-pc{border-style:solid;border-color:var(--brand);background:rgba(232,137,12,.08)}
+.ti-pc .g-ghost{border-color:var(--brand)}
+.ti-pc .g-ghost:after,.ti-pc .g-ghost:before{background:var(--brand)}
 /* 文字 */
 .tl{font-size:22rpx;color:var(--ink-700);margin-top:10rpx}
 .tl .new{font-size:16rpx;background:#E24B4A;color:#fff;border-radius:6rpx;padding:0 6rpx;vertical-align:4rpx;margin-left:4rpx}

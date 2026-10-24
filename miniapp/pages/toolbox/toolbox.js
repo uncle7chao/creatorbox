@@ -67,8 +67,23 @@ Page({
     }
   },
 
-  onPlaceholder() {
-    // ⭐ 合规：只提示，不跳转、不收集联系方式（诱导留资是审核红线）
+  onPlaceholder(e) {
+    // ⭐ 两种占位要分开（2026-10-24）：
+    //   ① 规划中 → 只吐一个 toast（合规：不跳转、不收集联系方式，诱导留资是审核红线）
+    //   ② PC / App 专用 → 明确告知去哪用。这类功能**不是没做，是不在小程序做**
+    //      （AI 创作属深度合成类目，个人主体过不了审），说清楚比含糊更好。
+    // ⚠️ dataset 里的布尔值到 JS 会变成字符串 'true'，不能只判 === true
+    const pcOnly = e.currentTarget.dataset.pc === true ||
+                   e.currentTarget.dataset.pc === 'true';
+    if (pcOnly) {
+      wx.showModal({
+        title: '请在电脑端使用',
+        content: '文案创作需要键盘输入和长文本编辑，请到 PC 或 App 端使用。',
+        showCancel: false,
+        confirmText: '知道了'
+      });
+      return;
+    }
     wx.showToast({ title: '该功能在规划中，敬请期待', icon: 'none' });
   }
 });

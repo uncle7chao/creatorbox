@@ -11,7 +11,7 @@
   <view class="cnt">
     <view class="cnt-l">
       <text class="cnt-t">工具矩阵</text>
-      <text class="cnt-s">{{live.length}} 个可用 · {{placeholders.length}} 个规划中</text>
+      <text class="cnt-s">{{live.length}} 个可用 · {{placeholders.length}} 个更多</text>
     </view>
     <text class="cnt-r">已验证 {{platformCount}} 平台</text>
   </view>
@@ -63,11 +63,14 @@
   <view class="sec">
     <view class="sec-h sec-ghost">即将上线<text class="ghost-tag">规划中 · 点击了解</text></view>
     <view class="grid ghost-grid">
-      <view wx:for="{{placeholders}}" wx:key="name" class="tool" bindtap="onPlaceholder">
-        <view class="ti ti-ghost">
+      <view wx:for="{{placeholders}}" wx:key="name" class="tool"
+            data-pc="{{item.pcOnly}}" bindtap="onPlaceholder">
+        <view class="ti {{item.pcOnly ? 'ti-ghost ti-pc' : 'ti-ghost'}}">
           <view class="g-ghost"></view>
-          <view class="lock"></view>
-          <view class="soon">规划中</view>
+          <!-- pcOnly 不是「锁着」，是「在另一端可用」→ 不画锁，画一个端区分标记 -->
+          <view wx:if="{{item.pcOnly}}" class="pc-badge">PC</view>
+          <view wx:else class="lock"></view>
+          <view class="soon{{item.pcOnly ? ' soon-pc' : ''}}">{{item.pcOnly ? 'PC / App' : '规划中'}}</view>
         </view>
         <view class="tl tl-ghost">{{item.name}}</view>
         <view class="td">{{item.desc}}</view>
@@ -75,5 +78,5 @@
     </view>
   </view>
 
-  <view class="disc">「即将上线」为功能规划展示，上线时间以后续版本公告为准</view>
+  <view class="disc">「规划中」为功能规划展示，上线时间以后续版本公告为准；标注「PC / App」的能力需在电脑端或 App 内使用</view>
 </view>
