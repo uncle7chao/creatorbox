@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>星创映画桌面剪辑版 · 已就绪</title>
+<style>
+  :root{--bg:#f5f6f8;--card:#fff;--ink:#1f2329;--muted:#6b7280;--brand:#2f6fed;--line:#e6e8eb;--ok:#1f9d55;--soft:#eaf1ff}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.7}
+  .wrap{max-width:860px;margin:0 auto;padding:26px}
+  h1{font-size:21px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+  .card h2{font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+  .step{display:inline-block;background:var(--soft);color:var(--brand);font-weight:700;font-size:12px;padding:2px 9px;border-radius:10px}
+  .card p{color:var(--muted);font-size:13px;margin:0 0 12px}
+  .cmd{position:relative;background:#12161d;color:#e8eaed;border-radius:8px;padding:13px 15px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:pre-wrap;word-break:break-all;margin-bottom:8px}
+  .cmd .copy{position:absolute;top:7px;right:7px;background:var(--brand);color:#fff;border:none;border-radius:6px;padding:4px 11px;font-size:11.5px;cursor:pointer}
+  .cmd .copy.done{background:var(--ok)}
+  .done{background:#e6f7ee;border:1px solid #a7e0c0;border-radius:10px;padding:14px 18px;font-size:13.5px;color:#155e38;margin-bottom:18px}
+  .note{background:#fff8e6;border:1px solid #f5d97a;border-radius:8px;padding:12px 14px;font-size:12.5px;color:#7a5b00}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600}
+  code{background:#f0f1f3;padding:1px 5px;border-radius:4px;font-size:11.5px}
+  .badge{display:inline-block;background:#e6f7ee;color:var(--ok);font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:9px;margin:2px 4px 2px 0}
+  .big{font-size:15px;font-weight:700;color:var(--brand)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>星创映画（CreatorBox）· 桌面剪辑版</h1>
+  <p class="sub">基于 Concat 完整应用二开 · AGPL-3.0-or-later</p>
+
+  <div class="done">
+    🎉 <strong>已经编译完成，可以直接用了！</strong><br>
+    窗口标题、启动页、图标、强调色、26 种语言的品牌名全部换成了星创映画。<strong>双击 exe 就能打开，不需要任何额外操作。</strong>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">用</span>怎么打开</h2>
+    <p>进入项目根目录的 <code>星创映画</code> 文件夹，<strong>双击 <span class="big">星创映画.exe</span></strong> 即可。</p>
+    <div class="cmd"><button class="copy">复制</button>D:\WorkBuddyFILE\CreatorBox\clipforge\星创映画\星创映画.exe</div>
+    <p style="margin-top:10px">这个文件夹里已经放好了程序本体和全部运行库（FFmpeg 等），所以是<strong>绿色免安装</strong>的——整个文件夹拷到别的电脑上也能直接双击运行。</p>
+    <p>打开后点「新建项目」即可开始剪辑。功能是 Concat 原生的完整版：多轨时间线、字幕、抠像、关键帧、100+ 特效、4K 导出等。</p>
+  </div>
+
+  <div class="card">
+    <h2>已完成品牌改造</h2>
+    <table>
+      <tr><th>项目</th><th>结果</th></tr>
+      <tr><td>窗口标题</td><td>星创映画（CreatorBox）· 桌面剪辑版</td></tr>
+      <tr><td>启动页大标题</td><td>欢迎使用星创映画</td></tr>
+      <tr><td>exe / 窗口图标</td><td>你的星创映画 LOGO</td></tr>
+      <tr><td>产品名 / 版权</td><td>CreatorBox ClipForge（保留上游署名，AGPL 要求）</td></tr>
+      <tr><td>强调色</td><td>品牌蓝 #2f6fed</td></tr>
+      <tr><td>26 种语言</td><td>简中→星创映画、繁中→星創映畫、其他→CreatorBox</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>如果以后改了代码要重编</h2>
+    <p>跑这一个脚本即可（已内置 Skia 离线方案，不会卡下载；编完会<strong>自动同步到 <code>星创映画\</code> 文件夹</strong>）：</p>
+    <div class="cmd"><button class="copy">复制</button>cd D:\WorkBuddyFILE\CreatorBox\clipforge
+powershell -ExecutionPolicy Bypass -File .\编译完整版.ps1</div>
+    <p style="margin-top:10px">约 15 分钟。会先编译 Slint 界面（较慢），属正常。</p>
+  </div>
+
+  <div class="card">
+    <h2>环境（已就绪）</h2>
+    <div>
+      <span class="badge">✓ Rust 1.95</span>
+      <span class="badge">✓ VS C++ 编译器</span>
+      <span class="badge">✓ Windows SDK</span>
+      <span class="badge">✓ cmake</span>
+      <span class="badge">✓ FFmpeg 8.1.3</span>
+      <span class="badge">✓ LLVM</span>
+      <span class="badge">✓ Skia 预编译包（离线）</span>
+    </div>
+  </div>
+
+  <div class="note">
+    说明：启动页的「0.2.12 的新功能」卡片和「GitHub / Discord」链接仍指向 Concat 上游——这是 AGPL 要求提供上游源码的合规做法，也可保留。若你想换成自己的官网/仓库，等你的仓库建好后我再改。当前是 debug 版（307MB、启动约 15 秒），需要更小更快的正式版我可以再编 release。
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.parentElement.innerText.replace(/^复制\s*/,'').trim();
+      navigator.clipboard.writeText(text).then(function(){done(btn);},function(){
+        var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');done(btn);}catch(e){}document.body.removeChild(ta);
+      });
+    });
+  });
+  function done(btn){var o=btn.textContent;btn.textContent='已复制';btn.classList.add('done');setTimeout(function(){btn.textContent=o;btn.classList.remove('done');},1500);}
+</script>
+</body>
+</html>

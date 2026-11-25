@@ -1,0 +1,35 @@
+# Rust / Cargo
+/target/
+src-tauri/target/
+
+# Tauri 构建产物
+src-tauri/gen/
+
+# 前端依赖
+node_modules/
+dist/
+
+# 编辑器与系统
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# 日志与密钥
+*.log
+/api_key
+.env
+
+# Modified by ClipForge / 星创映画桌面剪辑版 on 2026-11-25:
+# Concat 引擎的构建产物。quick / release / debug 三个 profile 加起来约 25 GB，
+# 全是可重新编译生成的中间文件，绝不能进仓库。
+# 注意：原有规则只有 /target/（只匹配 clipforge 根）和 src-tauri/target/，
+# 漏了 vendor 这一层，直接 add 会把 25 GB 编码产物推上去。
+vendor/Concat/src/target/
+
+# 编译出来的绿色包成品目录（exe + FFmpeg dll，约 770 MB）
+# 成品通过 Release 分发，不塞进源码仓库。
+星创映画/
+星创映画（开发版）/
+星创映画（正式版）/
